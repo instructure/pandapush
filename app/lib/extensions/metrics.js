@@ -1,4 +1,4 @@
-module.exports = function(bayeux) {
+exports.setup = function(bayeux) {
   bayeux.on('handshake', function(clientId) {
 
   });
