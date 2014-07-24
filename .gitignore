@@ -1,0 +1,5 @@
+.env
+node_modules
+ui/node_modules
+ui/public/admin/bundle.js
+localdata
