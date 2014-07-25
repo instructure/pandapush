@@ -4,9 +4,7 @@ var fs     = require('fs'),
     token  = require('../token');
 
 module.exports = function(dbpath) {
-  var database = {
-    applications: {}
-  };
+  var database = {};
 
   var readDatabase = function(done) {
     fs.readFile(dbpath, function(err, data) {
@@ -16,7 +14,10 @@ module.exports = function(dbpath) {
         return;
       }
 
-      done(null, JSON.parse(data));
+      var db = JSON.parse(data);
+      // fix some old bad databases
+      delete db.applications;
+      done(null, db);
     });
   };
 
