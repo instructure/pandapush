@@ -12,8 +12,6 @@ var React        = require('react'),
     Console      = require('./application/console');
 
 module.exports = React.createClass({
-  mixins: [ Router.ActiveState ],
-
   getInitialState: function() {
     return {
       app: {
@@ -34,6 +32,10 @@ module.exports = React.createClass({
 
   componentDidMount: function() {
     this.loadData();
+
+    if (!this.props.activeRouteHandler()) {
+      Router.replaceWith('applicationInfo', this.props.params, this.props.query);
+    }
   },
 
   handleReload: function() {
@@ -47,7 +49,7 @@ module.exports = React.createClass({
 
         <div className="row">
           <ul className="nav nav-tabs" role="tablist">
-            <Tab to="applicationInfo" id={this.props.params.id}>Name</Tab>
+            <Tab to="applicationInfo" id={this.props.params.id}>Info</Tab>
             <Tab to="applicationKeys" id={this.props.params.id}>Keys</Tab>
             <Tab to="applicationConsole" id={this.props.params.id}>Console</Tab>
           </ul>
