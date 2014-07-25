@@ -113,7 +113,7 @@ module.exports = React.createClass({
 
       return (
         <tr>
-          <td>{key.key_id}</td>
+          <td className="identifier">{key.key_id}</td>
           <td>{key.purpose}</td>
           <td>{key.created_at}</td>
           <td>{key.created_by}</td>
@@ -144,7 +144,7 @@ module.exports = React.createClass({
           <tbody>
             <tr>
               <td>ID</td>
-              <td>{this.state.app.application_id}</td>
+              <td className="identifier">{this.state.app.application_id}</td>
             </tr>
             <tr>
               <td>Name</td>

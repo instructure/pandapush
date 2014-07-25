@@ -92,27 +92,63 @@ exports.generateToken = function(req, res) {
       return res.send(404, "could not find application");
     }
 
-    // find key
-    var key = application.keys[req.params.keyId];
-    if (!key) {
-      console.log("couldn't find key");
-      return res.send(404, "could not find key");
+    var lookupKey = function(done) {
+      // find key
+      var key = null;
+
+      if (req.params.keyId) {
+        key = application.keys[req.params.keyId];
+        if (!key) {
+          console.log("couldn't find key");
+          return res.send(404, "could not find key");
+        }
+
+        done(key);
+      }
+      else {
+        // no key was specified, so find the "web console" purpose key and create if necessary
+        key = _.find(application.keys, function(key) {
+          return key.purpose == "web console" &&
+                 !key.revoked_at &&
+                 !moment(key.expires_at).isBefore(moment());
+        });
+
+        if (key) {
+          done(key);
+        }
+        else {
+          store.addKey(application.application_id, {
+            user: req.user || req.session.cas_user,
+            expires: moment().add('years', 1).toISOString(),
+            purpose: "web console"
+          }, function(err, key) {
+            if (err) {
+              console.log("error generating web console key:", err);
+              return res.send(500, "error");
+            }
+
+            done(key);
+          });
+        }
+      }
     }
 
-    var expires = req.body.expires && moment(req.body.expires) || moment().add('hours', 1);
+    lookupKey(function(key) {
+      var expires = req.body.expires && moment(req.body.expires) || moment().add('hours', 1);
 
-    var payload = {
-      keyId: key.key_id,
-      channel: req.body.channel,
-      pub: req.body.pub,
-      sub: req.body.sub,
-      exp: expires.unix()
-    };
+      var payload = {
+        keyId: key.key_id,
+        channel: req.body.channel,
+        pub: req.body.pub,
+        sub: req.body.sub,
+        exp: expires.unix()
+      };
 
-    var token = jwt.sign(payload, key.secret);
+      var token = jwt.sign(payload, key.secret);
 
-    res.json(200, {
-      token: token
+      res.json(200, {
+        token: token
+      });
     });
   });
 };

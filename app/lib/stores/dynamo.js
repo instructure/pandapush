@@ -170,28 +170,30 @@ module.exports = function(table) {
       token.generate(16, function(keyId) {
         keyId = 'PSID' + keyId;
         token.generate(40, function(keySecret) {
+
+          var key = {
+            application_id: applicationId,
+            key_id:         keyId,
+            secret:         keySecret,
+            created_at:     moment().toISOString(),
+            created_by:     attributes.user,
+            expires:        expiresAt.toISOString(),
+            purpose:        attributes.purpose
+          };
+
+          // each attribute is a string, so the dynamo item is easy to make
+          var item = _.mapValues(key, function(v) { return { S: v }; });
+
           dynamo.putItem({
             TableName: table.keys,
-            Item: {
-              application_id: { S: applicationId },
-              key_id:         { S: keyId },
-              secret:         { S: keySecret },
-              created_at:     { S: moment().toISOString() },
-              created_by:     { S: attributes.user },
-              expires:        { S: expiresAt.toISOString() },
-              purpose:        { S: attributes.purpose }
-            }
+            Item: item
           }, function(err, data) {
             if (err) {
               done(err);
               return;
             }
 
-            done(null, {
-              key_id: keyId,
-              secret: keySecret,
-              expires: expiresAt.toISOString()
-            });
+            done(null, key);
           });
         });
       });

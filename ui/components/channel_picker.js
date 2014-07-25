@@ -43,7 +43,7 @@ module.exports = React.createClass({
       <div className="input-group">
         <div className="input-group-btn">
           <button type="button" className="btn btn-default" disabled="disabled">/</button>
-          <button type="button" className="btn btn-default">{this.props.applicationId}</button>
+          <button type="button" className="btn btn-default identifier">{this.props.applicationId}</button>
           <button type="button" className="btn btn-default" disabled="disabled">/</button>
           <div className="btn-group">
             <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">{this.state.visibility || this.props.visibility} <span className="caret"></span></button>

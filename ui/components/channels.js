@@ -13,18 +13,9 @@ var React         = require('react'),
     ChannelPicker = require('./channel_picker');
 
 var getToken = function(app, channel, done) {
-  var key = _.find(_.values(app.keys), function(key) {
-    return !moment(key.expires).isBefore(moment()) && !key.revoked_at;
-  });
-
-  if (!key) {
-    done("could not find a valid key");
-    return;
-  }
-
   $.ajax({
     type: 'POST',
-    url: '/admin/api/application/' + app.application_id + '/keys/' + key.key_id + '/token',
+    url: '/admin/api/application/' + app.application_id + '/token',
     data: JSON.stringify({
       channel: channel,
       pub: true,
@@ -54,7 +45,6 @@ module.exports = React.createClass({
   },
 
   componentDidMount: function() {
-    console.log("didmount");
     this.loadData();
 
     var getCurrentToken = function() {
@@ -116,8 +106,6 @@ module.exports = React.createClass({
         }
       });
     });
-
-    console.log("publishing to " + channel, payload);
   },
 
   handleSubscribe: function(e) {
@@ -126,8 +114,6 @@ module.exports = React.createClass({
     var channel = this.refs["subChannel"].get();
 
     var doSubscribe = function() {
-      console.log("subscribing to " + channel);
-
       getToken(this.state.app, channel, function(err, token) {
         if (err) {
           alert("error getting token.\n\n" + err);

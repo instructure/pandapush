@@ -56,9 +56,10 @@ module.exports = React.createClass({
     return _.map(this.state.applications, function(app) {
       return (
         <tr>
-          <td><Link to="application" id={app.application_id} app={app}>{app.application_id}</Link></td>
+          <td className="identifier"><Link to="application" id={app.application_id} app={app}>{app.application_id}</Link></td>
           <td>{app.name}</td>
           <td>{app.created_at}</td>
+          <td>{app.created_by}</td>
         </tr>
       );
     }.bind(this));
@@ -75,6 +76,7 @@ module.exports = React.createClass({
               <th>Application ID</th>
               <th>Name</th>
               <th>Created</th>
+              <th>Created By</th>
             </tr>
 
             {this.renderApplications()}
