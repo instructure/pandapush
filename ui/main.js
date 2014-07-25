@@ -2,15 +2,17 @@
 
 'use strict';
 
-var React        = require('react'),
-    Router       = require('react-router'),
-    Route        = Router.Route,
-    Link         = Router.Link,
-    Faye         = window.Faye,
-    $            = window.jQuery,
-    Applications = require('./components/applications'),
-    Application  = require('./components/application'),
-    Channels     = require('./components/channels');
+var React              = require('react'),
+    Router             = require('react-router'),
+    Route              = Router.Route,
+    Link               = Router.Link,
+    Faye               = window.Faye,
+    $                  = window.jQuery,
+    Applications       = require('./components/applications'),
+    Application        = require('./components/application'),
+    ApplicationInfo    = require('./components/application/info'),
+    ApplicationKeys    = require('./components/application/keys'),
+    ApplicationConsole = require('./components/application/console');
 
 window.React = React; // for the React chrome extension
 
@@ -71,7 +73,10 @@ var App = React.createClass({
 React.renderComponent((
   <Route handler={App}>
     <Route path="/applications" name="applications" handler={Applications} />
-    <Route path="/application/:id" name="application" handler={Application} />
-    <Route path="/application/:id/channels" name="channels" handler={Channels} />
+    <Route path="/application/:id" name="application" handler={Application}>
+      <Route path="/application/:id/info" name="applicationInfo" handler={ApplicationInfo} />
+      <Route path="/application/:id/keys" name="applicationKeys" handler={ApplicationKeys} />
+      <Route path="/application/:id/console" name="applicationConsole" handler={ApplicationConsole} />
+    </Route>
   </Route>
 ), document.body);

@@ -10,7 +10,7 @@ var React         = require('react'),
     _             = require('lodash'),
     Faye          = window.Faye,
     $             = window.jQuery,
-    ChannelPicker = require('./channel_picker');
+    ChannelPicker = require('../channel_picker');
 
 var getToken = function(app, channel, done) {
   $.ajax({
@@ -87,7 +87,7 @@ module.exports = React.createClass({
       return;
     }
 
-    getToken(this.state.app, channel, function(err, token) {
+    getToken(this.props.app, channel, function(err, token) {
       if (err) {
         alert("error getting token.\n\n" + err);
         return;
@@ -114,7 +114,7 @@ module.exports = React.createClass({
     var channel = this.refs["subChannel"].get();
 
     var doSubscribe = function() {
-      getToken(this.state.app, channel, function(err, token) {
+      getToken(this.props.app, channel, function(err, token) {
         if (err) {
           alert("error getting token.\n\n" + err);
           return;
@@ -159,7 +159,7 @@ module.exports = React.createClass({
       params[channel + 'Type'] = newParams.channelType;
       params[channel + 'Path'] = newParams.path;
 
-      Router.replaceWith('channels', { id: this.props.params.id }, params);
+      Router.replaceWith('applicationConsole', { id: this.props.params.id }, params);
     }.bind(this);
   },
 
@@ -172,7 +172,7 @@ module.exports = React.createClass({
     else {
       params.payload = payload;
     }
-    Router.replaceWith('channels', { id: this.props.params.id }, params);
+    Router.replaceWith('applicationConsole', { id: this.props.params.id }, params);
   },
 
   renderEventsTable: function() {
@@ -314,3 +314,4 @@ module.exports = React.createClass({
     );
   }
 });
+
