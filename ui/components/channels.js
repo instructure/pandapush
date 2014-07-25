@@ -3,7 +3,7 @@
 'use strict';
 
 var React         = require('react'),
-    Router        = require('react-nested-router'),
+    Router        = require('react-router'),
     Route         = Router.Route,
     Link          = Router.Link,
     moment        = require('moment'),

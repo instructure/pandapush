@@ -3,7 +3,7 @@
 'use strict';
 
 var React        = require('react'),
-    Router       = require('react-nested-router'),
+    Router       = require('react-router'),
     Route        = Router.Route,
     Link         = Router.Link,
     Faye         = window.Faye,
@@ -22,7 +22,7 @@ var App = React.createClass({
   },
 
   componentDidMount: function() {
-    if (!this.props.activeRoute) {
+    if (!this.props.activeRouteHandler()) {
       Router.replaceWith('applications');
     }
 
@@ -62,7 +62,7 @@ var App = React.createClass({
           </div>
         </nav>
 
-        {this.props.activeRoute}
+        {this.props.activeRouteHandler()}
       </div>
     );
   }
