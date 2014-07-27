@@ -1,17 +1,22 @@
-var faye    = require('faye'),
+var Faye    = require('faye'),
     redis   = require('faye-redis-sharded'),
+    crypto  = require('crypto'),
     auth    = require('./extensions/auth'),
     metrics = require('./extensions/metrics');
 
 
-var instance = null;
+var instance = null,
+    externalClient = null,
+    internalClient = null;
+
+var internalToken = crypto.randomBytes(256).toString('base64');
 
 exports.getClient = function() {
-  if (!instance) {
-    return;
-  }
+  return externalClient;
+};
 
-  return instance.getClient();
+exports.getInternalClient = function() {
+  return internalClient;
 };
 
 exports.attach = function(server) {
@@ -28,7 +33,7 @@ exports.attach = function(server) {
 
   var options = {
     mount: '/push',
-    timeout: 60
+    timeout: 300
   };
 
   if (redisHosts.length > 0) {
@@ -38,12 +43,22 @@ exports.attach = function(server) {
     };
   }
 
-  var bayeux = instance = new faye.NodeAdapter(options);
+  var bayeux = instance = new Faye.NodeAdapter(options);
 
-  bayeux.addExtension(auth.sub);
-  bayeux.addExtension(auth.pub);
+  bayeux.addExtension(auth(internalToken));
 
   metrics.setup(bayeux);
+
+  externalClient = bayeux.getClient();
+
+  internalClient = new Faye.Client(bayeux._server);
+  internalClient.addExtension({
+    outgoing: function(message, callback) {
+      message.ext = message.ext || {};
+      message.ext.internalToken = internalToken;
+      callback(message);
+    }
+  });
 
   bayeux.attach(server);
 };

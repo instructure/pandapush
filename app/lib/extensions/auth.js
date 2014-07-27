@@ -97,12 +97,9 @@ var verifyAuth = function(channel, auth, allowPublic, done) {
   });
 }
 
-exports.sub = {
-  incoming: function(message, callback) {
+var checks = {
+  '/meta/subscribe': function(message, callback) {
     var msgError = _.partial(error, message, callback);
-    if (message.channel !== '/meta/subscribe') {
-      return callback(message);
-    }
 
     var subscription = message.subscription,
         auth         = message.ext && message.ext.auth;
@@ -119,15 +116,10 @@ exports.sub = {
       // token verified
       callback(message);
     });
-  }
-};
+  },
 
-exports.pub = {
-  incoming: function(message, callback) {
+  publish: function(message, callback) {
     var msgError = _.partial(error, message, callback);
-    if (message.channel.indexOf('/meta/') == 0) {
-      return callback(message);
-    }
 
     var auth = (message.ext && message.ext.auth) ||
                (message.data && message.data.__auth);
@@ -144,18 +136,46 @@ exports.pub = {
       // token verified
       callback(message);
     });
-  },
-
-  outgoing: function(message, callback) {
-    // strip out any auth token
-    if (message.ext) {
-      delete message.ext.auth;
-    }
-
-    if (message.data) {
-      delete message.data.__auth;
-    }
-
-    callback(message);
   }
+};
+
+module.exports = function(internalToken) {
+  return {
+    incoming: function(message, callback) {
+
+      // allow any operations specifying the correct internalToken
+      if (message.ext && message.ext.internalToken == internalToken) {
+        console.log("allowing internal publish");
+        return callback(message);
+      }
+
+      if (message.channel.indexOf('/meta/') === 0) {
+        var check = checks[message.channel];
+        if (check) {
+          check(message, callback);
+          return;
+        }
+
+        // no authentication specified for this meta channel
+        callback(message);
+        return;
+      }
+
+      checks.publish(message, callback);
+      return;
+    },
+
+    outgoing: function(message, callback) {
+      // strip out any auth token
+      if (message.ext) {
+        delete message.ext.auth;
+      }
+
+      if (message.data) {
+        delete message.data.__auth;
+      }
+
+      callback(message);
+    }
+  };
 };

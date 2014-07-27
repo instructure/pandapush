@@ -44,13 +44,14 @@ var storeStub = {
 };
 
 var auth = proxyquire('../../../../app/lib/extensions/auth', { '../store': storeStub });
+var auth = auth('internalToken');
 
 // These tests could use some DRY'ing up (there's some combinatorial
 // explosion happening...)
 
 describe('auth extension', function() {
   it('strips auth info from outgoing messages', function(done) {
-    auth.pub.outgoing({
+    auth.outgoing({
       ext: {
         auth: {
           token: "token"
@@ -71,7 +72,7 @@ describe('auth extension', function() {
   describe('subscribing', function() {
     describe('to public channels', function() {
       it('allows subscription without auth', function(done) {
-        auth.sub.incoming({
+        auth.incoming({
           channel: '/meta/subscribe',
           subscription: '/appid/public/channel'
         }, function(message) {
@@ -83,7 +84,7 @@ describe('auth extension', function() {
 
     describe('to private channels', function() {
       it('fails without any authentication', function(done) {
-        auth.sub.incoming({
+        auth.incoming({
           channel: '/meta/subscribe',
           subscription: '/appid/private/channel'
         }, function(message) {
@@ -94,7 +95,7 @@ describe('auth extension', function() {
 
       describe('with token auth', function() {
         it('works with a valid token', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: {
@@ -109,7 +110,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an expired key', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: {
@@ -124,7 +125,7 @@ describe('auth extension', function() {
         });
 
         it('fails with a revoked key', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: {
@@ -139,7 +140,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an expired token', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: {
@@ -154,7 +155,7 @@ describe('auth extension', function() {
         });
 
         it('fails with a token for a different channel', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel2',
             ext: {
@@ -169,7 +170,7 @@ describe('auth extension', function() {
         });
 
         it('fails with a token that can\'t subscribe', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: {
@@ -184,7 +185,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an unknown application', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid2/private/channel',
             ext: {
@@ -199,7 +200,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an unknown key', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: {
@@ -224,7 +225,7 @@ describe('auth extension', function() {
         }
 
         it('works with a valid key/secret', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: { auth: authForKey("goodkey") }
@@ -235,7 +236,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an expired key', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: { auth: authForKey("expiredkey") }
@@ -246,7 +247,7 @@ describe('auth extension', function() {
         });
 
         it('fails with a revoked key', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: { auth: authForKey("revokedkey") }
@@ -257,7 +258,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an unknown application', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid2/private/channel',
             ext: { auth: authForKey("goodkey") }
@@ -268,7 +269,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an unknown key', function(done) {
-          auth.sub.incoming({
+          auth.incoming({
             channel: '/meta/subscribe',
             subscription: '/appid/private/channel',
             ext: {
@@ -289,7 +290,7 @@ describe('auth extension', function() {
   describe('publishing', function() {
     describe('to public channels', function() {
       it('fails without any authentication', function(done) {
-        auth.pub.incoming({
+        auth.incoming({
           channel: '/appid/public/channel'
         }, function(message) {
           message.should.have.property('error');
@@ -300,7 +301,7 @@ describe('auth extension', function() {
 
     describe('to private channels', function() {
       it('fails without any authentication', function(done) {
-        auth.pub.incoming({
+        auth.incoming({
           channel: '/appid/private/channel'
         }, function(message) {
           message.should.have.property('error');
@@ -310,7 +311,7 @@ describe('auth extension', function() {
 
       describe('with token auth', function() {
         it('works with a valid token', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: {
               auth: {
@@ -324,7 +325,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an expired key', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: {
               auth: {
@@ -338,7 +339,7 @@ describe('auth extension', function() {
         });
 
         it('fails with a revoked key', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: {
               auth: {
@@ -352,7 +353,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an expired token', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: {
               auth: {
@@ -366,7 +367,7 @@ describe('auth extension', function() {
         });
 
         it('fails with a token for a different channel', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel2',
             ext: {
               auth: {
@@ -380,7 +381,7 @@ describe('auth extension', function() {
         });
 
         it('fails with a token that can\'t subscribe', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: {
               auth: {
@@ -394,7 +395,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an unknown application', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid2/private/channel',
             ext: {
               auth: {
@@ -408,7 +409,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an unknown key', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: {
               auth: {
@@ -432,7 +433,7 @@ describe('auth extension', function() {
         }
 
         it('works with a valid key/secret', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: { auth: authForKey("goodkey") }
           }, function(message) {
@@ -442,7 +443,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an expired key', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: { auth: authForKey("expiredkey") }
           }, function(message) {
@@ -452,7 +453,7 @@ describe('auth extension', function() {
         });
 
         it('fails with a revoked key', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: { auth: authForKey("revokedkey") }
           }, function(message) {
@@ -462,7 +463,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an unknown application', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid2/private/channel',
             ext: { auth: authForKey("goodkey") }
           }, function(message) {
@@ -472,7 +473,7 @@ describe('auth extension', function() {
         });
 
         it('fails with an unknown key', function(done) {
-          auth.pub.incoming({
+          auth.incoming({
             channel: '/appid/private/channel',
             ext: {
               auth: {

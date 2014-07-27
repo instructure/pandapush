@@ -88,7 +88,7 @@ app.use(express.static(__dirname + '/../ui/public'));
 
 
 // start some utility modules
-store.init(function() {
+store.init(bayeux, function() {
   // start server
   var port = process.env.PORT || 3000;
   server.listen(port, function() {

@@ -39,7 +39,7 @@ exports.getAllForUser = function(userId, done) {
   });
 };
 
-exports.init = function(done) {
+exports.init = function(bayeux, done) {
   setInterval(function() {
     exports.get(function(err, applications) {
       cache = applications;
@@ -68,6 +68,12 @@ exports.init = function(done) {
   }
   else {
     throw "unknown DATA_STORE specified: " + process.env.DATA_STORE;
+  }
+
+  if (bayeux) {
+    bayeux.getInternalClient().subscribe('/internal/foo', function(message) {
+      console.log("got internal message:", message);
+    });
   }
 
   exports.get(function(err, applications) {
