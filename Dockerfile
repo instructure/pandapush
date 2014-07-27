@@ -20,6 +20,7 @@ RUN cd /app/ui && nodejs ./node_modules/.bin/webpack -p
 VOLUME [ "/app/localdata" ]
 EXPOSE 3000
 
+RUN mkdir -p /var/log/eb-app
 ENV DATA_STORE FILE
 
 CMD nodejs /app/app/server.js
