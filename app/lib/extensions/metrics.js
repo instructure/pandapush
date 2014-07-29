@@ -136,7 +136,7 @@ exports.setup = function(bayeux, client) {
       var prefix = 'apps.' + appId;
 
       if (appStats.publishes) {
-        statsd.increment(prefix + '.publishes', appStats.publishes);
+        statsd.count(prefix + '.publishes', appStats.publishes);
       }
       statsd.gauge(prefix + '.published_channels', appStats.publishedChannels);
       statsd.gauge(prefix + '.clients', appStats.clients);

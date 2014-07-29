@@ -13,6 +13,7 @@ console.log("hostname: " + hostname);
 
 var instance = new lynx(host, port, { scope: prefix });
 
+exports.count     = instance.count.bind(instance);
 exports.increment = instance.increment.bind(instance);
 exports.decrement = instance.decrement.bind(instance);
 exports.timing    = instance.timing.bind(instance);
