@@ -22,7 +22,7 @@
     "dotenv": "^0.4.0",
     "express": "^4.6.1",
     "faye": "^1.0.3",
-    "faye-redis-sharded": "^0.2.4",
+    "faye-redis-sharded": "git://github.com/zwily/faye-redis-sharded-node",
     "grand_master_cas": "^0.2.3",
     "jsonwebtoken": "^0.4.1",
     "lodash": "^2.4.1",

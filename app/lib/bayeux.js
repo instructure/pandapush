@@ -39,7 +39,12 @@ exports.attach = function(server) {
   if (redisHosts.length > 0) {
     options.engine = {
       type: redis,
-      shards: redisHosts
+      shards: redisHosts,
+      redisOptions: {
+        no_ready_check: true,
+        parser:'javascript',
+        handleErrors: true
+      }
     };
   }
 
