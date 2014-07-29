@@ -1,7 +1,7 @@
 
 // a channel name looks like this:
 //
-// /<applicationId>/private-<string>/path/to/whatever
+// /<applicationId>/<public|private|meta>/path/to/whatever
 //
 //
 
@@ -17,15 +17,18 @@ exports.parse = function(channel) {
     components: components.slice(2)
   };
 
-  var initial = components[2];
-  if (initial === 'private') {
+  var type = components[2];
+  if (type === 'private') {
     res.private = true;
   }
-  else if (initial === 'public') {
+  else if (type === 'public') {
     res.public = true;
   }
+  else if (type === 'meta') {
+    res.meta = true;
+  }
   else {
-    // channel names must start with public or private
+    // channel names must start with public, private, or meta
     return null;
   }
 

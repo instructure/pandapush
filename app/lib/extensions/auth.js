@@ -145,7 +145,6 @@ module.exports = function(internalToken) {
 
       // allow any operations specifying the correct internalToken
       if (message.ext && message.ext.internalToken == internalToken) {
-        console.log("allowing internal publish");
         return callback(message);
       }
 

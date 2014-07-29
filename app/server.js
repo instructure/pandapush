@@ -15,6 +15,7 @@ var http           = require('http'),
     store          = require('./lib/store'),
     cookieSessions = require('./lib/cookie_sessions'),
     logger         = require('./lib/logger'),
+    statsd         = require('./lib/statsd'),
     routes         = require('./routes');
 
 var app = express(),

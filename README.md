@@ -112,7 +112,12 @@ For example:
 The public/private portion designates whether or not a token is needed
 to subscribe to that channel. Publishing always requires authentication.
 
-(In the future we may add more channel types - like `/presence/`.)
+There is another channel type that you'll probably never use: `meta`.
+Events are pushed to `meta` channels with monitoring information on the
+application (like # of connected clients). You can't push to `meta`
+channels.
+
+(In the future we may add more channel types - like `presence`.)
 
 ### Wildcards
 

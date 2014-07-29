@@ -6,10 +6,18 @@ var path   = require('path'),
 var rootAdmins = process.env.ROOT_ADMINS && process.env.ROOT_ADMINS.split(',') || [];
 
 var store = null;
+var dataMutated = null;
 
 exports.get            = function() { store.get.apply(store, arguments); };
 exports.getById        = function() { store.getById.apply(store, arguments); };
-exports.addApplication = function() { store.addApplication.apply(store, arguments); };
+
+exports.addApplication = function(attributes, done) {
+  store.addApplication(attributes, function(err, res) {
+
+    done(err, res);
+  });
+};
+
 exports.addKey         = function() { store.addKey.apply(store, arguments); };
 exports.revokeKey      = function() { store.revokeKey.apply(store, arguments); };
 
@@ -68,12 +76,6 @@ exports.init = function(bayeux, done) {
   }
   else {
     throw "unknown DATA_STORE specified: " + process.env.DATA_STORE;
-  }
-
-  if (bayeux) {
-    bayeux.getInternalClient().subscribe('/internal/foo', function(message) {
-      console.log("got internal message:", message);
-    });
   }
 
   exports.get(function(err, applications) {

@@ -8,26 +8,8 @@ var React         = require('react'),
     Link          = Router.Link,
     moment        = require('moment'),
     _             = require('lodash'),
-    Faye          = window.Faye,
     $             = window.jQuery,
     ChannelPicker = require('../channel_picker');
-
-var getToken = function(app, channel, done) {
-  $.ajax({
-    type: 'POST',
-    url: '/admin/api/application/' + app.application_id + '/token',
-    data: JSON.stringify({
-      channel: channel,
-      pub: true,
-      sub: true
-    }),
-    contentType: 'application/json; charset=utf-8',
-    dataType: 'json',
-    success: function(data) {
-      done(null, data.token);
-    }
-  });
-};
 
 module.exports = React.createClass({
   getInitialState: function() {
@@ -46,31 +28,6 @@ module.exports = React.createClass({
 
   componentDidMount: function() {
     this.loadData();
-
-    var getCurrentToken = function() {
-      return this.subToken;
-    }.bind(this);
-
-    this.client = new Faye.Client('/push');
-    this.client.addExtension({
-      outgoing: function(message, callback) {
-        if (!message.ext) message.ext = {};
-        message.ext.auth = { token: getCurrentToken() };
-        callback(message);
-      },
-      incoming: function(message, callback) {
-        if (!message.data) message.data = {};
-
-        // wrap up the message object so metadata gets sent up to
-        // our consumer.
-        message.data = {
-          data: message.data,
-          channel: message.channel,
-          received: moment()
-        }
-        callback(message);
-      }
-    });
   },
 
   handlePublish: function(e) {
@@ -87,7 +44,7 @@ module.exports = React.createClass({
       return;
     }
 
-    getToken(this.props.app, channel, function(err, token) {
+    this.props.getToken(this.props.app.application_id, channel, function(err, token) {
       if (err) {
         alert("error getting token.\n\n" + err);
         return;
@@ -114,37 +71,28 @@ module.exports = React.createClass({
     var channel = this.refs["subChannel"].get();
 
     var doSubscribe = function() {
-      getToken(this.props.app, channel, function(err, token) {
-        if (err) {
-          alert("error getting token.\n\n" + err);
-          return;
+      this.props.client.subscribe(channel, function(message) {
+        this.state.events.splice(0, 0, message);
+        this.state.events = this.state.events.splice(0, 50);
+        this.forceUpdate();
+
+        if (this.state.events.length >= 50) {
+          this.props.client.unsubscribe(this.state.subChannel);
+          this.setState({
+            subscribed: false
+          });
         }
-
-        this.subToken = token;
-
-        this.client.subscribe(channel, function(message) {
-          this.state.events.splice(0, 0, message);
-          this.state.events = this.state.events.splice(0, 50);
-          this.forceUpdate();
-
-          if (this.state.events.length >= 50) {
-            this.client.unsubscribe(this.state.subChannel);
-            this.setState({
-              subscribed: false
-            });
-          }
-        }.bind(this));
-
-        this.setState({
-          subChannel: channel,
-          subscribed: true,
-          events: []
-        });
       }.bind(this));
+
+      this.setState({
+        subChannel: channel,
+        subscribed: true,
+        events: []
+      });
     }.bind(this);
 
     if (this.state.subChannel) {
-      this.client.unsubscribe(this.state.subChannel);
+      this.props.client.unsubscribe(this.state.subChannel);
       doSubscribe();
     }
     else {
@@ -260,7 +208,7 @@ module.exports = React.createClass({
                 <ChannelPicker
                   ref="pubChannel"
                   applicationId={this.props.params.id}
-                  visibility={this.props.query.pubChannelType || "public"}
+                  type={this.props.query.pubChannelType || "public"}
                   path={this.props.query.pubChannelPath || ""}
                   updateParams={this.updateChannelParams('pubChannel')} />
               </div>
@@ -294,9 +242,10 @@ module.exports = React.createClass({
                 <ChannelPicker
                   ref="subChannel"
                   applicationId={this.props.params.id}
-                  visibility={this.props.query.subChannelType || "public"}
+                  type={this.props.query.subChannelType || "public"}
                   path={this.props.query.subChannelPath || ""}
-                  updateParams={this.updateChannelParams('subChannel')} />
+                  updateParams={this.updateChannelParams('subChannel')}
+                  showMeta='1' />
               </div>
             </div>
 

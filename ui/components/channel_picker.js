@@ -10,10 +10,10 @@ module.exports = React.createClass({
     return {};
   },
 
-  handleVisibility: function(val) {
+  handleType: function(val) {
     return function(e) {
       this.setState({
-        visibility: val
+        type: val
       });
 
       this.props.updateParams({
@@ -27,14 +27,14 @@ module.exports = React.createClass({
 
   updateParams: function() {
     this.props.updateParams({
-      channelType: this.state.visibility || this.props.visibility,
+      channelType: this.state.type || this.props.type,
       path: this.refs["path"].getDOMNode().value
     });
   },
 
   get: function() {
     return '/' + this.props.applicationId +
-           '/' + (this.state.visibility || this.props.visibility) +
+           '/' + (this.state.type || this.props.type) +
            '/' + this.refs["path"].getDOMNode().value;
   },
 
@@ -46,10 +46,11 @@ module.exports = React.createClass({
           <button type="button" className="btn btn-default identifier">{this.props.applicationId}</button>
           <button type="button" className="btn btn-default" disabled="disabled">/</button>
           <div className="btn-group">
-            <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">{this.state.visibility || this.props.visibility} <span className="caret"></span></button>
+            <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">{this.state.type || this.props.type} <span className="caret"></span></button>
             <ul className="dropdown-menu" role="menu">
-              <li><a onClick={this.handleVisibility('public')} href="#">public</a></li>
-              <li><a onClick={this.handleVisibility('private')} href="#">private</a></li>
+              <li><a onClick={this.handleType('public')} href="#">public</a></li>
+              <li><a onClick={this.handleType('private')} href="#">private</a></li>
+              <li className={this.props.showMeta ? '' : 'hidden'}><a onClick={this.handleType('meta')} href="#">meta</a></li>
             </ul>
           </div>
           <button type="button" className="btn btn-default" disabled="disabled">/</button>

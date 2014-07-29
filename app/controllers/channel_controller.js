@@ -44,11 +44,8 @@ exports.post = function(req, res) {
       type = req.params[1],
       path = req.params[2];
 
-  console.log("params", req.params);
   var channel = '/' + applicationId + '/' + type + path;
   var payload = req.body;
-
-  console.log("CHANNEL: " + channel);
 
   if (!payload) {
     return res.send(400, 'No payload');

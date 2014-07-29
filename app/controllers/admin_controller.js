@@ -79,7 +79,9 @@ exports.createApplication = function(req, res) {
 };
 
 exports.generateToken = function(req, res) {
-  store.getAllForUser(req.user || req.session.cas_user, function(err, apps) {
+  var user = req.user || req.session.cas_user;
+
+  store.getAllForUser(user, function(err, apps) {
     if (err) {
       console.log("error getting applications", err);
       return res.send(500, "error");
@@ -118,7 +120,7 @@ exports.generateToken = function(req, res) {
         }
         else {
           store.addKey(application.application_id, {
-            user: req.user || req.session.cas_user,
+            user: user,
             expires: moment().add('years', 1).toISOString(),
             purpose: "web console"
           }, function(err, key) {

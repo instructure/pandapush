@@ -33,7 +33,7 @@ exports.attach = function(server) {
 
   var options = {
     mount: '/push',
-    timeout: 300
+    timeout: 60
   };
 
   if (redisHosts.length > 0) {
@@ -47,8 +47,6 @@ exports.attach = function(server) {
 
   bayeux.addExtension(auth(internalToken));
 
-  metrics.setup(bayeux);
-
   externalClient = bayeux.getClient();
 
   internalClient = new Faye.Client(bayeux._server);
@@ -59,6 +57,8 @@ exports.attach = function(server) {
       callback(message);
     }
   });
+
+  metrics.setup(bayeux, internalClient);
 
   bayeux.attach(server);
 };
