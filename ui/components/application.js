@@ -47,17 +47,22 @@ module.exports = React.createClass({
     this.client = new Faye.Client('/push');
     this.client.addExtension({
       outgoing: function(message, callback) {
-        // get a token
-        this.getToken(this.props.params.id, message.subscription, function(err, token) {
-          if (err) {
-            alert('error getting a token: ' + err);
-            return;
-          }
+        if (message.channel == '/meta/subscribe') {
+          // get a token
+          this.getToken(this.props.params.id, message.subscription, function(err, token) {
+            if (err) {
+              alert('error getting a token: ' + err);
+              return;
+            }
 
-          if (!message.ext) message.ext = {};
-          message.ext.auth = { token: token };
+            if (!message.ext) message.ext = {};
+            message.ext.auth = { token: token };
+            callback(message);
+          });
+        }
+        else {
           callback(message);
-        });
+        }
       }.bind(this),
       incoming: function(message, callback) {
         if (!message.data) message.data = {};
