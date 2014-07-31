@@ -11,6 +11,7 @@ ADD ui/package.json /app/ui/package.json
 RUN cd /app    && npm install
 RUN cd /app/ui && npm install
 
+ADD ./bin /app/bin
 ADD ./app /app/app
 ADD ./ui /app/ui
 
