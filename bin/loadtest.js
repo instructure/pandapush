@@ -62,6 +62,7 @@ program
           done();
         }, function(err) {
           console.log("" + n + " FAILED SUBSCRIBE in " + (Date.now() - start) + " ms");
+          console.log("err:", err);
           done(err);
         });
       };
