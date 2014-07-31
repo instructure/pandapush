@@ -87,7 +87,7 @@ module.exports = React.createClass({
   },
 
   handleStats: function(source, received, stats) {
-    this.state.stats[stats.source] = {
+    this.state.stats[source] = {
       received: received,
       stats: stats
     };
