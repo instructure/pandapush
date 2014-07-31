@@ -6,10 +6,8 @@ var host = process.env.STATSD_HOST || 'localhost',
     hostname = "";
 
 if (process.env.HOSTNAME) {
-  hostname = "." + process.env.HOSTNAME;
+  hostname = "." + process.env.HOSTNAME + "-" + process.pid;
 }
-
-console.log("hostname: " + hostname);
 
 var instance = new lynx(host, port, { scope: prefix });
 

@@ -147,7 +147,7 @@ exports.setup = function(bayeux, client) {
   var pushToClients = function(stats) {
     _.each(stats.applications, function(appStats, appId) {
       client.publish('/' + appId + '/meta/statistics', {
-        source: process.env.HOSTNAME,
+        source: process.env.HOSTNAME + '-' + process.pid,
         stats: appStats
       })
     });
