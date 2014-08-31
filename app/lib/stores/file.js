@@ -49,11 +49,11 @@ module.exports = function(dbpath) {
 
   return {
     get: function(done) {
-      _.defer(done, null, database);
+      _.defer(done, null, _.cloneDeep(database));
     },
 
     getById: function(id, done) {
-      _.defer(done, null, database[id]);
+      _.defer(done, null, _.cloneDeep(database[id]));
     },
 
     addApplication: function(attributes, done) {
