@@ -17,7 +17,8 @@ function runServer() {
       cookieSessions = require('./lib/cookie_sessions'),
       logger         = require('./lib/logger'),
       statsd         = require('./lib/statsd'),
-      routes         = require('./routes');
+      routes         = require('./routes'),
+      httpMetrics    = require('./lib/http_metrics');
 
   var app = express(),
       server = http.Server(app);
@@ -76,6 +77,10 @@ function runServer() {
 
   // attach bayeux handlers
   bayeux.attach(server);
+
+
+  // set up http metric gatherer (needs to happen after bayeux.attach)
+  httpMetrics(server);
 
 
   // configure Express application

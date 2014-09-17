@@ -17,9 +17,4 @@ exports.decrement = instance.decrement.bind(instance);
 exports.timing    = instance.timing.bind(instance);
 exports.set       = instance.set.bind(instance);
 exports.send      = instance.send.bind(instance);
-
-// gauges need to include something to differentiate the hosts from each other,
-// since their values need to be combined at graphite query time.
-exports.gauge = function(name, val, sample) {
-  instance.gauge(name + hostname, val, sample);
-};
+exports.gauge     = instance.gauge.bind(instance);
