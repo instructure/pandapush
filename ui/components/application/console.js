@@ -217,7 +217,7 @@ module.exports = React.createClass({
             <div className="form-group">
               <label className="col-sm-2 control-label">Payload</label>
               <div className="col-sm-4">
-                <textarea onChange={this.handlePayloadChange} ref="pubPayload" className="form-control" rows="3" value={this.props.query.payload} />
+                <textarea onChange={this.handlePayloadChange} ref="pubPayload" className="form-control" rows="3" defaultValue={this.props.query.payload} />
               </div>
             </div>
 
