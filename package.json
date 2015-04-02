@@ -24,7 +24,7 @@
     "faye": "^1.0.3",
     "faye-redis-sharded": "git://github.com/zwily/faye-redis-sharded-node#4c0f9b708e015b263fc5db2bbbb2e15eced071f4",
     "grand_master_cas": "^0.2.3",
-    "jsonwebtoken": "^0.4.1",
+    "jsonwebtoken": "^4.2.2",
     "lodash": "^2.4.1",
     "lynx": "^0.2.0",
     "mkdirp": "^0.5.0",
