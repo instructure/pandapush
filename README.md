@@ -19,20 +19,18 @@ This will start Pandapush running on your docker host. If that's
 localhost, then access the web ui at http://localhost:49000/admin. Log
 in with `admin`/`password`.
 
-### From the repository
+### From the repository, using docker-compose
 
 ```bash
-$ npm install
-$ cp .env-example .env
+$ docker-compose run --rm web npm install
+$ docker-compose run --rm webpack npm install
+$ docker-compose up
 ```
 
-Open `.env` and set an admin username/password.
+This will start Pandapush on http://pandapush.docker/admin.
 
-```bash
-$ foreman start
-```
-
-This will start Pandapush on http://localhost:5000/admin.
+(Note - use Chrome instead of Safari when doing local testing. Safari refuses
+to override HTTP Basic Auth when making an ajax request.)
 
 
 ### Create an Application and Key:
@@ -234,4 +232,3 @@ client.addExtension({
 Note that this is *not* a "Push Notification" service like for iOS and
 Android. There do appear to be some open-source Faye clients
 for iOS and Android, but I have not tested any of them yet.
-

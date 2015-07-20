@@ -1,0 +1,6 @@
+.git
+docker
+localdata
+node_modules
+ui/node_modules
+test

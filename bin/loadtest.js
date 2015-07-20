@@ -56,6 +56,10 @@ program
           waitingReceive -= 1;
           subscribed[n] -= 1;
           console.log("" + n + " received message " + message.msg + " (waiting for " + waitingReceive + " more)");
+          if (waitingPush == 0 && waitingReceive == 0) {
+            console.log("exiting SUCCESS");
+            process.exit(0);
+          }
         }).then(function() {
           subscribed[n] = 0;
           console.log("" + n + " subscribed in " + (Date.now() - start) + " ms (" + subscribed.length + " subscribed)");
@@ -109,4 +113,3 @@ program
   });
 
 program.parse(process.argv);
-

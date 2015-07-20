@@ -1,0 +1,45 @@
+redis1:
+  image: redis:latest
+  ports:
+    - "6379"
+  command: redis-server --save ""
+
+redis2:
+  image: redis:latest
+  ports:
+    - "6379"
+  command: redis-server --save ""
+
+dynamo:
+  build: docker/dynamo
+  command: -dbPath /var/lib/dynamodb
+  volumes:
+    - "docker/data/dynamo:/var/lib/dynamodb"
+  ports:
+    - "8000"
+  environment:
+    VIRTUAL_HOST: pandapush-dynamo.docker
+    VIRTUAL_PORT: 8000
+
+webpack:
+  build: .
+  command: nodejs ./node_modules/.bin/webpack --watch --colors --progress
+  volumes:
+    - "ui/:/app"
+
+web:
+  build: .
+  command: ./node_modules/.bin/nodemon --watch app/ app/cluster.js
+  volumes:
+    - ".:/app"
+  links:
+    - redis1
+    - redis2
+  environment:
+    VIRTUAL_HOST: pandapush.docker
+    VIRTUAL_PORT: 3000
+    ADMIN_USERNAME: admin
+    ADMIN_PASSWORD: password
+    REDIS_HOSTS: redis1:6379,redis2:6379
+    DATA_STORE: FILE
+    NODE_ENV: development

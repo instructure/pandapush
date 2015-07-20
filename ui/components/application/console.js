@@ -59,7 +59,6 @@ module.exports = React.createClass({
           xhr.setRequestHeader('Authorization', 'Token ' + token);
         },
         success: function(data) {
-          console.log('data published', data);
         }
       });
     });
@@ -263,4 +262,3 @@ module.exports = React.createClass({
     );
   }
 });
-

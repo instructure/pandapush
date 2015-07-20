@@ -1,7 +1,8 @@
-var AWS    = require('aws-sdk'),
-    _      = require('lodash'),
-    moment = require('moment'),
-    token  = require('../token');
+var AWS        = require('aws-sdk'),
+    _          = require('lodash'),
+    moment     = require('moment'),
+    awsOptions = require('../aws_options'),
+    token      = require('../token');
 
 var scanOrQueryAll = function(dynamo, tableName, keyConditions, done) {
   var op = keyConditions ? "query" : "scan";
@@ -48,7 +49,7 @@ var queryAll = function(dynamo, tableName, keyConditions, done) {
 };
 
 module.exports = function(table) {
-  var dynamo = new AWS.DynamoDB();
+  var dynamo = new AWS.DynamoDB(awsOptions(process.env.DYNAMO_ENDPOINT));
 
   return {
     get: function(done) {
@@ -223,4 +224,3 @@ module.exports = function(table) {
     }
   };
 };
-
