@@ -10,17 +10,21 @@ WORKDIR /app
 
 ADD package.json /app/package.json
 ADD ui/package.json /app/ui/package.json
+ADD client/package.json /app/client/package.json
 
 ENV NODE_ENV production
 
-RUN cd /app    && npm install
-RUN cd /app/ui && npm install
+RUN cd /app        && npm install
+RUN cd /app/ui     && npm install
+RUN cd /app/client && npm install
 
 ADD ./bin /app/bin
 ADD ./app /app/app
 ADD ./ui /app/ui
+ADD ./client /app/client
 
 RUN cd /app/ui && nodejs ./node_modules/.bin/webpack -p
+RUN cd /app/client && nodejs ./node_modules/.bin/webpack -p
 
 RUN mkdir /home/docker \
   && useradd -d /home/docker docker \
