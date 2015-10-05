@@ -15,7 +15,9 @@ module.exports = React.createClass({
   getInitialState: function() {
     return {
       subChannel: null,
-      events: []
+      presence: this.props.params.subChannelType === 'presence',
+      events: [],
+      subscribers: {}
     };
   },
 
@@ -70,7 +72,25 @@ module.exports = React.createClass({
     var channel = this.refs["subChannel"].get();
 
     var doSubscribe = function() {
-      this.props.client.subscribe(channel, function(message) {
+      var presence = (channel.split('/')[2] === 'presence');
+      var presenceId, presenceData = null;
+
+      if (presence) {
+        var presenceId = this.refs["presenceId"].getDOMNode().value || this.props.username;
+        var presenceData = {};
+        var rawPresenceData = this.refs["presenceData"].getDOMNode().value;
+        if (rawPresenceData) {
+          try {
+            presenceData = JSON.parse(rawPresenceData);
+          } catch(e) {
+            alert('Presence Data must be valid JSON.\n\n' + e.message);
+            return;
+          }
+        }
+        presenceData.id = presenceId;
+      }
+
+      this.props.client.subscribe(channel, null, presenceData, function(message) {
         this.state.events.splice(0, 0, message);
         this.state.events = this.state.events.splice(0, 50);
         this.forceUpdate();
@@ -81,11 +101,28 @@ module.exports = React.createClass({
             subscribed: false
           });
         }
+
+        if (presence) {
+          var subscribers = this.state.subscribers || {};
+
+          // this funkiness is just because we munge incoming messages to store
+          // some metadata alongside them.
+          if (message.data) {
+            message = message.data;
+          }
+
+          subscribers = _.extend({}, subscribers, message.subscribe || {});
+          subscribers = _.omit(subscribers, _.keys(message.unsubscribe));
+          this.setState({
+            subscribers: subscribers
+          });
+        }
       }.bind(this));
 
       this.setState({
         subChannel: channel,
         subscribed: true,
+        subscribers: {},
         events: []
       });
     }.bind(this);
@@ -97,7 +134,6 @@ module.exports = React.createClass({
     else {
       doSubscribe();
     }
-
   },
 
   updateChannelParams: function(channel) {
@@ -107,17 +143,21 @@ module.exports = React.createClass({
       params[channel + 'Path'] = newParams.path;
 
       Router.replaceWith('applicationConsole', { id: this.props.params.id }, params);
+
+      this.setState({
+        presenceSub: (newParams.channelType === 'presence')
+      });
     }.bind(this);
   },
 
-  handlePayloadChange: function(e) {
+  handleFieldChange: function(field, e) {
     var params = this.props.query;
-    var payload = this.refs["pubPayload"].getDOMNode().value;
-    if (payload.length > 1024) {
-      params.payload = '';
+    var value = this.refs[field].getDOMNode().value;
+    if (value.length > 1024) {
+      params[field] = '';
     }
     else {
-      params.payload = payload;
+      params[field] = value;
     }
     Router.replaceWith('applicationConsole', { id: this.props.params.id }, params);
   },
@@ -133,7 +173,11 @@ module.exports = React.createClass({
       prefix = ary[0];
     }
 
-    var events = _.map(this.state.events, function(ev) {
+    var events = _.omit(this.state.events, function(ev) {
+      return !ev.channel;
+    });
+
+    events = _.map(events, function(ev) {
       var shortenedChannel = ev.channel.replace(prefix, "");
       var channelTd = null;
       if (prefix) {
@@ -196,6 +240,51 @@ module.exports = React.createClass({
     );
   },
 
+  renderSubscribers: function() {
+    if (!(this.props.query.subChannelType === 'presence' && this.state.subChannel)) {
+      return <span />;
+    }
+
+    var r = _.map(this.state.subscribers, function(data, id) {
+      return <span className="label label-primary subscriber">{id}</span>;
+    });
+
+    return (
+      <div className="panel panel-default">
+        <div className="panel-heading">
+          <h4>Subscribers</h4>
+        </div>
+        <div className="panel-body">
+          {r}
+        </div>
+      </div>
+    );
+  },
+
+  renderPresenceFields: function() {
+    if (this.props.query.subChannelType === 'presence') {
+      return (
+        <div>
+          <div className="form-group">
+            <label className="col-sm-2 control-label">Presence ID</label>
+            <div className="col-sm-4">
+              <input type="text" onChange={this.handleFieldChange.bind(this, 'presenceId')} ref="presenceId" className="form-control" placeholder={this.props.username} defaultValue={this.props.query.presenceId} />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="col-sm-2 control-label">Presence Data</label>
+            <div className="col-sm-4">
+              <textarea onChange={this.handleFieldChange.bind(this, 'presenceData')} ref="presenceData" className="form-control" rows="3" defaultValue={this.props.query.presenceData} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return <span />;
+  },
+
   render: function() {
     return (
       <div className="container">
@@ -216,7 +305,7 @@ module.exports = React.createClass({
             <div className="form-group">
               <label className="col-sm-2 control-label">Payload</label>
               <div className="col-sm-4">
-                <textarea onChange={this.handlePayloadChange} ref="pubPayload" className="form-control" rows="3" defaultValue={this.props.query.payload} />
+                <textarea onChange={this.handleFieldChange.bind(this, 'pubPayload')} ref="pubPayload" className="form-control" rows="3" defaultValue={this.props.query.pubPayload} />
               </div>
             </div>
 
@@ -244,9 +333,12 @@ module.exports = React.createClass({
                   type={this.props.query.subChannelType || "public"}
                   path={this.props.query.subChannelPath || ""}
                   updateParams={this.updateChannelParams('subChannel')}
+                  showPresence='1'
                   showMeta='1' />
               </div>
             </div>
+
+            {this.renderPresenceFields()}
 
             <div className="form-group">
               <label className="col-sm-2 control-label"></label>
@@ -256,6 +348,7 @@ module.exports = React.createClass({
             </div>
           </form>
 
+          {this.renderSubscribers()}
           {this.renderEvents()}
         </div>
       </div>

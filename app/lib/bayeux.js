@@ -1,8 +1,9 @@
-var Faye    = require('faye'),
-    redis   = require('faye-redis-sharded'),
-    crypto  = require('crypto'),
-    auth    = require('./extensions/auth'),
-    metrics = require('./extensions/metrics');
+var Faye     = require('faye'),
+    redis    = require('faye-redis-sharded'),
+    crypto   = require('crypto'),
+    auth     = require('./extensions/auth'),
+    metrics  = require('./extensions/metrics'),
+    presence = require('faye-presence');
 
 
 var instance = null,
@@ -61,6 +62,11 @@ exports.attach = function(server) {
       message.ext.internalToken = internalToken;
       callback(message);
     }
+  });
+
+  presence.setup(bayeux, internalClient, {
+    channelRe: /^\/\w+\/presence\//,
+    servers: process.env.REDIS_HOSTS.split(',')
   });
 
   metrics.setup(bayeux, internalClient);

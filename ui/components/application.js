@@ -12,7 +12,7 @@ var React        = require('react'),
     Info         = require('./application/info'),
     Keys         = require('./application/keys'),
     Console      = require('./application/console'),
-    Faye         = window.Faye;
+    Pandapush    = require('../../client/dist/client');
 
 module.exports = React.createClass({
   getInitialState: function() {
@@ -44,7 +44,7 @@ module.exports = React.createClass({
   },
 
   createClient: function() {
-    this.client = new Faye.Client('/push');
+    this.client = new Pandapush.Client('/push');
     this.client.addExtension({
       outgoing: function(message, callback) {
         if (message.channel == '/meta/subscribe') {
@@ -58,7 +58,7 @@ module.exports = React.createClass({
             if (!message.ext) message.ext = {};
             message.ext.auth = { token: token };
             callback(message);
-          });
+          }.bind(this));
         }
         else {
           callback(message);
@@ -142,11 +142,11 @@ module.exports = React.createClass({
             app: this.state.app,
             reload: this.handleReload,
             client: this.client,
-            getToken: this.getToken
+            getToken: this.getToken,
+            username: this.props.username
           })}
         </div>
       </div>
     );
   }
 });
-

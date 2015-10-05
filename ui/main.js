@@ -64,7 +64,7 @@ var App = React.createClass({
           </div>
         </nav>
 
-        {this.props.activeRouteHandler()}
+        {this.props.activeRouteHandler({ username: this.state.username })}
       </div>
     );
   }

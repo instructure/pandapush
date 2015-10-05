@@ -27,6 +27,9 @@ exports.parse = function(channel) {
   else if (type === 'meta') {
     res.meta = true;
   }
+  else if (type === 'presence') {
+    res.presence = true;
+  }
   else {
     // channel names must start with public, private, or meta
     return null;

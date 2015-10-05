@@ -50,6 +50,7 @@ module.exports = React.createClass({
             <ul className="dropdown-menu" role="menu">
               <li><a onClick={this.handleType('public')} href="#">public</a></li>
               <li><a onClick={this.handleType('private')} href="#">private</a></li>
+              <li className={this.props.showPresence ? '' : 'hidden'}><a onClick={this.handleType('presence')} href="#">presence</a></li>
               <li className={this.props.showMeta ? '' : 'hidden'}><a onClick={this.handleType('meta')} href="#">meta</a></li>
             </ul>
           </div>

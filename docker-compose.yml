@@ -24,8 +24,15 @@ dynamo:
 webpack:
   build: .
   command: nodejs ./node_modules/.bin/webpack --watch --colors --progress
+  working_dir: /app/ui
   volumes:
-    - "./ui/:/app"
+    - "./:/app"
+
+webpackclient:
+  build: .
+  command: nodejs ./node_modules/.bin/webpack -d --watch --colors --progress
+  volumes:
+    - "./client:/app"
 
 web:
   build: .
