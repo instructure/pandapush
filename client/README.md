@@ -38,7 +38,7 @@ $ npm install pandapush-client --save-dev
 ```javascript
 var Pandapush = require('pandapush-client');
 
-var client = new Pandapush.client('https://pandapush-server/push');
+var client = new Pandapush.Client('https://pandapush-server/push');
 ```
 
 ## Usage
