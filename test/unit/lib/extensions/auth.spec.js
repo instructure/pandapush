@@ -109,6 +109,51 @@ describe('auth extension', function() {
           });
         });
 
+        it('works with a valid token for a wildcard channel', function(done) {
+          auth.incoming({
+            channel: '/meta/subscribe',
+            subscription: '/appid/private/something_random',
+            ext: {
+              auth: {
+                token: token({ channel: '/appid/private/*', sub: true })
+              }
+            }
+          }, function(message) {
+            message.should.not.have.property('error');
+            done();
+          });
+        });
+
+        it('works with a valid token for a recursive wildcard channel', function(done) {
+          auth.incoming({
+            channel: '/meta/subscribe',
+            subscription: '/appid/private/something/random/again',
+            ext: {
+              auth: {
+                token: token({ channel: '/appid/private/**', sub: true })
+              }
+            }
+          }, function(message) {
+            message.should.not.have.property('error');
+            done();
+          });
+        });
+
+        it('fails with a single-level wildcard token on longer path', function(done) {
+          auth.incoming({
+            channel: '/meta/subscribe',
+            subscription: '/appid/private/something/random/again',
+            ext: {
+              auth: {
+                token: token({ channel: '/appid/private/*', sub: true })
+              }
+            }
+          }, function(message) {
+            message.should.have.property('error');
+            done();
+          });
+        });
+
         it('fails with an expired key', function(done) {
           auth.incoming({
             channel: '/meta/subscribe',
@@ -320,6 +365,48 @@ describe('auth extension', function() {
             }
           }, function(message) {
             message.should.not.have.property('error');
+            done();
+          });
+        });
+
+        it('works with a valid token for a wildcard channel', function(done) {
+          auth.incoming({
+            channel: '/appid/private/something_random',
+            ext: {
+              auth: {
+                token: token({ channel: '/appid/private/*', pub: true })
+              }
+            }
+          }, function(message) {
+            message.should.not.have.property('error');
+            done();
+          });
+        });
+
+        it('works with a valid token for a recursive wildcard channel', function(done) {
+          auth.incoming({
+            channel: '/appid/private/something/random/again',
+            ext: {
+              auth: {
+                token: token({ channel: '/appid/private/**', pub: true })
+              }
+            }
+          }, function(message) {
+            message.should.not.have.property('error');
+            done();
+          });
+        });
+
+        it('fails with a single-level wildcard token on longer path', function(done) {
+          auth.incoming({
+            channel: '/appid/private/something/random/again',
+            ext: {
+              auth: {
+                token: token({ channel: '/appid/private/*', pub: true })
+              }
+            }
+          }, function(message) {
+            message.should.have.property('error');
             done();
           });
         });

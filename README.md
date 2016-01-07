@@ -174,15 +174,6 @@ token = JWT.encode({
 }, "aWvMCPXnV599u6hJ71YJqAKSz0t0Lihs09DM92xS")
 ```
 
-### Wildcard Authentication
-
-You can specify a wildcard channel name for subscription, but the client
-must subscribe exactly to the channel name specified. For example, if
-you specify as channel `/<app>/private/users/1/**`, the client must
-subscribe to `/<app>/private/users/1/**`, **not**
-`/<app>/private/users/1/messages`.
-
-
 ## Publishing REST API
 
 If using a key/secret for auth:

@@ -87,7 +87,16 @@ var verifyAuth = function(channel, auth, allowPublic, done) {
         }
 
         if (channel !== decoded.channel) {
-          // TODO: handle /* and /** type channel names
+          if (_.endsWith(decoded.channel, '/*') &&
+              _.startsWith(channel, decoded.channel.slice(0, -2)) &&
+              _.lastIndexOf(channel, '/') === _.lastIndexOf(decoded.channel, '/')) {
+            return done(null, decoded);
+          }
+
+          if (_.endsWith(decoded.channel, '/**') && _.startsWith(channel, decoded.channel.slice(0, -3))) {
+            return done(null, decoded);
+          }
+
           return done('Token does not match channel');
         }
 
