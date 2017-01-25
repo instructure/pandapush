@@ -1,7 +1,7 @@
 FROM ubuntu:14.04
 
 RUN apt-get update \
-    && apt-get install -y nodejs npm git \
+    && apt-get install -y nodejs npm git redis-server \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10

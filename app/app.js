@@ -11,6 +11,7 @@ var http           = require('http'),
     fs             = require('fs'),
     path           = require('path'),
     crypto         = require('crypto'),
+    spawn          = require('child_process').spawn,
     bayeux         = require('./lib/bayeux'),
     store          = require('./lib/store'),
     cookieSessions = require('./lib/cookie_sessions'),
@@ -73,10 +74,15 @@ else if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
   };
 }
 
+// If redis conn info was not provided, start our own local process
+// This is mostly for local development.
+if (!process.env.REDIS_HOSTS) {
+  spawn("/usr/bin/redis-server", ["--port", "6379"], { detached: true });
+  process.env.REDIS_HOSTS = "localhost:6379";
+}
 
 // attach bayeux handlers
 bayeux.attach(server);
-
 
 // set up http metric gatherer (needs to happen after bayeux.attach)
 httpMetrics(server);
