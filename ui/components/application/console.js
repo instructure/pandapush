@@ -187,7 +187,7 @@ module.exports = React.createClass({
       return (
         <tr>
           {channelTd}
-          <td>{ev.received.toISOString()}</td>
+          <td>{ev.received && ev.received.toISOString()}</td>
           <td><pre>{JSON.stringify(ev.data, null, 2)}</pre></td>
         </tr>
       );
