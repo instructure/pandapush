@@ -14,7 +14,7 @@ dynamo:
   build: docker/dynamo
   command: -dbPath /var/lib/dynamodb
   volumes:
-    - "docker/data/dynamo:/var/lib/dynamodb"
+    - "./docker/data/dynamo:/var/lib/dynamodb"
   ports:
     - "8000"
   environment:
@@ -25,7 +25,7 @@ webpack:
   build: .
   command: nodejs ./node_modules/.bin/webpack --watch --colors --progress
   volumes:
-    - "ui/:/app"
+    - "./ui/:/app"
 
 web:
   build: .
