@@ -6,7 +6,6 @@ var React = require('react');
 
 module.exports = React.createClass({
   render: function() {
-    console.log("props", this.props);
     return (
       <div className="container">
         <table className="table">
