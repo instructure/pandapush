@@ -112,21 +112,9 @@ module.exports = React.createClass({
     this.loadData();
   },
 
-  renderClients: function() {
-    // only get sources with recent data
-    var recent = _.filter(this.state.stats, function(stats) { return stats.received.valueOf() > Date.now() - 10000; });
-    var sum = _.reduce(recent, function(sum, s) { return sum + s.stats.clients; }, 0);
-    return (
-      <span className="pull-right">
-        {sum || 0} connected clients
-      </span>
-    );
-  },
-
   render: function() {
     return (
       <div className="container">
-        {this.renderClients()}
         <h1>{this.state.app.name} <span style={{'font-size': '0.6em'}}>(<span className="identifier">{this.props.params.id}</span>)</span></h1>
 
         <div className="row">
