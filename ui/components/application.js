@@ -26,12 +26,30 @@ module.exports = React.createClass({
     };
   },
 
-  getToken: function(appId, channel, done) {
+
+  loadData: function() {
+    $.getJSON('/admin/api/applications', function(data) {
+      var app = _.find(data, { application_id: this.props.params.id });
+      this.setState({ app: app });
+    }.bind(this));
+  },
+
+  handleStats: function(source, received, stats) {
+    this.state.stats[source] = {
+      received: received,
+      stats: stats
+    };
+
+    this.forceUpdate();
+  },
+
+  getToken: function(appId, channel, presence, done) {
     $.ajax({
       type: 'POST',
       url: '/admin/api/application/' + appId + '/token',
       data: JSON.stringify({
         channel: channel,
+        presence: presence,
         pub: true,
         sub: true
       }),
@@ -48,8 +66,13 @@ module.exports = React.createClass({
     this.client.addExtension({
       outgoing: function(message, callback) {
         if (message.channel == '/meta/subscribe') {
-          // get a token
-          this.getToken(this.props.params.id, message.subscription, function(err, token) {
+          if (message.ext && message.ext.auth) {
+            callback(message);
+            return;
+          }
+
+          // get a token (cause we didn't already have one)
+          this.getToken(this.props.params.id, message.subscription, null, function(err, token) {
             if (err) {
               alert('error getting a token: ' + err);
               return;
@@ -77,22 +100,6 @@ module.exports = React.createClass({
         callback(message);
       }
     });
-  },
-
-  loadData: function() {
-    $.getJSON('/admin/api/applications', function(data) {
-      var app = _.find(data, { application_id: this.props.params.id });
-      this.setState({ app: app });
-    }.bind(this));
-  },
-
-  handleStats: function(source, received, stats) {
-    this.state.stats[source] = {
-      received: received,
-      stats: stats
-    };
-
-    this.forceUpdate();
   },
 
   componentDidMount: function() {

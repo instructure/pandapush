@@ -115,8 +115,6 @@ Events are pushed to `meta` channels with monitoring information on the
 application (like # of connected clients). You can't push to `meta`
 channels.
 
-(In the future we may add more channel types - like `presence`.)
-
 ### Wildcards
 
 You can also subscribe to all channels under a path using wildcards. Wildcards can
@@ -189,7 +187,25 @@ $ curl -H "Authorization: Token <token>" -H "Content-Type: application/json" -d 
 ```
 
 
-## Subscribing to a Private channel
+## Subscribing with the Pandapush client
+
+To subscribe to private channels, you must specify authentication information.
+This is easiest to do by using the Pandapush client:
+
+```html
+<script src="https://pandapush.hostname/client.js"></script>
+```
+
+```javascript
+const CHANNEL = "/applicationid/private/foo"; // sent by server
+const TOKEN = "...";                          // sent by server
+client = new Pandapush.Client("https://pandapush.hostname/push");
+client.subscribe(CHANNEL, TOKEN, function(message) {
+  console.log('got message!');
+});
+```
+
+## Subscribing to a Private channel without Pandapush Client
 
 To subscribe to a `/private/` channel, you must provide a token. You can
 either supply this on your page at render time, or have the browser ask
@@ -217,6 +233,58 @@ client.addExtension({
 
 (Read more about this pattern in the [Faye documentation](http://faye.jcoglan.com/security/authentication.html).)
 
+
+## Presence
+
+Presence is a feature you can use to signal to a group of subscribers
+to a channel who else is subscribed to that channel. Presence channels
+begin with `/presence/`, and when a user subscribes to a presence
+channel, they must have a `presence` object in their token that has
+at least an `id` field. For example, the token may be an encoded JWT of:
+
+```json
+{
+  keyId: "PSIDv4ADyV6V9fQ2BgJZ",
+  channel: "/fRP0y2aVpYCKiW6PIFOK/presence/generaltalk",
+  sub: true,
+  presence: {
+    id: 'user1',
+    name: 'Joe',
+    avatar_url: 'https://gravatar/foo'
+  }
+}
+```
+
+When the client subscribes to the channel `/fRP0y2aVpYCKiW6PIFOK/presence/generaltalk`
+using the given token, all other subscribers to that channel will receive a
+notification:
+
+```json
+{
+  "subscribe": {
+    "user1": {
+      "id": 'user1',
+      "name": 'Joe',
+      "avatar_url": 'https://gravatar/foo'
+    }
+  }
+}
+```
+
+"Joe" will also receive a callback similar to the one above, but with all
+users currently subscribed to that channel.
+
+When Joe disconnects, all other users will receive a message:
+
+```json
+{
+  "unsubscribe": {
+    "user1": null
+  }
+}
+```
+
+Presence data should be kept small, as it is persisted in redis in memory.
 
 # Mobile
 

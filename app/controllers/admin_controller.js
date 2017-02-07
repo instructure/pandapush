@@ -141,6 +141,7 @@ exports.generateToken = function(req, res) {
       var payload = {
         keyId: key.key_id,
         channel: req.body.channel,
+        presence: req.body.presence,
         pub: req.body.pub,
         sub: req.body.sub,
         exp: expires.unix()

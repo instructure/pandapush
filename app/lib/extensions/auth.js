@@ -122,8 +122,15 @@ var checks = {
         return msgError('Token does not allow subscribing');
       }
 
-      if (decoded) {
-        message.ext._decodedToken = decoded;
+      // For presence, overwrite anything the user sent in as presence
+      // info in ext with what is in the token.
+      if (message.ext) {
+        message.ext.presence = null;
+
+        if (decoded) {
+          message.ext._decodedToken = decoded;
+          message.ext.presence = decoded.presence;
+        }
       }
 
       // token verified
@@ -147,6 +154,7 @@ var checks = {
       }
 
       if (decoded) {
+        message.ext = message.ext || {};
         message.ext._decodedToken = decoded;
       }
 

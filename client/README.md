@@ -51,15 +51,7 @@ Param      | Type   |          | Description
 -----------|--------|----------|------------
 `channel`  | String |          | The channel to subscribe to.
 `token`    | String | optional | The token to use when subscribing. Must be specified if the channel is not public.
-`presence` | Object | optional | Presence information about the subscribing user. See below.
 `callback` | Function |        | Function called on every new message.
-
-`presence`, if supplied, should be an object with at least an `id` field. That
-identifier uniquely identifies the connecting user, so would typically be a user id
-or username. You can also include other keys in the object, and the entire object
-is returned to all subscribers to this presence channel. Other fields could be
-`name` or `avatar_url`. Keep the data minimal though - it is all persisted in the
-Pandapush backend while the user is subscribed through at least one connection.
 
 ### `unsubscribe`
 

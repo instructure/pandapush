@@ -5,7 +5,6 @@ var Client = Faye.Class({
     var self = this;
     self._faye = new Faye.Client(base);
     self._tokens = {};
-    self._presences = {};
     self._presenceCBs = {};
 
     self._faye.addExtension({
@@ -17,23 +16,16 @@ var Client = Faye.Class({
               token: self._tokens[message.subscription]
             };
           }
-
-          if (self._presences[message.subscription]) {
-            if (!message.ext) message.ext = {};
-            message.ext.presence = self._presences[message.subscription];
-          }
         }
 
         callback(message);
       },
       incoming: function(message, callback) {
         if (message.channel === '/meta/subscribe') {
-          var presenceCB = self._presenceCBs[message.subscription];
-          if (presenceCB) {
-            if (message.ext && message.ext.presence) {
+          if (message.ext && message.ext.presence) {
+            var presenceCB = self._presenceCBs[message.subscription];
+            if (presenceCB) {
               presenceCB(message.ext.presence);
-            } else {
-              presenceCB(message);
             }
           }
         }
@@ -49,24 +41,19 @@ var Client = Faye.Class({
   /**
    * @param channel [String]
    * @param token [String] (optional)
-   * @param presence [Object] (optional)
    * @callback [function(message)]
    *   @param message [Object]
    * @returns {Promise}
    *
    * subscribe(channel, callback)
    * subscribe(channel, token, callback);
-   * subscribe(channel, token, presence, callback);
    */
   subscribe: function() {
     var channel = arguments[0];
     var callback = arguments[arguments.length - 1];
-    var token, presence = null;
+    var token = null;
     if (arguments.length >= 3) {
       token = arguments[1];
-    }
-    if (arguments.length >= 4) {
-      presence = arguments[2];
     }
     var self = this;
 
@@ -74,15 +61,7 @@ var Client = Faye.Class({
       self._tokens[channel] = token;
     }
 
-    if (presence) {
-      if (!presence.id) {
-        console.error('presence object supplied with no `id` field');
-        return null;
-      }
-
-      self._presences[channel] = presence;
-      self._presenceCBs[channel] = callback;
-    }
+    self._presenceCBs[channel] = callback;
 
     return self._faye.subscribe.call(self._faye, channel, callback);
   },

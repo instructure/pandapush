@@ -46,7 +46,7 @@ module.exports = React.createClass({
       return;
     }
 
-    this.props.getToken(this.props.app.application_id, channel, function(err, token) {
+    this.props.getToken(this.props.app.application_id, channel, null, function(err, token) {
       if (err) {
         alert("error getting token.\n\n" + err);
         return;
@@ -90,33 +90,42 @@ module.exports = React.createClass({
         presenceData.id = presenceId;
       }
 
-      this.props.client.subscribe(channel, null, presenceData, function(message) {
-        this.state.events.splice(0, 0, message);
-        this.state.events = this.state.events.splice(0, 50);
-        this.forceUpdate();
-
-        if (this.state.events.length >= 50) {
-          this.props.client.unsubscribe(this.state.subChannel);
-          this.setState({
-            subscribed: false
-          });
+      this.props.getToken(this.props.app.application_id, channel, presenceData, function(err, token) {
+        if (err) {
+          alert('Error getting token', err);
+          return;
         }
 
-        if (presence) {
-          var subscribers = this.state.subscribers || {};
-
-          // this funkiness is just because we munge incoming messages to store
-          // some metadata alongside them.
-          if (message.data) {
-            message = message.data;
+        this.props.client.subscribe(channel, token, presenceData, function(message) {
+          if (message.channel) {
+            this.state.events.splice(0, 0, message);
+            this.state.events = this.state.events.splice(0, 50);
+            this.forceUpdate();
           }
 
-          subscribers = _.extend({}, subscribers, message.subscribe || {});
-          subscribers = _.omit(subscribers, _.keys(message.unsubscribe));
-          this.setState({
-            subscribers: subscribers
-          });
-        }
+          if (this.state.events.length >= 50) {
+            this.props.client.unsubscribe(this.state.subChannel);
+            this.setState({
+              subscribed: false
+            });
+          }
+
+          if (presence) {
+            var subscribers = this.state.subscribers || {};
+
+            // this funkiness is just because we munge incoming messages to store
+            // some metadata alongside them.
+            if (message.data) {
+              message = message.data;
+            }
+
+            subscribers = _.extend({}, subscribers, message.subscribe || {});
+            subscribers = _.omit(subscribers, _.keys(message.unsubscribe));
+            this.setState({
+              subscribers: subscribers
+            });
+          }
+        }.bind(this));
       }.bind(this));
 
       this.setState({
