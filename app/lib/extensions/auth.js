@@ -122,6 +122,10 @@ var checks = {
         return msgError('Token does not allow subscribing');
       }
 
+      if (decoded) {
+        message.ext._decodedToken = decoded;
+      }
+
       // token verified
       callback(message);
     });
@@ -142,6 +146,10 @@ var checks = {
         return msgError('Token does not allow publishing', callback);
       }
 
+      if (decoded) {
+        message.ext._decodedToken = decoded;
+      }
+
       // token verified
       callback(message);
     });
@@ -155,6 +163,10 @@ module.exports = function(internalToken) {
       // allow any operations specifying the correct internalToken
       if (message.ext && message.ext.internalToken == internalToken) {
         return callback(message);
+      }
+
+      if (message.ext) {
+        delete message.ext._decodedToken;
       }
 
       if (message.channel.indexOf('/meta/') === 0) {
@@ -177,6 +189,7 @@ module.exports = function(internalToken) {
       // strip out any auth token
       if (message.ext) {
         delete message.ext.auth;
+        delete message.ext._decodedToken;
       }
 
       if (message.data) {

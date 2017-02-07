@@ -1,42 +1,36 @@
-FROM ubuntu:14.04
+FROM instructure/node-passenger:6
+
+USER root
 
 RUN apt-get update \
-    && apt-get install -y nodejs npm git redis-server \
+    && apt-get install -y redis-server \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    && sudo update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-WORKDIR /app
-
-ADD package.json /app/package.json
-ADD ui/package.json /app/ui/package.json
-ADD client/package.json /app/client/package.json
+ADD package.json /usr/src/app/package.json
+ADD ui/package.json /usr/src/app/ui/package.json
+ADD client/package.json /usr/src/app/client/package.json
 
 ENV NODE_ENV production
 
-RUN cd /app        && npm install
-RUN cd /app/ui     && npm install
-RUN cd /app/client && npm install
+RUN cd /usr/src/app        && npm install
+RUN cd /usr/src/app/ui     && npm install
+RUN cd /usr/src/app/client && npm install
 
-ADD ./bin /app/bin
-ADD ./app /app/app
-ADD ./ui /app/ui
-ADD ./client /app/client
+ADD ./bin /usr/src/app/bin
+ADD ./app /usr/src/app/app
+ADD ./ui /usr/src/app/ui
+ADD ./client /usr/src/app/client
 
-RUN cd /app/ui && nodejs ./node_modules/.bin/webpack -p
-RUN cd /app/client && nodejs ./node_modules/.bin/webpack -p
+# to expose the application to passenger
+RUN ln -s /usr/src/app/ui/public /usr/src/app/public
+RUN ln -s /usr/src/app/app/app.js /usr/src/app/app.js
 
-RUN mkdir /home/docker \
-  && useradd -d /home/docker docker \
-  && chown -R docker:docker /home/docker /app
+RUN cd /usr/src/app/ui && node ./node_modules/.bin/webpack -p
+RUN cd /usr/src/app/client && node ./node_modules/.bin/webpack -p
 
-EXPOSE 3000
-
-RUN mkdir -p /var/log/eb-app \
-  && chown docker:docker /var/log/eb-app
+RUN chown -R docker:docker /usr/src/app
 
 ENV DATA_STORE FILE
 
 USER docker
-
-CMD nodejs /app/app/cluster.js

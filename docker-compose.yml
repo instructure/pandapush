@@ -23,22 +23,22 @@ dynamo:
 
 webpack:
   build: .
-  command: nodejs ./node_modules/.bin/webpack --watch --colors --progress
-  working_dir: /app/ui
+  command: node ./node_modules/.bin/webpack --watch --colors --progress
+  working_dir: /usr/src/app/ui
   volumes:
-    - "./:/app"
+    - "./:/usr/src/app"
 
 webpackclient:
   build: .
-  command: nodejs ./node_modules/.bin/webpack -d --watch --colors --progress
+  command: node ./node_modules/.bin/webpack -d --watch --colors --progress
   volumes:
-    - "./client:/app"
+    - "./client:/usr/src/app"
 
 web:
   build: .
-  command: ./node_modules/.bin/nodemon --watch app/ app/cluster.js
+  command: ./node_modules/.bin/nodemon --watch app/ app/app.js
   volumes:
-    - ".:/app"
+    - ".:/usr/src/app"
   links:
     - redis1
     - redis2
