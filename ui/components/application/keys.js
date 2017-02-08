@@ -7,8 +7,7 @@ var React        = require('react'),
     Route        = Router.Route,
     Link         = Router.Link,
     moment       = require('moment'),
-    _            = require('lodash'),
-    $            = window.jQuery;
+    _            = require('lodash');
 
 module.exports = React.createClass({
   getInitialState: function() {
@@ -62,25 +61,26 @@ module.exports = React.createClass({
 
     var expires = m.toISOString();
 
-    $.ajax({
-      type: 'POST',
-      url: '/admin/api/application/' + this.props.params.id + '/keys',
-      data: JSON.stringify({
+    fetch('/admin/api/application/' + this.props.params.id + '/keys', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: JSON.stringify({
         purpose: purpose,
         expires: expires
-      }),
-      contentType: 'application/json; charset=utf-8',
-      dataType: 'json',
-      success: function(data) {
-        alert('Your new key ID is\n\n' + data.key_id + '\n\n and secret is\n\n' + data.secret + '\n\n' +
+      })
+    }).then(response => response.json())
+      .then(json => {
+        alert('Your new key ID is\n\n' + json.key_id + '\n\n and secret is\n\n' + json.secret + '\n\n' +
               'Copy the secret to a safe place, as you won\'t see it again here.');
 
         this.props.reload();
 
         this.refs["keyPurpose"].getDOMNode().value = "";
         this.refs["keyExpires"].getDOMNode().value = "";
-      }.bind(this)
-    });
+      })
 
     return false;
   },

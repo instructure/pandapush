@@ -8,7 +8,6 @@ var React         = require('react'),
     Link          = Router.Link,
     moment        = require('moment'),
     _             = require('lodash'),
-    $             = window.jQuery,
     ChannelPicker = require('../channel_picker');
 
 module.exports = React.createClass({
@@ -22,10 +21,15 @@ module.exports = React.createClass({
   },
 
   loadData: function() {
-    $.getJSON('/admin/api/applications', function(data) {
-      var app = _.find(data, { application_id: this.props.params.id });
-      this.setState({ app: app });
-    }.bind(this));
+    fetch('/admin/api/applications', { credentials: 'same-origin', })
+      .then(response => response.json())
+      .then(json => {
+        var app = _.find(json, { application_id: this.props.params.id });
+        this.setState({ app: app });
+      })
+      .catch(e => {
+        console.log('error getting applications', e);
+      });
   },
 
   componentDidMount: function() {
@@ -52,16 +56,13 @@ module.exports = React.createClass({
         return;
       }
 
-      $.ajax({
-        type: 'POST',
-        url: '/channel' + channel,
-        data: JSON.stringify(payload),
-        contentType: 'application/json; charset=utf-8',
-        beforeSend: function(xhr) {
-          xhr.setRequestHeader('Authorization', 'Token ' + token);
+      fetch('/channel' + channel + '?token=' + token, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
         },
-        success: function(data) {
-        }
+        body: JSON.stringify(payload)
       });
     });
   },

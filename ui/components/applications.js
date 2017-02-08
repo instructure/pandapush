@@ -8,8 +8,7 @@ var React        = require('react'),
     Link         = Router.Link,
     moment       = require('moment'),
     _            = require('lodash'),
-    Faye         = window.Faye,
-    $            = window.jQuery;
+    Faye         = window.Faye;
 
 module.exports = React.createClass({
   getInitialState: function() {
@@ -19,11 +18,14 @@ module.exports = React.createClass({
   },
 
   componentDidMount: function() {
-    $.getJSON('/admin/api/applications', function(data) {
-      this.setState({
-        applications: data
+    fetch('/admin/api/applications', { credentials: 'same-origin', })
+      .then(response => response.json())
+      .then(json => {
+        this.setState({ applications: json});
+      })
+      .catch(e => {
+        console.log('error getting applications', e);
       });
-    }.bind(this));
   },
 
   handleAppSubmit: function(e) {
@@ -36,18 +38,22 @@ module.exports = React.createClass({
       return false;
     }
 
-    $.ajax({
-      type: 'POST',
-      url: '/admin/api/applications',
-      data: JSON.stringify({
+    fetch('/admin/api/applications', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: JSON.stringify({
         name: name
-      }),
-      contentType: 'application/json; charset=utf-8',
-      dataType: 'json',
-      success: function(data) {
-        Router.transitionTo("application", { id: data.application_id });
-      }.bind(this)
-    });
+      })
+    }).then(response => response.json())
+      .then(json => {
+        Router.transitionTo("application", { id: json.application_id });
+      })
+      .catch(e => {
+        console.log('error creating application', e);
+      });
 
     return false;
   },

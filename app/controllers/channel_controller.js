@@ -6,6 +6,13 @@ var unauthorized = function(res) {
 };
 
 var authFromRequest = function(req) {
+  // first look for token in query string (least desired method)
+  if (req.query.token) {
+    return {
+      token: req.query.token
+    };
+  }
+
   // extract auth from headers
   var auth = req.get('authorization');
   if (!auth) return;

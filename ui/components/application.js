@@ -26,12 +26,16 @@ module.exports = React.createClass({
     };
   },
 
-
   loadData: function() {
-    $.getJSON('/admin/api/applications', function(data) {
-      var app = _.find(data, { application_id: this.props.params.id });
-      this.setState({ app: app });
-    }.bind(this));
+    fetch('/admin/api/applications', { credentials: 'same-origin', })
+      .then(response => response.json())
+      .then(json => {
+        var app = _.find(json, { application_id: this.props.params.id });
+        this.setState({ app: app });
+      })
+      .catch(e => {
+        console.log('error getting applications', e);
+      });
   },
 
   handleStats: function(source, received, stats) {
@@ -44,21 +48,25 @@ module.exports = React.createClass({
   },
 
   getToken: function(appId, channel, presence, done) {
-    $.ajax({
-      type: 'POST',
-      url: '/admin/api/application/' + appId + '/token',
-      data: JSON.stringify({
+    fetch('/admin/api/application/' + appId + '/token', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      body: JSON.stringify({
         channel: channel,
         presence: presence,
         pub: true,
         sub: true
-      }),
-      contentType: 'application/json; charset=utf-8',
-      dataType: 'json',
-      success: function(data) {
-        done(null, data.token);
-      }
-    });
+      })
+    }).then(response => response.json())
+      .then(json => {
+        done(null, json.token)
+      })
+      .catch(e => {
+        console.log('error getting token', e);
+      });
   },
 
   createClient: function() {

@@ -17,6 +17,7 @@
     "moment": "^2.17.1",
     "react": "^0.11.0",
     "react-router": "^0.4.1",
-    "webpack": "^2.2.1"
+    "webpack": "^2.2.1",
+    "whatwg-fetch": "^2.0.2"
   }
 }

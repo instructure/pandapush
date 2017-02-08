@@ -7,7 +7,6 @@ var React              = require('react'),
     Route              = Router.Route,
     Link               = Router.Link,
     Faye               = window.Faye,
-    $                  = window.jQuery,
     Applications       = require('./components/applications'),
     Application        = require('./components/application'),
     ApplicationInfo    = require('./components/application/info'),
@@ -28,11 +27,16 @@ var App = React.createClass({
       Router.replaceWith('applications');
     }
 
-    $.getJSON('/admin/api/info', function(data) {
-      this.setState({
-        username: data.username
+    fetch('/admin/api/info', { credentials: 'same-origin', })
+      .then(response => response.json())
+      .then(json => {
+        console.log('got', json);
+        this.setState({
+          username: json.username
+        });
+      }).catch(e => {
+        console.log('parsing failed', e);
       });
-    }.bind(this));
   },
 
   render: function() {

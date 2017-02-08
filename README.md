@@ -29,9 +29,6 @@ $ docker-compose up
 
 This will start Pandapush on http://pandapush.docker/admin.
 
-(Note - use Chrome instead of Safari when doing local testing. Safari refuses
-to override HTTP Basic Auth when making an ajax request.)
-
 
 ### Create an Application and Key:
 
