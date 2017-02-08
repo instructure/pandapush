@@ -1,11 +1,20 @@
+const path = require('path');
+
 module.exports = {
-  entry: [ "whatwg-fetch", "./main.js" ],
+  entry: [ "whatwg-fetch", path.join(__dirname, './main.js') ],
   output: {
-    filename: "./public/admin/bundle.js"
+    filename: "./ui/public/admin/bundle.js"
   },
   module: {
     loaders: [
-      {test: /\.js$/, loader: 'jsx-loader'},
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        loader: 'babel-loader',
+        query: {
+          presets: ['es2015', 'react']
+        }
+      }
     ]
   }
 };

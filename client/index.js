@@ -1,6 +1,7 @@
-var Faye = require('./node_modules/faye/browser/faye-browser.js');
+var Faye = require('faye/src/faye_browser');
+var Class = require('faye/src/util/class');
 
-var Client = Faye.Class({
+var Client = Class({
   initialize: function(base) {
     var self = this;
     self._faye = new Faye.Client(base);

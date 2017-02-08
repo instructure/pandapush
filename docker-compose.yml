@@ -23,16 +23,14 @@ dynamo:
 
 webpack:
   build: .
-  command: node ./node_modules/.bin/webpack --watch --colors --progress
-  working_dir: /usr/src/app/ui
+  command: bash -c "
+    node_modules/.bin/webpack --watch --devtool inline-source-map --config ui/webpack.config.js &
+    node_modules/.bin/webpack --watch --devtool inline-source-map --config client/webpack.config.js"
+  working_dir: /usr/src/app
   volumes:
     - "./:/usr/src/app"
-
-webpackclient:
-  build: .
-  command: node ./node_modules/.bin/webpack -d --watch --colors --progress
-  volumes:
-    - "./client:/usr/src/app"
+  environment:
+    NODE_ENV: development
 
 web:
   build: .
