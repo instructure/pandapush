@@ -112,7 +112,7 @@ exports.generateToken = function(req, res) {
         key = _.find(application.keys, function(key) {
           return key.purpose == "web console" &&
                  !key.revoked_at &&
-                 !moment(key.expires_at).isBefore(moment());
+                 !moment(key.expires).isBefore(moment());
         });
 
         if (key) {

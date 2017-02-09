@@ -17,6 +17,9 @@ ADD ./app /usr/src/app/app
 ADD ./ui /usr/src/app/ui
 ADD ./client /usr/src/app/client
 
+RUN chown -R docker:docker /usr/src/app
+USER docker
+
 # to expose the application to passenger
 RUN ln -s /usr/src/app/ui/public /usr/src/app/public
 RUN ln -s /usr/src/app/app/app.js /usr/src/app/app.js
@@ -25,8 +28,6 @@ RUN NODE_ENV=dev npm install && \
     NODE_ENV=production node_modules/.bin/webpack -p --config ui/webpack.config.js && \
     NODE_ENV=production node_modules/.bin/webpack -p --config client/webpack.config.js && \
     if [ "$prunedev" = "true" ]; then npm prune --production; fi
-
-RUN chown -R docker:docker /usr/src/app
 
 ENV DATA_STORE FILE
 

@@ -28,7 +28,6 @@ var App = React.createClass({
     fetch('/admin/api/info', { credentials: 'same-origin', })
       .then(response => response.json())
       .then(json => {
-        console.log('got', json);
         this.setState({
           username: json.username
         });

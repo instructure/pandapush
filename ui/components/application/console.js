@@ -48,7 +48,7 @@ module.exports = React.createClass({
       return;
     }
 
-    this.props.getToken(this.props.app.application_id, channel, null, function(err, token) {
+    this.props.getToken(this.props.app.application_id, channel, null, (err, token) => {
       if (err) {
         alert("error getting token.\n\n" + err);
         return;
@@ -61,7 +61,24 @@ module.exports = React.createClass({
           'Content-Type': 'application/json; charset=utf-8',
         },
         body: JSON.stringify(payload)
-      });
+      })
+      .then(response => {
+        if (response.ok) {
+          this.setState({
+            publishStatus: true
+          });
+        } else {
+          response.json().then(json => {
+            this.setState({
+              publishStatus: {
+                status: response.status,
+                statusText: response.statusText,
+                body: json.message
+              }
+            });
+          });
+        }
+      })
     });
   },
 
@@ -293,6 +310,24 @@ module.exports = React.createClass({
     return <span />;
   },
 
+  renderPublishStatus: function() {
+    if (this.state.publishStatus === true) {
+      return <span style={{paddingLeft: '10px'}} className="text-success">Sent.</span>;
+    }
+
+    if (this.state.publishStatus) {
+      return (
+        <span style={{paddingLeft: '10px'}}>
+          <span className="text-danger">{this.state.publishStatus.statusText}</span>&nbsp;
+          <span className="text-warning">[{this.state.publishStatus.status}]</span>&nbsp;
+          <span className="text-muted">{this.state.publishStatus.body}</span>
+        </span>
+      );
+    }
+
+    return;
+  },
+
   render: function() {
     return (
       <div className="container">
@@ -321,6 +356,7 @@ module.exports = React.createClass({
               <label className="col-sm-2 control-label"></label>
               <div className="col-sm-4">
                 <button type="submit" className="btn btn-default">Publish</button>
+                {this.renderPublishStatus()}
               </div>
             </div>
           </form>
