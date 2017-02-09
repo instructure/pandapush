@@ -1,9 +1,6 @@
 'use strict';
 
 var React        = require('react'),
-    Router       = require('react-router'),
-    Route        = Router.Route,
-    Link         = Router.Link,
     moment       = require('moment'),
     _            = require('lodash');
 
@@ -38,8 +35,8 @@ module.exports = React.createClass({
   handleKeySubmit: function(e) {
     e.preventDefault();
 
-    var purpose = this.refs["keyPurpose"].getDOMNode().value,
-        expiresRaw = this.refs["keyExpires"].getDOMNode().value;
+    var purpose = this.keyPurposeInput.value,
+        expiresRaw = this.keyExpiresInput.value;
 
     if (!purpose) {
       alert("Purpose is required!");
@@ -76,8 +73,8 @@ module.exports = React.createClass({
 
         this.props.reload();
 
-        this.refs["keyPurpose"].getDOMNode().value = "";
-        this.refs["keyExpires"].getDOMNode().value = "";
+        this.keyPurposeInput.value = "";
+        this.keyExpiresInput.value = "";
       })
 
     return false;
@@ -94,7 +91,7 @@ module.exports = React.createClass({
       }
 
       return (
-        <tr>
+        <tr key={key.key_id}>
           <td className="identifier">{key.key_id}</td>
           <td>{key.purpose}</td>
           <td>{key.created_at} ({key.created_by})</td>
@@ -132,13 +129,13 @@ module.exports = React.createClass({
           <div className="form-group">
             <label className="col-sm-2 control-label" htmlFor="keyPurpose">Purpose</label>
             <div className="col-sm-6">
-              <input type="text" className="form-control" ref="keyPurpose" name="purpose" id="keyPurpose" />
+              <input type="text" className="form-control" ref={e => this.keyPurposeInput = e} name="purpose" id="keyPurpose" />
             </div>
           </div>
           <div className="form-group">
             <label className="col-sm-2 control-label" htmlFor="keyExpires">Expires</label>
             <div className="col-sm-4">
-              <input onChange={this.handleExpiresChange} ref="keyExpires" type="text" className="form-control" name="expires" id="keyExpires" placeholder="iso8601 format plz" />
+              <input onChange={this.handleExpiresChange} ref={e => this.keyExpiresInput = e} type="text" className="form-control" name="expires" id="keyExpires" placeholder="iso8601 format plz" />
               <span>{this.state.parsedExpires}</span>
             </div>
           </div>

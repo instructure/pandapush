@@ -1,12 +1,9 @@
 'use strict';
 
 var React        = require('react'),
-    Router       = require('react-router'),
-    Route        = Router.Route,
-    Link         = Router.Link,
+    Link         = require('react-router').Link,
     moment       = require('moment'),
     _            = require('lodash'),
-    Tab          = require('./tab'),
     Info         = require('./application/info'),
     Keys         = require('./application/keys'),
     Console      = require('./application/console'),
@@ -111,10 +108,6 @@ module.exports = React.createClass({
   componentDidMount: function() {
     this.loadData();
 
-    if (!this.props.activeRouteHandler()) {
-      Router.replaceWith('applicationInfo', this.props.params, this.props.query);
-    }
-
     this.createClient();
     this.client.subscribe('/' + this.props.params.id + '/meta/statistics', function(msg) {
       this.handleStats(msg.data.source, msg.received, msg.data.stats);
@@ -128,18 +121,18 @@ module.exports = React.createClass({
   render: function() {
     return (
       <div className="container">
-        <h1>{this.state.app.name} <span style={{'font-size': '0.6em'}}>(<span className="identifier">{this.props.params.id}</span>)</span></h1>
+        <h1>{this.state.app.name} <span style={{ fontSize: '0.6em' }}>(<span className="identifier">{this.props.params.id}</span>)</span></h1>
 
         <div className="row">
           <ul className="nav nav-tabs" role="tablist">
-            <Tab to="applicationInfo" id={this.props.params.id}>Info</Tab>
-            <Tab to="applicationKeys" id={this.props.params.id}>Keys</Tab>
-            <Tab to="applicationConsole" id={this.props.params.id}>Console</Tab>
+            <li><Link to={`/application/${this.props.params.id}/info`} activeClassName="active">Info</Link></li>
+            <li><Link to={`/application/${this.props.params.id}/keys`} activeClassName="active">Keys</Link></li>
+            <li><Link to={`/application/${this.props.params.id}/console`} activeClassName="active">Console</Link></li>
           </ul>
 
           <br />
 
-          {this.props.activeRouteHandler({
+          {React.cloneElement(this.props.children, {
             app: this.state.app,
             reload: this.handleReload,
             client: this.client,

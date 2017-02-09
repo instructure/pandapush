@@ -1,9 +1,13 @@
 'use strict';
 
 var React              = require('react'),
-    Router             = require('react-router'),
-    Route              = Router.Route,
-    Link               = Router.Link,
+    render             = require('react-dom').render,
+    Router             = require('react-router').Router,
+    Route              = require('react-router').Route,
+    IndexRoute         = require('react-router').IndexRoute,
+    IndexRedirect      = require('react-router').IndexRedirect,
+    Link               = require('react-router').Link,
+    hashHistory        = require('react-router').hashHistory,
     Faye               = window.Faye,
     Applications       = require('./components/applications'),
     Application        = require('./components/application'),
@@ -21,10 +25,6 @@ var App = React.createClass({
   },
 
   componentDidMount: function() {
-    if (!this.props.activeRouteHandler()) {
-      Router.replaceWith('applications');
-    }
-
     fetch('/admin/api/info', { credentials: 'same-origin', })
       .then(response => response.json())
       .then(json => {
@@ -54,7 +54,7 @@ var App = React.createClass({
             <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               <ul className="nav navbar-nav">
                 <li>
-                  <Link to="applications">Applications</Link>
+                  <Link to="/">Applications</Link>
                 </li>
               </ul>
               <ul className="nav navbar-nav navbar-right">
@@ -65,19 +65,22 @@ var App = React.createClass({
           </div>
         </nav>
 
-        {this.props.activeRouteHandler({ username: this.state.username })}
+        {React.cloneElement(this.props.children, { username: this.state.username })}
       </div>
     );
   }
 });
 
-React.renderComponent((
-  <Route handler={App}>
-    <Route path="/applications" name="applications" handler={Applications} />
-    <Route path="/application/:id" name="application" handler={Application}>
-      <Route path="/application/:id/info" name="applicationInfo" handler={ApplicationInfo} />
-      <Route path="/application/:id/keys" name="applicationKeys" handler={ApplicationKeys} />
-      <Route path="/application/:id/console" name="applicationConsole" handler={ApplicationConsole} />
+render((
+  <Router history={hashHistory}>
+    <Route path="/" component={App}>
+      <IndexRoute component={Applications} />
+      <Route path="application/:id" component={Application}>
+        <IndexRedirect to="info" />
+        <Route path="info" component={ApplicationInfo} />
+        <Route path="keys" component={ApplicationKeys} />
+        <Route path="console" component={ApplicationConsole} />
+      </Route>
     </Route>
-  </Route>
-), document.body);
+  </Router>
+), document.getElementById('root'));

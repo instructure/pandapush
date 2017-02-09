@@ -9,13 +9,15 @@ module.exports = React.createClass({
 
   handleType: function(val) {
     return function(e) {
+      e.preventDefault();
+
       this.setState({
         type: val
       });
 
       this.props.updateParams({
         channelType: val,
-        path: this.refs["path"].getDOMNode().value
+        path: this.inputElement.value
       });
 
       return false;
@@ -25,14 +27,14 @@ module.exports = React.createClass({
   updateParams: function() {
     this.props.updateParams({
       channelType: this.state.type || this.props.type,
-      path: this.refs["path"].getDOMNode().value
+      path: this.inputElement.value
     });
   },
 
   get: function() {
     return '/' + this.props.applicationId +
            '/' + (this.state.type || this.props.type) +
-           '/' + this.refs["path"].getDOMNode().value;
+           '/' + this.inputElement.value;
   },
 
   render: function() {
@@ -53,7 +55,7 @@ module.exports = React.createClass({
           </div>
           <button type="button" className="btn btn-default" disabled="disabled">/</button>
         </div>
-        <input onChange={this.updateParams} type="text" ref="path" className="form-control" value={this.props.path} />
+        <input onChange={this.updateParams} type="text" ref={e => this.inputElement = e} className="form-control" value={this.props.path} />
       </div>
     );
   }

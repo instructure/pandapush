@@ -1,18 +1,21 @@
 'use strict';
 
 var React         = require('react'),
-    Router        = require('react-router'),
-    Route         = Router.Route,
-    Link          = Router.Link,
     moment        = require('moment'),
     _             = require('lodash'),
     ChannelPicker = require('../channel_picker');
 
 module.exports = React.createClass({
+  contextTypes: {
+    router: React.PropTypes.object.isRequired
+  },
+
   getInitialState: function() {
+    this._refs = {};
+
     return {
       subChannel: null,
-      presence: this.props.params.subChannelType === 'presence',
+      presence: this.props.location.params && this.props.location.params.subChannelType === 'presence',
       events: [],
       subscribers: {}
     };
@@ -37,8 +40,8 @@ module.exports = React.createClass({
   handlePublish: function(e) {
     e.preventDefault();
 
-    var channel = this.refs["pubChannel"].get(),
-        payload = this.refs["pubPayload"].getDOMNode().value;
+    var channel = this._refs["pubChannel"].get(),
+        payload = this._refs["pubPayload"].value;
 
     try {
       payload = JSON.parse(payload);
@@ -85,16 +88,16 @@ module.exports = React.createClass({
   handleSubscribe: function(e) {
     e.preventDefault();
 
-    var channel = this.refs["subChannel"].get();
+    var channel = this._refs["subChannel"].get();
 
     var doSubscribe = function() {
       var presence = (channel.split('/')[2] === 'presence');
       var presenceId, presenceData = null;
 
       if (presence) {
-        var presenceId = this.refs["presenceId"].getDOMNode().value || this.props.username;
+        var presenceId = this._refs["presenceId"].value || this.props.username;
         var presenceData = {};
-        var rawPresenceData = this.refs["presenceData"].getDOMNode().value;
+        var rawPresenceData = this._refs["presenceData"].value;
         if (rawPresenceData) {
           try {
             presenceData = JSON.parse(rawPresenceData);
@@ -163,11 +166,14 @@ module.exports = React.createClass({
 
   updateChannelParams: function(channel) {
     return function(newParams) {
-      var params = this.props.query;
+      var params = this.props.location.query;
       params[channel + 'Type'] = newParams.channelType;
       params[channel + 'Path'] = newParams.path;
 
-      Router.replaceWith('applicationConsole', { id: this.props.params.id }, params);
+      this.context.router.replace({
+        pathname: this.props.location.pathname,
+        query: params
+      });
 
       this.setState({
         presenceSub: (newParams.channelType === 'presence')
@@ -176,15 +182,19 @@ module.exports = React.createClass({
   },
 
   handleFieldChange: function(field, e) {
-    var params = this.props.query;
-    var value = this.refs[field].getDOMNode().value;
+    var params = this.props.location.query;
+    var value = this._refs[field].value;
     if (value.length > 1024) {
       params[field] = '';
     }
     else {
       params[field] = value;
     }
-    Router.replaceWith('applicationConsole', { id: this.props.params.id }, params);
+
+    this.context.router.replace({
+      pathname: this.props.location.pathname,
+      query: params
+    });
   },
 
   renderEventsTable: function() {
@@ -202,7 +212,7 @@ module.exports = React.createClass({
       return !ev.channel;
     });
 
-    events = _.map(events, function(ev) {
+    events = _.map(events, function(ev, index) {
       var shortenedChannel = ev.channel.replace(prefix, "");
       var channelTd = null;
       if (prefix) {
@@ -210,7 +220,7 @@ module.exports = React.createClass({
       }
 
       return (
-        <tr>
+        <tr key={`${ev.channel}-${ev.received && ev.received.toISOString()}`}>
           {channelTd}
           <td>{ev.received && ev.received.toISOString()}</td>
           <td><pre>{JSON.stringify(ev.data, null, 2)}</pre></td>
@@ -266,12 +276,12 @@ module.exports = React.createClass({
   },
 
   renderSubscribers: function() {
-    if (!(this.props.query.subChannelType === 'presence' && this.state.subChannel)) {
+    if (!(this.props.location.query.subChannelType === 'presence' && this.state.subChannel)) {
       return <span />;
     }
 
     var r = _.map(this.state.subscribers, function(data, id) {
-      return <span className="label label-primary subscriber">{id}</span>;
+      return <span key={id} className="label label-primary subscriber">{id}</span>;
     });
 
     return (
@@ -287,20 +297,20 @@ module.exports = React.createClass({
   },
 
   renderPresenceFields: function() {
-    if (this.props.query.subChannelType === 'presence') {
+    if (this.props.location.query.subChannelType === 'presence') {
       return (
         <div>
           <div className="form-group">
             <label className="col-sm-2 control-label">Presence ID</label>
             <div className="col-sm-4">
-              <input type="text" onChange={this.handleFieldChange.bind(this, 'presenceId')} ref="presenceId" className="form-control" placeholder={this.props.username} defaultValue={this.props.query.presenceId} />
+              <input type="text" onChange={this.handleFieldChange.bind(this, 'presenceId')} ref={e => this._refs["presenceId"] = e} className="form-control" placeholder={this.props.username} defaultValue={this.props.location.query.presenceId} />
             </div>
           </div>
 
           <div className="form-group">
             <label className="col-sm-2 control-label">Presence Data</label>
             <div className="col-sm-4">
-              <textarea onChange={this.handleFieldChange.bind(this, 'presenceData')} ref="presenceData" className="form-control" rows="3" defaultValue={this.props.query.presenceData} />
+              <textarea onChange={this.handleFieldChange.bind(this, 'presenceData')} ref={e => this._refs["presenceData"] = e} className="form-control" rows="3" defaultValue={this.props.location.query.presenceData} />
             </div>
           </div>
         </div>
@@ -337,10 +347,10 @@ module.exports = React.createClass({
               <label className="col-sm-2 control-label" htmlFor="postChannel">Publish to</label>
               <div className="col-sm-6">
                 <ChannelPicker
-                  ref="pubChannel"
+                  ref={e => this._refs["pubChannel"] = e}
                   applicationId={this.props.params.id}
-                  type={this.props.query.pubChannelType || "public"}
-                  path={this.props.query.pubChannelPath || ""}
+                  type={this.props.location.query.pubChannelType || "public"}
+                  path={this.props.location.query.pubChannelPath || ""}
                   updateParams={this.updateChannelParams('pubChannel')} />
               </div>
             </div>
@@ -348,7 +358,7 @@ module.exports = React.createClass({
             <div className="form-group">
               <label className="col-sm-2 control-label">Payload</label>
               <div className="col-sm-4">
-                <textarea onChange={this.handleFieldChange.bind(this, 'pubPayload')} ref="pubPayload" className="form-control" rows="3" defaultValue={this.props.query.pubPayload} />
+                <textarea onChange={this.handleFieldChange.bind(this, 'pubPayload')} ref={e => this._refs["pubPayload"] = e} className="form-control" rows="3" defaultValue={this.props.location.query.pubPayload} />
               </div>
             </div>
 
@@ -372,10 +382,10 @@ module.exports = React.createClass({
               <label className="col-sm-2 control-label" htmlFor="postChannel">Subscribe to</label>
               <div className="col-sm-6">
                 <ChannelPicker
-                  ref="subChannel"
+                  ref={e => this._refs["subChannel"] = e}
                   applicationId={this.props.params.id}
-                  type={this.props.query.subChannelType || "public"}
-                  path={this.props.query.subChannelPath || ""}
+                  type={this.props.location.query.subChannelType || "public"}
+                  path={this.props.location.query.subChannelPath || ""}
                   updateParams={this.updateChannelParams('subChannel')}
                   showPresence='1'
                   showMeta='1' />

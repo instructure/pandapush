@@ -1,14 +1,16 @@
 'use strict';
 
 var React        = require('react'),
-    Router       = require('react-router'),
-    Route        = Router.Route,
-    Link         = Router.Link,
+    Link         = require('react-router').Link,
     moment       = require('moment'),
     _            = require('lodash'),
     Faye         = window.Faye;
 
 module.exports = React.createClass({
+  contextTypes: {
+    router: React.PropTypes.object.isRequired
+  },
+
   getInitialState: function() {
     return {
       applications: []
@@ -29,7 +31,7 @@ module.exports = React.createClass({
   handleAppSubmit: function(e) {
     e.preventDefault();
 
-    var name = this.refs["appName"].getDOMNode().value;
+    var name = this.newAppNameInput.value;
 
     if (!name) {
       alert("Name is required!");
@@ -47,7 +49,9 @@ module.exports = React.createClass({
       })
     }).then(response => response.json())
       .then(json => {
-        Router.transitionTo("application", { id: json.application_id });
+        this.context.router.push({
+          pathname: `/application/${json.application_id}`
+        });
       })
       .catch(e => {
         console.log('error creating application', e);
@@ -59,8 +63,10 @@ module.exports = React.createClass({
   renderApplications: function() {
     return _.map(this.state.applications, function(app) {
       return (
-        <tr>
-          <td className="identifier"><Link to="application" id={app.application_id} app={app}>{app.application_id}</Link></td>
+        <tr key={app.application_id}>
+          <td className="identifier">
+            <Link to={`/application/${app.application_id}`}>{app.application_id}</Link>
+          </td>
           <td>{app.name}</td>
           <td>{app.created_at}</td>
           <td>{app.created_by}</td>
@@ -93,7 +99,7 @@ module.exports = React.createClass({
           <div className="form-group">
             <label className="col-sm-2 control-label" htmlFor="appName">Name</label>
             <div className="col-sm-6">
-              <input type="text" className="form-control" ref="appName" name="name" id="appName" />
+              <input type="text" className="form-control" ref={e => this.newAppNameInput = e} name="name" id="appName" />
             </div>
           </div>
           <div className="form-group">
