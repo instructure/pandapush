@@ -1,17 +1,13 @@
-'use strict';
+import React from 'react';
+import moment from 'moment';
+import _ from 'lodash';
 
-var React        = require('react'),
-    moment       = require('moment'),
-    _            = require('lodash');
+class Keys extends React.Component {
+  state = {
+    parsedExpires: ""
+  }
 
-module.exports = React.createClass({
-  getInitialState: function() {
-    return {
-      parsedExpires: ""
-    };
-  },
-
-  handleExpiresChange: function(e) {
+  handleExpiresChange = (e) => {
     var m = moment(e.target.value);
     if (!m.isValid()) {
       this.setState({
@@ -30,9 +26,9 @@ module.exports = React.createClass({
     }
 
     return false;
-  },
+  }
 
-  handleKeySubmit: function(e) {
+  handleKeySubmit = (e) => {
     e.preventDefault();
 
     var purpose = this.keyPurposeInput.value,
@@ -78,9 +74,9 @@ module.exports = React.createClass({
       })
 
     return false;
-  },
+  }
 
-  renderKeys: function() {
+  renderKeys() {
     return _.map(_.sortBy(_.values(this.props.app.keys), 'created_at'), function(key) {
       var status = 'active';
       if (key.revoked_at) {
@@ -101,9 +97,9 @@ module.exports = React.createClass({
         </tr>
       );
     });
-  },
+  }
 
-  render: function() {
+  render() {
     return (
       <div className="container">
         <table className="table">
@@ -149,6 +145,6 @@ module.exports = React.createClass({
       </div>
     );
   }
-});
+}
 
-
+module.exports = Keys;

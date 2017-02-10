@@ -1,13 +1,9 @@
-'use strict';
+import React from 'react';
 
-var React = require('react');
+class ChannelPicker extends React.Component {
+  state = {}
 
-module.exports = React.createClass({
-  getInitialState: function() {
-    return {};
-  },
-
-  handleType: function(val) {
+  handleType(val) {
     return function(e) {
       e.preventDefault();
 
@@ -22,22 +18,22 @@ module.exports = React.createClass({
 
       return false;
     }.bind(this);
-  },
+  }
 
-  updateParams: function() {
+  updateParams = () => {
     this.props.updateParams({
       channelType: this.state.type || this.props.type,
       path: this.inputElement.value
     });
-  },
+  }
 
-  get: function() {
+  get = () => {
     return '/' + this.props.applicationId +
            '/' + (this.state.type || this.props.type) +
            '/' + this.inputElement.value;
-  },
+  }
 
-  render: function() {
+  render() {
     return (
       <div className="input-group">
         <div className="input-group-btn">
@@ -59,4 +55,6 @@ module.exports = React.createClass({
       </div>
     );
   }
-});
+}
+
+module.exports = ChannelPicker;

@@ -1,23 +1,14 @@
-'use strict';
+import React from 'react';
+import { Link } from 'react-router';
+import moment from 'moment';
+import _ from 'lodash';
 
-var React        = require('react'),
-    Link         = require('react-router').Link,
-    moment       = require('moment'),
-    _            = require('lodash'),
-    Faye         = window.Faye;
+class Applications extends React.Component {
+  state = {
+    applications: []
+  }
 
-module.exports = React.createClass({
-  contextTypes: {
-    router: React.PropTypes.object.isRequired
-  },
-
-  getInitialState: function() {
-    return {
-      applications: []
-    }
-  },
-
-  componentDidMount: function() {
+  componentDidMount() {
     fetch('/admin/api/applications', { credentials: 'same-origin', })
       .then(response => response.json())
       .then(json => {
@@ -26,9 +17,9 @@ module.exports = React.createClass({
       .catch(e => {
         console.log('error getting applications', e);
       });
-  },
+  }
 
-  handleAppSubmit: function(e) {
+  handleAppSubmit = (e) => {
     e.preventDefault();
 
     var name = this.newAppNameInput.value;
@@ -58,9 +49,9 @@ module.exports = React.createClass({
       });
 
     return false;
-  },
+  }
 
-  renderApplications: function() {
+  renderApplications() {
     return _.map(this.state.applications, function(app) {
       return (
         <tr key={app.application_id}>
@@ -73,9 +64,9 @@ module.exports = React.createClass({
         </tr>
       );
     }.bind(this));
-  },
+  }
 
-  render: function() {
+  render() {
     return (
       <div className="container">
         <h1>Applications</h1>
@@ -112,4 +103,10 @@ module.exports = React.createClass({
       </div>
     );
   }
-});
+}
+
+Applications.contextTypes = {
+  router: React.PropTypes.object.isRequired
+}
+
+module.exports = Applications;

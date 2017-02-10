@@ -10,13 +10,16 @@ var Client = Class({
 
     self._faye.addExtension({
       outgoing: function(message, callback) {
-        if (message.channel === '/meta/subscribe') {
-          if (self._tokens[message.subscription]) {
-            if (!message.ext) message.ext = {};
-            message.ext.auth = {
-              token: self._tokens[message.subscription]
-            };
-          }
+        const channel = message.channel === '/meta/subscribe' ?
+                          message.subscription :
+                          message.channel;
+        const token = self._tokens[channel];
+
+        if (token) {
+          if (!message.ext) message.ext = {};
+          message.ext.auth = {
+            token: token
+          };
         }
 
         callback(message);
@@ -26,7 +29,7 @@ var Client = Class({
           if (message.ext && message.ext.presence) {
             var presenceCB = self._presenceCBs[message.subscription];
             if (presenceCB) {
-              presenceCB(message.ext.presence);
+              presenceCB(message.ext.presence, message.subscription);
             }
           }
         }
@@ -42,8 +45,9 @@ var Client = Class({
   /**
    * @param channel [String]
    * @param token [String] (optional)
-   * @callback [function(message)]
+   * @callback [function(message, channel)] (optional)
    *   @param message [Object]
+   *   @param channel [String]
    * @returns {Promise}
    *
    * subscribe(channel, callback)
@@ -51,9 +55,12 @@ var Client = Class({
    */
   subscribe: function() {
     var channel = arguments[0];
-    var callback = arguments[arguments.length - 1];
+    var callback = null;
+    if (typeof arguments[arguments.length - 1] === 'function') {
+      callback = arguments[arguments.length - 1];
+    }
     var token = null;
-    if (arguments.length >= 3) {
+    if (typeof arguments[1] === 'string') {
       token = arguments[1];
     }
     var self = this;
@@ -64,7 +71,29 @@ var Client = Class({
 
     self._presenceCBs[channel] = callback;
 
-    return self._faye.subscribe.call(self._faye, channel, callback);
+    if (callback) {
+      return self._faye.subscribe.call(self._faye, channel).withChannel(function(channel, message) {
+        callback(message, channel);
+      });
+    } else {
+      return self._faye.subscribe.call(self._faye, channel);
+    }
+  },
+
+  /**
+   * @param channel [String]
+   * @param token [String]
+   * @param message [Object]
+   * @returns {Promise}
+   */
+  publish: function(channel, token, message) {
+    var self = this;
+
+    if (token) {
+      self._tokens[channel] = token;
+    }
+
+    return self._faye.publish.call(self._faye, channel, message);
   },
 
   unsubscribe: function(channel) {

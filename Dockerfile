@@ -17,6 +17,9 @@ ADD ./app /usr/src/app/app
 ADD ./ui /usr/src/app/ui
 ADD ./client /usr/src/app/client
 
+# for legacy purposes
+RUN ln -s /usr/src/app /app
+
 RUN chown -R docker:docker /usr/src/app
 USER docker
 
@@ -30,5 +33,3 @@ RUN NODE_ENV=dev npm install && \
     if [ "$prunedev" = "true" ]; then npm prune --production; fi
 
 ENV DATA_STORE FILE
-
-USER docker

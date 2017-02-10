@@ -1,27 +1,21 @@
-'use strict';
+import React from 'react';
+import moment from 'moment';
+import _ from 'lodash';
+import ChannelPicker from '../channel_picker';
 
-var React         = require('react'),
-    moment        = require('moment'),
-    _             = require('lodash'),
-    ChannelPicker = require('../channel_picker');
+class Console extends React.Component {
+  constructor(props) {
+    super(props);
 
-module.exports = React.createClass({
-  contextTypes: {
-    router: React.PropTypes.object.isRequired
-  },
-
-  getInitialState: function() {
-    this._refs = {};
-
-    return {
+    this.state = {
       subChannel: null,
       presence: this.props.location.params && this.props.location.params.subChannelType === 'presence',
       events: [],
       subscribers: {}
     };
-  },
+  }
 
-  loadData: function() {
+  loadData() {
     fetch('/admin/api/applications', { credentials: 'same-origin', })
       .then(response => response.json())
       .then(json => {
@@ -31,17 +25,17 @@ module.exports = React.createClass({
       .catch(e => {
         console.log('error getting applications', e);
       });
-  },
+  }
 
-  componentDidMount: function() {
+  componentDidMount() {
     this.loadData();
-  },
+  }
 
-  handlePublish: function(e) {
+  handlePublish = (e) => {
     e.preventDefault();
 
-    var channel = this._refs["pubChannel"].get(),
-        payload = this._refs["pubPayload"].value;
+    const channel = this.pubChannel.get();
+    let payload = this.pubPayloadInput.value;
 
     try {
       payload = JSON.parse(payload);
@@ -83,21 +77,21 @@ module.exports = React.createClass({
         }
       })
     });
-  },
+  }
 
-  handleSubscribe: function(e) {
+  handleSubscribe = (e) => {
     e.preventDefault();
 
-    var channel = this._refs["subChannel"].get();
+    const channel = this.subChannel.get();
 
     var doSubscribe = function() {
-      var presence = (channel.split('/')[2] === 'presence');
-      var presenceId, presenceData = null;
+      const presence = (channel.split('/')[2] === 'presence');
+      let presenceId, presenceData = null;
 
       if (presence) {
-        var presenceId = this._refs["presenceId"].value || this.props.username;
-        var presenceData = {};
-        var rawPresenceData = this._refs["presenceData"].value;
+        const presenceId = this.presenceIdInput.value || this.props.username;
+        presenceData = {};
+        const rawPresenceData = this.presenceDataInput.value;
         if (rawPresenceData) {
           try {
             presenceData = JSON.parse(rawPresenceData);
@@ -115,12 +109,16 @@ module.exports = React.createClass({
           return;
         }
 
-        this.props.client.subscribe(channel, token, presenceData, function(message) {
-          if (message.channel) {
-            this.state.events.splice(0, 0, message);
-            this.state.events = this.state.events.splice(0, 50);
-            this.forceUpdate();
-          }
+        this.props.client.subscribe(channel, token, presenceData, function(message, channel) {
+          const event = {
+            data: message,
+            channel: channel,
+            received: moment()
+          };
+
+          this.state.events.splice(0, 0, event);
+          this.state.events = this.state.events.splice(0, 50);
+          this.forceUpdate();
 
           if (this.state.events.length >= 50) {
             this.props.client.unsubscribe(this.state.subChannel);
@@ -130,18 +128,16 @@ module.exports = React.createClass({
           }
 
           if (presence) {
-            var subscribers = this.state.subscribers || {};
+            const subscribers = this.state.subscribers || {};
 
-            // this funkiness is just because we munge incoming messages to store
-            // some metadata alongside them.
-            if (message.data) {
-              message = message.data;
-            }
+            const updatedSubscribers =
+              _({})
+                .extend(subscribers, message.subscribe || {})
+                .omit(_.keys(message.unsubscribe))
+                .value();
 
-            subscribers = _.extend({}, subscribers, message.subscribe || {});
-            subscribers = _.omit(subscribers, _.keys(message.unsubscribe));
             this.setState({
-              subscribers: subscribers
+              subscribers: updatedSubscribers
             });
           }
         }.bind(this));
@@ -162,9 +158,9 @@ module.exports = React.createClass({
     else {
       doSubscribe();
     }
-  },
+  }
 
-  updateChannelParams: function(channel) {
+  updateChannelParams = (channel) => {
     return function(newParams) {
       var params = this.props.location.query;
       params[channel + 'Type'] = newParams.channelType;
@@ -179,11 +175,11 @@ module.exports = React.createClass({
         presenceSub: (newParams.channelType === 'presence')
       });
     }.bind(this);
-  },
+  }
 
-  handleFieldChange: function(field, e) {
+  handleFieldChange = (field, e) => {
     var params = this.props.location.query;
-    var value = this._refs[field].value;
+    var value = this[field].value;
     if (value.length > 1024) {
       params[field] = '';
     }
@@ -195,9 +191,9 @@ module.exports = React.createClass({
       pathname: this.props.location.pathname,
       query: params
     });
-  },
+  }
 
-  renderEventsTable: function() {
+  renderEventsTable() {
     if (this.state.events.length == 0) {
       return "Nothing yet.";
     }
@@ -246,9 +242,9 @@ module.exports = React.createClass({
         </tbody>
       </table>
     );
-  },
+  }
 
-  renderEvents: function() {
+  renderEvents() {
     if (!this.state.subChannel) {
       return null;
     }
@@ -273,9 +269,9 @@ module.exports = React.createClass({
         </div>
       </div>
     );
-  },
+  }
 
-  renderSubscribers: function() {
+  renderSubscribers() {
     if (!(this.props.location.query.subChannelType === 'presence' && this.state.subChannel)) {
       return <span />;
     }
@@ -294,23 +290,23 @@ module.exports = React.createClass({
         </div>
       </div>
     );
-  },
+  }
 
-  renderPresenceFields: function() {
+  renderPresenceFields() {
     if (this.props.location.query.subChannelType === 'presence') {
       return (
         <div>
           <div className="form-group">
             <label className="col-sm-2 control-label">Presence ID</label>
             <div className="col-sm-4">
-              <input type="text" onChange={this.handleFieldChange.bind(this, 'presenceId')} ref={e => this._refs["presenceId"] = e} className="form-control" placeholder={this.props.username} defaultValue={this.props.location.query.presenceId} />
+              <input type="text" onChange={this.handleFieldChange.bind(this, 'presenceIdInput')} ref={e => this.presenceIdInput = e} className="form-control" placeholder={this.props.username} defaultValue={this.props.location.query.presenceIdInput} />
             </div>
           </div>
 
           <div className="form-group">
             <label className="col-sm-2 control-label">Presence Data</label>
             <div className="col-sm-4">
-              <textarea onChange={this.handleFieldChange.bind(this, 'presenceData')} ref={e => this._refs["presenceData"] = e} className="form-control" rows="3" defaultValue={this.props.location.query.presenceData} />
+              <textarea onChange={this.handleFieldChange.bind(this, 'presenceDataInput')} ref={e => this.presenceDataInput = e} className="form-control" rows="3" defaultValue={this.props.location.query.presenceDataInput} />
             </div>
           </div>
         </div>
@@ -318,9 +314,9 @@ module.exports = React.createClass({
     }
 
     return <span />;
-  },
+  }
 
-  renderPublishStatus: function() {
+  renderPublishStatus() {
     if (this.state.publishStatus === true) {
       return <span style={{paddingLeft: '10px'}} className="text-success">Sent.</span>;
     }
@@ -336,9 +332,9 @@ module.exports = React.createClass({
     }
 
     return;
-  },
+  }
 
-  render: function() {
+  render() {
     return (
       <div className="container">
         <div className="row">
@@ -347,7 +343,7 @@ module.exports = React.createClass({
               <label className="col-sm-2 control-label" htmlFor="postChannel">Publish to</label>
               <div className="col-sm-6">
                 <ChannelPicker
-                  ref={e => this._refs["pubChannel"] = e}
+                  ref={e => this.pubChannel = e}
                   applicationId={this.props.params.id}
                   type={this.props.location.query.pubChannelType || "public"}
                   path={this.props.location.query.pubChannelPath || ""}
@@ -358,7 +354,7 @@ module.exports = React.createClass({
             <div className="form-group">
               <label className="col-sm-2 control-label">Payload</label>
               <div className="col-sm-4">
-                <textarea onChange={this.handleFieldChange.bind(this, 'pubPayload')} ref={e => this._refs["pubPayload"] = e} className="form-control" rows="3" defaultValue={this.props.location.query.pubPayload} />
+                <textarea onChange={this.handleFieldChange.bind(this, 'pubPayloadInput')} ref={e => this.pubPayloadInput = e} className="form-control" rows="3" defaultValue={this.props.location.query.pubPayload} />
               </div>
             </div>
 
@@ -382,7 +378,7 @@ module.exports = React.createClass({
               <label className="col-sm-2 control-label" htmlFor="postChannel">Subscribe to</label>
               <div className="col-sm-6">
                 <ChannelPicker
-                  ref={e => this._refs["subChannel"] = e}
+                  ref={e => this.subChannel = e}
                   applicationId={this.props.params.id}
                   type={this.props.location.query.subChannelType || "public"}
                   path={this.props.location.query.subChannelPath || ""}
@@ -408,4 +404,10 @@ module.exports = React.createClass({
       </div>
     );
   }
-});
+}
+
+Console.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
+
+module.exports = Console;

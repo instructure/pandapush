@@ -1,9 +1,7 @@
-'use strict';
+import React from 'react';
 
-var React = require('react');
-
-module.exports = React.createClass({
-  render: function() {
+class Info extends React.Component {
+  render() {
     return (
       <div className="container">
         <table className="table">
@@ -37,6 +35,6 @@ module.exports = React.createClass({
       </div>
     );
   }
-});
+}
 
-
+module.exports = Info;

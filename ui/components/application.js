@@ -1,27 +1,23 @@
-'use strict';
+import React from 'react';
+import { Link } from 'react-router';
+import moment from 'moment';
+import _ from 'lodash';
+import Info from './application/info';
+import Keys from './application/keys';
+import Console from './application/console';
+import Pandapush from '../../client/dist/client';
 
-var React        = require('react'),
-    Link         = require('react-router').Link,
-    moment       = require('moment'),
-    _            = require('lodash'),
-    Info         = require('./application/info'),
-    Keys         = require('./application/keys'),
-    Console      = require('./application/console'),
-    Pandapush    = require('../../client/dist/client');
+class Application extends React.Component {
+  state = {
+    app: {
+      application_id: "?",
+      keys: {},
+      admins: []
+    },
+    stats: {}
+  }
 
-module.exports = React.createClass({
-  getInitialState: function() {
-    return {
-      app: {
-        application_id: "?",
-        keys: {},
-        admins: []
-      },
-      stats: {}
-    };
-  },
-
-  loadData: function() {
+  loadData() {
     fetch('/admin/api/applications', { credentials: 'same-origin', })
       .then(response => response.json())
       .then(json => {
@@ -31,18 +27,18 @@ module.exports = React.createClass({
       .catch(e => {
         console.log('error getting applications', e);
       });
-  },
+  }
 
-  handleStats: function(source, received, stats) {
+  handleStats(source, received, stats) {
     this.state.stats[source] = {
       received: received,
       stats: stats
     };
 
     this.forceUpdate();
-  },
+  }
 
-  getToken: function(appId, channel, presence, done) {
+  getToken(appId, channel, presence, done) {
     fetch('/admin/api/application/' + appId + '/token', {
       method: 'POST',
       credentials: 'same-origin',
@@ -62,9 +58,9 @@ module.exports = React.createClass({
       .catch(e => {
         console.log('error getting token', e);
       });
-  },
+  }
 
-  createClient: function() {
+  createClient() {
     this.client = new Pandapush.Client('/push');
     this.client.addExtension({
       outgoing: function(message, callback) {
@@ -89,36 +85,24 @@ module.exports = React.createClass({
         else {
           callback(message);
         }
-      }.bind(this),
-      incoming: function(message, callback) {
-        if (!message.data) message.data = {};
-
-        // wrap up the message object so metadata gets sent up to
-        // our consumer.
-        message.data = {
-          data: message.data,
-          channel: message.channel,
-          received: moment()
-        }
-        callback(message);
-      }
+      }.bind(this)
     });
-  },
+  }
 
-  componentDidMount: function() {
+  componentDidMount() {
     this.loadData();
 
     this.createClient();
     this.client.subscribe('/' + this.props.params.id + '/meta/statistics', function(msg) {
       this.handleStats(msg.data.source, msg.received, msg.data.stats);
     }.bind(this));
-  },
+  }
 
-  handleReload: function() {
+  handleReload = (e) => {
     this.loadData();
-  },
+  }
 
-  render: function() {
+  render() {
     return (
       <div className="container">
         <h1>{this.state.app.name} <span style={{ fontSize: '0.6em' }}>(<span className="identifier">{this.props.params.id}</span>)</span></h1>
@@ -141,6 +125,8 @@ module.exports = React.createClass({
           })}
         </div>
       </div>
-    );
+    )
   }
-});
+}
+
+module.exports = Application;

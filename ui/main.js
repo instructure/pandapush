@@ -1,30 +1,23 @@
-'use strict';
-
-var React              = require('react'),
-    render             = require('react-dom').render,
-    Router             = require('react-router').Router,
-    Route              = require('react-router').Route,
-    IndexRoute         = require('react-router').IndexRoute,
-    IndexRedirect      = require('react-router').IndexRedirect,
-    Link               = require('react-router').Link,
-    hashHistory        = require('react-router').hashHistory,
-    Faye               = window.Faye,
-    Applications       = require('./components/applications'),
-    Application        = require('./components/application'),
-    ApplicationInfo    = require('./components/application/info'),
-    ApplicationKeys    = require('./components/application/keys'),
-    ApplicationConsole = require('./components/application/console');
+import React from 'react';
+import { render } from 'react-dom';
+import { Router, Route, IndexRoute, IndexRedirect, Link, hashHistory } from 'react-router';
+import Applications from './components/applications';
+import Application from './components/application';
+import ApplicationInfo from './components/application/info';
+import ApplicationKeys from './components/application/keys';
+import ApplicationConsole from './components/application/console';
 
 window.React = React; // for the React chrome extension
 
-var App = React.createClass({
-  getInitialState: function() {
-    return {
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
       username: ""
     };
-  },
+  }
 
-  componentDidMount: function() {
+  componentDidMount() {
     fetch('/admin/api/info', { credentials: 'same-origin', })
       .then(response => response.json())
       .then(json => {
@@ -34,9 +27,9 @@ var App = React.createClass({
       }).catch(e => {
         console.log('parsing failed', e);
       });
-  },
+  }
 
-  render: function() {
+  render() {
     return (
       <div>
         <nav className="navbar navbar-default" role="navigation">
@@ -69,7 +62,7 @@ var App = React.createClass({
       </div>
     );
   }
-});
+};
 
 render((
   <Router history={hashHistory}>
