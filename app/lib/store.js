@@ -64,14 +64,14 @@ exports.init = function(bayeux, done) {
   }
   else if (process.env.DATA_STORE == "DYNAMO") {
     if (!process.env.AWS_REGION ||
-        !process.env.DYNAMO_TABLE_APPLICATIONS ||
-        !process.env.DYNAMO_TABLE_KEYS) {
-      throw "missing aws/dynamo configuration - AWS_REGION, DYNAMO_TABLE_APPLICATIONS, DYNAMO_TABLE_KEYS required";
+        !process.env.DYNAMO_APPLICATIONS ||
+        !process.env.DYNAMO_KEYS) {
+      throw "missing aws/dynamo configuration - AWS_REGION, DYNAMO_APPLICATIONS, DYNAMO_KEYS required";
     }
 
     store = require('./stores/dynamo')({
-      applications: process.env.DYNAMO_TABLE_APPLICATIONS,
-      keys:         process.env.DYNAMO_TABLE_KEYS
+      applications: process.env.DYNAMO_APPLICATIONS,
+      keys:         process.env.DYNAMO_KEYS
     });
   }
   else {
