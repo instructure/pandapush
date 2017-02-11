@@ -38,7 +38,7 @@ exports.getAllForUser = function(userId, done) {
     }
 
     if (_.indexOf(rootAdmins, userId) < 0) {
-      applications = _.pick(applications, function(app) {
+      applications = _.filter(applications, function(app) {
         return _.indexOf(app.admins, userId) >= 0;
       });
     }
