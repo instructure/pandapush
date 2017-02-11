@@ -4,7 +4,7 @@ var statsd = require('./statsd'),
 
 var interval = process.env.CONNECTIONS_STATS_INTERVAL || 5000;
 
-module.exports = function(http) {
+module.exports = function(http, log) {
   var connections = 0,
       wsConnections = 0;
 
@@ -24,10 +24,12 @@ module.exports = function(http) {
     });
   });
 
+  const sourceId = process.env.HOSTNAME + '-' + process.pid;
+
   // periodically send to the number of open connections to all servers
   function sendStats() {
     bayeux.getInternalClient().publish('/internal/meta/statistics', {
-      source: process.env.HOSTNAME + '-' + process.pid,
+      source: sourceId,
       stats: {
         connections: connections,
         wsConnections: wsConnections
@@ -52,6 +54,11 @@ module.exports = function(http) {
       totalConnections += stat.connections;
       totalWsConnections += stat.wsConnections;
     });
+
+    log.info('local_http=' + stats[sourceId].connections +
+             ' local_ws=' + stats[sourceId].wsConnections +
+             ' http=' + totalConnections +
+             ' ws=' + totalWsConnections);
 
     statsd.gauge('connections.http', totalConnections);
     statsd.gauge('connections.ws', totalWsConnections);

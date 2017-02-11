@@ -1,4 +1,5 @@
 var bunyan = require('bunyan');
+var statsd = require('./statsd');
 
 var log_streams = [];
 
@@ -48,16 +49,8 @@ exports.middleware = function(req, res, next) {
       'response_length': res['_headers']['content-length']
     }, "%s %s finished in %d", req.method, req.url, duration);
 
-    var stats = {
-      'destination': 'statsd',
-      'increment': [
-        'responses.all.' + res.statusCode
-      ],
-      'timing': {
-        'duration.all': duration,
-      }
-    };
-    req.log.info(stats);
+    statsd.increment('responses.all.' + res.statusCode);
+    statsd.timing('duration.all.' + duration);
   };
 
   res.on('finish', logResponse);

@@ -10,6 +10,15 @@ redis2:
     - "6379"
   command: redis-server --save ""
 
+statsd:
+  image: hopsoft/graphite-statsd
+  ports:
+    - "80"
+    - "8125/udp"
+  environment:
+    VIRTUAL_HOST: pandapush-graphite.docker
+    VIRTUAL_PORT: 80
+
 dynamo:
   build: docker/dynamo
   command: -dbPath /var/lib/dynamodb
@@ -40,6 +49,7 @@ web:
   links:
     - redis1
     - redis2
+    - statsd
   environment:
     VIRTUAL_HOST: pandapush.docker
     VIRTUAL_PORT: 3000
@@ -48,3 +58,5 @@ web:
     REDIS_HOSTS: redis1:6379,redis2:6379
     DATA_STORE: FILE
     NODE_ENV: development
+    STATSD_HOST: statsd
+    STATSD_PORT: 8125

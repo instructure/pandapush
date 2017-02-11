@@ -85,7 +85,7 @@ if (!process.env.REDIS_HOSTS) {
 bayeux.attach(server);
 
 // set up http metric gatherer (needs to happen after bayeux.attach)
-httpMetrics(server);
+httpMetrics(server, logger.log);
 
 
 // configure Express application
