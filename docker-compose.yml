@@ -55,7 +55,9 @@ web:
     VIRTUAL_PORT: 3000
     ADMIN_USERNAME: admin
     ADMIN_PASSWORD: password
-    REDIS_HOSTS: redis1:6379,redis2:6379
+    REDIS_URL_ENV_VARS: REDIS1_URL,REDIS2_URL
+    REDIS1_URL: tcp://redis1:6379
+    REDIS2_URL: tcp://redis2:6379
     DATA_STORE: FILE
     NODE_ENV: development
     STATSD_HOST: statsd

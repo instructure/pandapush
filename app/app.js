@@ -76,7 +76,7 @@ else if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
 
 // If redis conn info was not provided, start our own local process
 // This is mostly for local development.
-if (!process.env.REDIS_HOSTS) {
+if (!process.env.REDIS_HOSTS && !process.env.REDIS_URL_ENV_VARS) {
   spawn("/usr/bin/redis-server", ["--port", "6379"], { detached: true });
   process.env.REDIS_HOSTS = "localhost:6379";
 }

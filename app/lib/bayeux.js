@@ -3,7 +3,8 @@ var Faye     = require('faye'),
     crypto   = require('crypto'),
     auth     = require('./extensions/auth'),
     metrics  = require('./extensions/metrics'),
-    presence = require('faye-presence');
+    presence = require('faye-presence'),
+    parseUrl = require('url').parse;
 
 
 var instance = null,
@@ -21,9 +22,21 @@ exports.getInternalClient = function() {
 };
 
 exports.attach = function(server) {
-  var redisHosts = [];
+  var redisHostList = [];
+
   if (process.env.REDIS_HOSTS) {
-    redisHosts = process.env.REDIS_HOSTS.split(',').map(function(hostAndPort) {
+    redisHostList = process.env.REDIS_HOSTS.split(',');
+  } else if (process.env.REDIS_URL_ENV_VARS) {
+    redisHostList = process.env.REDIS_URL_ENV_VARS.split(',').map(function(envVar) {
+      var url = process.env[envVar];
+      var parsedUrl = parseUrl(url);
+      return parsedUrl.host; // this is host:port, which is what we want in the array
+    });
+  }
+
+  var redisHosts = [];
+  if (redisHostList) {
+    redisHosts = redisHostList.map(function(hostAndPort) {
       var ary = hostAndPort.split(':'),
           host = ary[0],
           port = ary[1];
@@ -66,7 +79,7 @@ exports.attach = function(server) {
 
   presence.setup(bayeux, internalClient, {
     channelRe: /^\/\w+\/presence\//,
-    servers: process.env.REDIS_HOSTS.split(',')
+    servers: redisHostList
   });
 
   metrics.setup(bayeux, internalClient);
