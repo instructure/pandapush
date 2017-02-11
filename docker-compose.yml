@@ -40,7 +40,9 @@ webpack:
 
 web:
   build: .
-  command: node ./bin/create_dynamo_tables.js && ./node_modules/.bin/nodemon --watch app/ app/app.js
+  command: bash -c "
+    node ./bin/create_dynamo_tables.js &&
+    ./node_modules/.bin/nodemon --watch app/ app/app.js"
   volumes:
     - ".:/usr/src/app"
   links:
