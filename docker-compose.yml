@@ -20,10 +20,7 @@ statsd:
     VIRTUAL_PORT: 80
 
 dynamo:
-  build: docker/dynamo
-  command: -dbPath /var/lib/dynamodb
-  volumes:
-    - "./docker/data/dynamo:/var/lib/dynamodb"
+  image: instructure/dynamo-local-admin
   ports:
     - "8000"
   environment:
@@ -43,13 +40,14 @@ webpack:
 
 web:
   build: .
-  command: ./node_modules/.bin/nodemon --watch app/ app/app.js
+  command: node ./bin/create_dynamo_tables.js && ./node_modules/.bin/nodemon --watch app/ app/app.js
   volumes:
     - ".:/usr/src/app"
   links:
     - redis1
     - redis2
     - statsd
+    - dynamo
   environment:
     VIRTUAL_HOST: pandapush.docker
     VIRTUAL_PORT: 3000
@@ -58,7 +56,13 @@ web:
     REDIS_URL_ENV_VARS: REDIS1_URL,REDIS2_URL
     REDIS1_URL: tcp://redis1:6379
     REDIS2_URL: tcp://redis2:6379
-    DATA_STORE: FILE
+    DATA_STORE: DYNAMO
+    DYNAMO_APPLICATIONS: dev_applications
+    DYNAMO_KEYS: dev_keys
+    DYNAMO_ENDPOINT: http://dynamo:8000/
+    AWS_REGION: us-east-1
+    AWS_ACCESS_KEY_ID: key
+    AWS_SECRET_ACCESS_KEY: secret
     NODE_ENV: development
     STATSD_HOST: statsd
     STATSD_PORT: 8125
