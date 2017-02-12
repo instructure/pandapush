@@ -82,85 +82,91 @@ class Console extends React.Component {
     });
   }
 
+  handleUnsubscribe = (e) => {
+    e.preventDefault();
+
+    this.currentSubscription.cancel();
+    this.currentSubscription = null;
+
+    this.setState({
+      subscribed: false
+    });
+  }
+
   handleSubscribe = (e) => {
     e.preventDefault();
 
     const channel = this.subChannel.get();
 
-    var doSubscribe = function() {
-      const presence = (channel.split('/')[2] === 'presence');
-      let presenceId, presenceData = null;
+    const presence = (channel.split('/')[2] === 'presence');
+    let presenceId, presenceData = null;
 
-      if (presence) {
-        const presenceId = this.presenceIdInput.value || this.props.username;
-        presenceData = {};
-        const rawPresenceData = this.presenceDataInput.value;
-        if (rawPresenceData) {
-          try {
-            presenceData = JSON.parse(rawPresenceData);
-          } catch(e) {
-            alert('Presence Data must be valid JSON.\n\n' + e.message);
-            return;
-          }
-        }
-        presenceData.id = presenceId;
-      }
-
-      this.props.getToken(this.props.app.application_id, channel, presenceData, function(err, token) {
-        if (err) {
-          alert('Error getting token', err);
+    if (presence) {
+      const presenceId = this.presenceIdInput.value || this.props.username;
+      presenceData = {};
+      const rawPresenceData = this.presenceDataInput.value;
+      if (rawPresenceData) {
+        try {
+          presenceData = JSON.parse(rawPresenceData);
+        } catch(e) {
+          alert('Presence Data must be valid JSON.\n\n' + e.message);
           return;
         }
+      }
+      presenceData.id = presenceId;
+    }
 
-        this.props.client.subscribe(channel, token, presenceData, function(message, channel) {
-          const event = {
-            data: message,
-            channel: channel,
-            received: moment()
-          };
+    this.props.getToken(this.props.app.application_id, channel, presenceData, (err, token) => {
+      if (err) {
+        alert('Error getting token', err);
+        return;
+      }
 
-          this.state.events.splice(0, 0, event);
-          this.state.events = this.state.events.splice(0, 50);
-          this.forceUpdate();
+      this.currentSubscription = this.props.client.subscribe(channel, token, presenceData, (message, channel) => {
+        const event = {
+          data: message,
+          channel: channel,
+          received: moment()
+        };
 
-          if (this.state.events.length >= 50) {
-            this.props.client.unsubscribe(this.state.subChannel);
-            this.setState({
-              subscribed: false
-            });
-          }
+        this.state.events.splice(0, 0, event);
+        this.state.events = this.state.events.splice(0, 50);
+        this.forceUpdate();
 
-          if (presence) {
-            const subscribers = this.state.subscribers || {};
+        if (this.state.events.length >= 50) {
+          this.props.client.unsubscribe(this.state.subChannel);
+          this.setState({
+            subscribed: false
+          });
+        }
 
-            const updatedSubscribers =
-              _({})
-                .extend(subscribers, message.subscribe || {})
-                .omit(_.keys(message.unsubscribe))
-                .value();
+        if (presence) {
+          const subscribers = this.state.subscribers || {};
 
-            this.setState({
-              subscribers: updatedSubscribers
-            });
-          }
-        }.bind(this));
-      }.bind(this));
+          const updatedSubscribers =
+            _({})
+              .extend(subscribers, message.subscribe || {})
+              .omit(_.keys(message.unsubscribe))
+              .value();
 
-      this.setState({
-        subChannel: channel,
-        subscribed: true,
-        subscribers: {},
-        events: []
+          this.setState({
+            subscribers: updatedSubscribers
+          });
+        }
       });
-    }.bind(this);
 
-    if (this.state.subChannel) {
-      this.props.client.unsubscribe(this.state.subChannel);
-      doSubscribe();
-    }
-    else {
-      doSubscribe();
-    }
+      this.currentSubscription.then(() => {
+        this.setState({ subscribing: false });
+      });
+    });
+
+    this.setState({
+      subChannel: channel,
+      subscribed: true,
+      subscribing: true,
+      subscribers: {},
+      events: []
+    });
   }
 
   updateChannelParams = (channel, newParams) => {
@@ -381,7 +387,7 @@ class Console extends React.Component {
         </div>
 
         <div className="row">
-          <form onSubmit={this.handleSubscribe} className="form-horizontal" role="form">
+          <form className="form-horizontal" role="form">
             <div className="form-group">
               <label className="col-sm-2 control-label" htmlFor="postChannel">Subscribe to</label>
               <div className="col-sm-6">
@@ -401,11 +407,22 @@ class Console extends React.Component {
             <div className="form-group">
               <label className="col-sm-2 control-label"></label>
               <div className="col-sm-4">
-                <button
-                  type="submit"
-                  disabled={this.channelButtonDisabled(this.props.location.query.subChannelPath)}
-                  className="btn btn-default"
-                  >Subscribe</button> (for 50 events)
+                { this.state.subscribed ?
+                    <button
+                      type="submit"
+                      onClick={this.handleUnsubscribe}
+                      className="btn btn-default"
+                      >Unsubscribe</button>
+                  :
+                    <span>
+                      <button
+                        type="submit"
+                        onClick={this.handleSubscribe}
+                        disabled={this.channelButtonDisabled(this.props.location.query.subChannelPath)}
+                        className="btn btn-default"
+                        >Subscribe</button> (for 50 events)
+                    </span>
+                }
               </div>
             </div>
           </form>
