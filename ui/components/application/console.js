@@ -36,6 +36,9 @@ class Console extends React.Component {
 
     const channel = this.pubChannel.get();
     let payload = this.pubPayloadInput.value;
+    if (payload === '') {
+      payload = '{}';
+    }
 
     try {
       payload = JSON.parse(payload);
@@ -160,21 +163,19 @@ class Console extends React.Component {
     }
   }
 
-  updateChannelParams = (channel) => {
-    return function(newParams) {
-      var params = this.props.location.query;
-      params[channel + 'Type'] = newParams.channelType;
-      params[channel + 'Path'] = newParams.path;
+  updateChannelParams = (channel, newParams) => {
+    var params = this.props.location.query;
+    params[channel + 'Type'] = newParams.channelType;
+    params[channel + 'Path'] = newParams.path;
 
-      this.context.router.replace({
-        pathname: this.props.location.pathname,
-        query: params
-      });
+    this.context.router.replace({
+      pathname: this.props.location.pathname,
+      query: params
+    });
 
-      this.setState({
-        presenceSub: (newParams.channelType === 'presence')
-      });
-    }.bind(this);
+    this.setState({
+      presenceSub: (newParams.channelType === 'presence')
+    });
   }
 
   handleFieldChange = (field, e) => {
@@ -334,6 +335,10 @@ class Console extends React.Component {
     return;
   }
 
+  channelButtonDisabled(path) {
+    return (typeof path === 'undefined' || path === '' || path.slice(-1) === '/');
+  }
+
   render() {
     return (
       <div className="container">
@@ -347,7 +352,7 @@ class Console extends React.Component {
                   applicationId={this.props.params.id}
                   type={this.props.location.query.pubChannelType || "public"}
                   path={this.props.location.query.pubChannelPath || ""}
-                  updateParams={this.updateChannelParams('pubChannel')} />
+                  updateParams={this.updateChannelParams.bind(this, 'pubChannel')} />
               </div>
             </div>
 
@@ -361,7 +366,10 @@ class Console extends React.Component {
             <div className="form-group">
               <label className="col-sm-2 control-label"></label>
               <div className="col-sm-4">
-                <button type="submit" className="btn btn-default">Publish</button>
+                <button
+                  type="submit"
+                  disabled={this.channelButtonDisabled(this.props.location.query.pubChannelPath)}
+                  className="btn btn-default">Publish</button>
                 {this.renderPublishStatus()}
               </div>
             </div>
@@ -382,7 +390,7 @@ class Console extends React.Component {
                   applicationId={this.props.params.id}
                   type={this.props.location.query.subChannelType || "public"}
                   path={this.props.location.query.subChannelPath || ""}
-                  updateParams={this.updateChannelParams('subChannel')}
+                  updateParams={this.updateChannelParams.bind(this, 'subChannel')}
                   showPresence='1'
                   showMeta='1' />
               </div>
@@ -393,7 +401,11 @@ class Console extends React.Component {
             <div className="form-group">
               <label className="col-sm-2 control-label"></label>
               <div className="col-sm-4">
-                <button type="submit" className="btn btn-default">Subscribe</button> (for 50 events)
+                <button
+                  type="submit"
+                  disabled={this.channelButtonDisabled(this.props.location.query.subChannelPath)}
+                  className="btn btn-default"
+                  >Subscribe</button> (for 50 events)
               </div>
             </div>
           </form>
