@@ -1,51 +1,46 @@
-var Faye     = require('faye'),
-    redis    = require('faye-redis-sharded'),
-    crypto   = require('crypto'),
-    auth     = require('./extensions/auth'),
-    metrics  = require('./extensions/metrics'),
-    presence = require('faye-presence'),
-    parseUrl = require('url').parse;
+const Faye = require('faye');
+const redis = require('faye-redis-sharded');
+const crypto = require('crypto');
+const auth = require('./extensions/auth');
+const metrics = require('./extensions/metrics');
+const presence = require('faye-presence');
+const parseUrl = require('url').parse;
 
+let externalClient, internalClient;
 
-var instance = null,
-    externalClient = null,
-    internalClient = null;
+const internalToken = crypto.randomBytes(256).toString('base64');
 
-var internalToken = crypto.randomBytes(256).toString('base64');
-
-exports.getClient = function() {
+exports.getClient = function () {
   return externalClient;
 };
 
-exports.getInternalClient = function() {
+exports.getInternalClient = function () {
   return internalClient;
 };
 
-exports.attach = function(server) {
-  var redisHostList = [];
-
+exports.attach = function (server) {
+  // an array of host:port strings
+  let redisHostList = [];
   if (process.env.REDIS_HOSTS) {
     redisHostList = process.env.REDIS_HOSTS.split(',');
   } else if (process.env.REDIS_URL_ENV_VARS) {
-    redisHostList = process.env.REDIS_URL_ENV_VARS.split(',').map(function(envVar) {
-      var url = process.env[envVar];
-      var parsedUrl = parseUrl(url);
+    redisHostList = process.env.REDIS_URL_ENV_VARS.split(',').map(function (envVar) {
+      const url = process.env[envVar];
+      const parsedUrl = parseUrl(url);
       return parsedUrl.host; // this is host:port, which is what we want in the array
     });
   }
 
-  var redisHosts = [];
+  // an array of objects with host and port keys
+  let redisHosts = [];
   if (redisHostList) {
-    redisHosts = redisHostList.map(function(hostAndPort) {
-      var ary = hostAndPort.split(':'),
-          host = ary[0],
-          port = ary[1];
-
-      return { host: host, port: port };
+    redisHosts = redisHostList.map(function (hostAndPort) {
+      const ary = hostAndPort.split(':');
+      return { host: ary[0], port: ary[1] };
     });
   }
 
-  var options = {
+  const options = {
     mount: '/push',
     timeout: 60
   };
@@ -56,13 +51,13 @@ exports.attach = function(server) {
       shards: redisHosts,
       redisOptions: {
         no_ready_check: true,
-        parser:'javascript',
+        parser: 'javascript',
         handleErrors: true
       }
     };
   }
 
-  var bayeux = instance = new Faye.NodeAdapter(options);
+  const bayeux = new Faye.NodeAdapter(options);
 
   bayeux.addExtension(auth(internalToken));
 
@@ -70,7 +65,7 @@ exports.attach = function(server) {
 
   internalClient = new Faye.Client(bayeux._server);
   internalClient.addExtension({
-    outgoing: function(message, callback) {
+    outgoing: function (message, callback) {
       message.ext = message.ext || {};
       message.ext.internalToken = internalToken;
       callback(message);

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router';
-import moment from 'moment';
 import _ from 'lodash';
 
 class Applications extends React.Component {
@@ -8,11 +7,11 @@ class Applications extends React.Component {
     applications: []
   }
 
-  componentDidMount() {
-    fetch('/admin/api/applications', { credentials: 'same-origin', })
+  componentDidMount () {
+    fetch('/admin/api/applications', { credentials: 'same-origin' })
       .then(response => response.json())
       .then(json => {
-        this.setState({ applications: json});
+        this.setState({ applications: json });
       })
       .catch(e => {
         console.log('error getting applications', e);
@@ -22,10 +21,10 @@ class Applications extends React.Component {
   handleAppSubmit = (e) => {
     e.preventDefault();
 
-    var name = this.newAppNameInput.value;
+    const name = this.newAppNameInput.value;
 
     if (!name) {
-      alert("Name is required!");
+      alert('Name is required!');
       return false;
     }
 
@@ -51,8 +50,8 @@ class Applications extends React.Component {
     return false;
   }
 
-  renderApplications() {
-    return _.map(this.state.applications, function(app) {
+  renderApplications () {
+    return _.map(this.state.applications, function (app) {
       return (
         <tr key={app.application_id}>
           <td className="identifier">
@@ -63,10 +62,10 @@ class Applications extends React.Component {
           <td>{app.created_by}</td>
         </tr>
       );
-    }.bind(this));
+    });
   }
 
-  render() {
+  render () {
     return (
       <div className="container">
         <h1>Applications</h1>
@@ -90,7 +89,7 @@ class Applications extends React.Component {
           <div className="form-group">
             <label className="col-sm-2 control-label" htmlFor="appName">Name</label>
             <div className="col-sm-6">
-              <input type="text" className="form-control" ref={e => this.newAppNameInput = e} name="name" id="appName" />
+              <input type="text" className="form-control" ref={e => (this.newAppNameInput = e)} name="name" id="appName" />
             </div>
           </div>
           <div className="form-group">
@@ -107,6 +106,6 @@ class Applications extends React.Component {
 
 Applications.contextTypes = {
   router: React.PropTypes.object.isRequired
-}
+};
 
 module.exports = Applications;

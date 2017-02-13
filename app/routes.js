@@ -1,9 +1,9 @@
-var admin   = require('./controllers/admin_controller'),
-    channel = require('./controllers/channel_controller');
+const admin = require('./controllers/admin_controller');
+const channel = require('./controllers/channel_controller');
 
-exports.map = function(app, auth) {
+exports.map = function (app, auth) {
   app.post(/^\/channel\/([a-zA-Z0-9]+)\/(public|private)((?:\/[a-zA-Z0-9-_~]+)+)$/, channel.post);
-  app.get('/health_check.json', function(req, res) {
+  app.get('/health_check.json', function (req, res) {
     res.json(200, {});
   });
 
@@ -15,7 +15,7 @@ exports.map = function(app, auth) {
     app.get('/admin/api/applications', auth.blocker, admin.getApplications);
     app.post('/admin/api/applications', auth.blocker, admin.createApplication);
     app.post('/admin/api/application/:applicationId/keys', auth.blocker, admin.generateKey);
-    app.post('/admin/api/application/:applicationId/token', auth.blocker, admin.generateToken)
-    app.post('/admin/api/application/:applicationId/keys/:keyId/token', auth.blocker, admin.generateToken)
+    app.post('/admin/api/application/:applicationId/token', auth.blocker, admin.generateToken);
+    app.post('/admin/api/application/:applicationId/keys/:keyId/token', auth.blocker, admin.generateToken);
   }
-}
+};

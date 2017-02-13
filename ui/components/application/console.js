@@ -4,7 +4,7 @@ import _ from 'lodash';
 import ChannelPicker from '../channel_picker';
 
 class Console extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props);
 
     this.state = {
@@ -15,11 +15,11 @@ class Console extends React.Component {
     };
   }
 
-  loadData() {
-    fetch('/admin/api/applications', { credentials: 'same-origin', })
+  loadData () {
+    fetch('/admin/api/applications', { credentials: 'same-origin' })
       .then(response => response.json())
       .then(json => {
-        var app = _.find(json, { application_id: this.props.params.id });
+        const app = _.find(json, { application_id: this.props.params.id });
         this.setState({ app: app });
       })
       .catch(e => {
@@ -27,7 +27,7 @@ class Console extends React.Component {
       });
   }
 
-  componentDidMount() {
+  componentDidMount () {
     this.loadData();
   }
 
@@ -42,15 +42,14 @@ class Console extends React.Component {
 
     try {
       payload = JSON.parse(payload);
-    }
-    catch(e) {
+    } catch (e) {
       alert('Payload must be valid JSON.\n\n' + e.message);
       return;
     }
 
     this.props.getToken(this.props.app.application_id, channel, null, (err, token) => {
       if (err) {
-        alert("error getting token.\n\n" + err);
+        alert('error getting token.\n\n' + err);
         return;
       }
 
@@ -58,7 +57,7 @@ class Console extends React.Component {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
-          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Type': 'application/json; charset=utf-8'
         },
         body: JSON.stringify(payload)
       })
@@ -78,7 +77,7 @@ class Console extends React.Component {
             });
           });
         }
-      })
+      });
     });
   }
 
@@ -99,16 +98,16 @@ class Console extends React.Component {
     const channel = this.subChannel.get();
 
     const presence = (channel.split('/')[2] === 'presence');
-    let presenceId, presenceData = null;
+    let presenceData = null;
 
     if (presence) {
       const presenceId = this.presenceIdInput.value || this.props.username;
       presenceData = {};
-      const rawPresenceData = this.presenceDataInput.value;
+      const rawPresenceData = this.presenceDataInput.value || '{}';
       if (rawPresenceData) {
         try {
           presenceData = JSON.parse(rawPresenceData);
-        } catch(e) {
+        } catch (e) {
           alert('Presence Data must be valid JSON.\n\n' + e.message);
           return;
         }
@@ -134,7 +133,11 @@ class Console extends React.Component {
         this.forceUpdate();
 
         if (this.state.events.length >= 50) {
-          this.props.client.unsubscribe(this.state.subChannel);
+          if (this.currentSubscription) {
+            this.currentSubscription.cancel();
+            this.currentSubscription = null;
+          }
+
           this.setState({
             subscribed: false
           });
@@ -170,7 +173,7 @@ class Console extends React.Component {
   }
 
   updateChannelParams = (channel, newParams) => {
-    var params = this.props.location.query;
+    const params = this.props.location.query;
     params[channel + 'Type'] = newParams.channelType;
     params[channel + 'Path'] = newParams.path;
 
@@ -185,12 +188,11 @@ class Console extends React.Component {
   }
 
   handleFieldChange = (field, e) => {
-    var params = this.props.location.query;
-    var value = this[field].value;
+    const params = this.props.location.query;
+    const value = this[field].value;
     if (value.length > 1024) {
       params[field] = '';
-    }
-    else {
+    } else {
       params[field] = value;
     }
 
@@ -200,41 +202,37 @@ class Console extends React.Component {
     });
   }
 
-  renderEventsTable() {
-    if (this.state.events.length == 0) {
-      return "Nothing yet.";
+  renderEventsTable () {
+    if (this.state.events.length === 0) {
+      return 'Nothing yet.';
     }
 
-    var ary = this.state.subChannel.split('*', 2);
-    var prefix = null;
+    const ary = this.state.subChannel.split('*', 2);
+    let prefix = null;
     if (ary.length > 1) {
       prefix = ary[0];
     }
 
-    var events = _.omit(this.state.events, function(ev) {
-      return !ev.channel;
-    });
+    const events = _(this.state.events)
+      .omit(ev => !ev.channel)
+      .map((ev, index) => {
+        const shortenedChannel = ev.channel.replace(prefix, '');
+        let channelTd = null;
+        if (prefix) {
+          channelTd = <td>{shortenedChannel}</td>;
+        }
 
-    events = _.map(events, function(ev, index) {
-      var shortenedChannel = ev.channel.replace(prefix, "");
-      var channelTd = null;
-      if (prefix) {
-        channelTd = <td>{shortenedChannel}</td>;
-      }
+        return (
+          <tr key={`${ev.channel}-${ev.received && ev.received.toISOString()}`}>
+            {channelTd}
+            <td>{ev.received && ev.received.toISOString()}</td>
+            <td><pre>{JSON.stringify(ev.data, null, 2)}</pre></td>
+          </tr>
+        );
+      })
+      .value();
 
-      return (
-        <tr key={`${ev.channel}-${ev.received && ev.received.toISOString()}`}>
-          {channelTd}
-          <td>{ev.received && ev.received.toISOString()}</td>
-          <td><pre>{JSON.stringify(ev.data, null, 2)}</pre></td>
-        </tr>
-      );
-    });
-
-    var channelTh = null;
-    if (prefix) {
-      channelTh = <th>Channel</th>
-    }
+    const channelTh = prefix ? <th>Channel</th> : null;
 
     return (
       <table className="table">
@@ -251,14 +249,14 @@ class Console extends React.Component {
     );
   }
 
-  renderEvents() {
+  renderEvents () {
     if (!this.state.subChannel) {
       return null;
     }
 
-    var subscribedImg = null;
+    let subscribedImg = null;
     if (this.state.subscribed) {
-      subscribedImg = <img src="/loader.gif" />;
+      subscribedImg = <img src='/loader.gif' />;
     }
 
     return (
@@ -278,12 +276,12 @@ class Console extends React.Component {
     );
   }
 
-  renderSubscribers() {
+  renderSubscribers () {
     if (!(this.props.location.query.subChannelType === 'presence' && this.state.subChannel)) {
       return <span />;
     }
 
-    var r = _.map(this.state.subscribers, function(data, id) {
+    const r = _.map(this.state.subscribers, (data, id) => {
       return <span key={id} className="label label-primary subscriber">{id}</span>;
     });
 
@@ -299,21 +297,21 @@ class Console extends React.Component {
     );
   }
 
-  renderPresenceFields() {
+  renderPresenceFields () {
     if (this.props.location.query.subChannelType === 'presence') {
       return (
         <div>
           <div className="form-group">
             <label className="col-sm-2 control-label">Presence ID</label>
             <div className="col-sm-4">
-              <input type="text" onChange={this.handleFieldChange.bind(this, 'presenceIdInput')} ref={e => this.presenceIdInput = e} className="form-control" placeholder={this.props.username} defaultValue={this.props.location.query.presenceIdInput} />
+              <input type="text" onChange={this.handleFieldChange.bind(this, 'presenceIdInput')} ref={e => (this.presenceIdInput = e)} className="form-control" placeholder={this.props.username} defaultValue={this.props.location.query.presenceIdInput} />
             </div>
           </div>
 
           <div className="form-group">
             <label className="col-sm-2 control-label">Presence Data</label>
             <div className="col-sm-4">
-              <textarea onChange={this.handleFieldChange.bind(this, 'presenceDataInput')} ref={e => this.presenceDataInput = e} className="form-control" rows="3" defaultValue={this.props.location.query.presenceDataInput} />
+              <textarea onChange={this.handleFieldChange.bind(this, 'presenceDataInput')} ref={e => (this.presenceDataInput = e)} className="form-control" rows="3" defaultValue={this.props.location.query.presenceDataInput} />
             </div>
           </div>
         </div>
@@ -323,7 +321,7 @@ class Console extends React.Component {
     return <span />;
   }
 
-  renderPublishStatus() {
+  renderPublishStatus () {
     if (this.state.publishStatus === true) {
       return <span style={{paddingLeft: '10px'}} className="text-success">Sent.</span>;
     }
@@ -341,11 +339,11 @@ class Console extends React.Component {
     return;
   }
 
-  channelButtonDisabled(path) {
+  channelButtonDisabled (path) {
     return (typeof path === 'undefined' || path === '' || path.slice(-1) === '/');
   }
 
-  render() {
+  render () {
     return (
       <div className="container">
         <div className="row">
@@ -354,10 +352,10 @@ class Console extends React.Component {
               <label className="col-sm-2 control-label" htmlFor="postChannel">Publish to</label>
               <div className="col-sm-6">
                 <ChannelPicker
-                  ref={e => this.pubChannel = e}
+                  ref={e => (this.pubChannel = e)}
                   applicationId={this.props.params.id}
-                  type={this.props.location.query.pubChannelType || "public"}
-                  path={this.props.location.query.pubChannelPath || ""}
+                  type={this.props.location.query.pubChannelType || 'public'}
+                  path={this.props.location.query.pubChannelPath || ''}
                   updateParams={this.updateChannelParams.bind(this, 'pubChannel')} />
               </div>
             </div>
@@ -365,7 +363,7 @@ class Console extends React.Component {
             <div className="form-group">
               <label className="col-sm-2 control-label">Payload</label>
               <div className="col-sm-4">
-                <textarea onChange={this.handleFieldChange.bind(this, 'pubPayloadInput')} ref={e => this.pubPayloadInput = e} className="form-control" rows="3" defaultValue={this.props.location.query.pubPayload} />
+                <textarea onChange={this.handleFieldChange.bind(this, 'pubPayloadInput')} ref={e => (this.pubPayloadInput = e)} className="form-control" rows="3" defaultValue={this.props.location.query.pubPayload} />
               </div>
             </div>
 
@@ -392,10 +390,10 @@ class Console extends React.Component {
               <label className="col-sm-2 control-label" htmlFor="postChannel">Subscribe to</label>
               <div className="col-sm-6">
                 <ChannelPicker
-                  ref={e => this.subChannel = e}
+                  ref={e => (this.subChannel = e)}
                   applicationId={this.props.params.id}
-                  type={this.props.location.query.subChannelType || "public"}
-                  path={this.props.location.query.subChannelPath || ""}
+                  type={this.props.location.query.subChannelType || 'public'}
+                  path={this.props.location.query.subChannelPath || ''}
                   updateParams={this.updateChannelParams.bind(this, 'subChannel')}
                   showPresence='1'
                   showMeta='1' />
@@ -407,14 +405,13 @@ class Console extends React.Component {
             <div className="form-group">
               <label className="col-sm-2 control-label"></label>
               <div className="col-sm-4">
-                { this.state.subscribed ?
-                    <button
+                { this.state.subscribed
+                  ? <button
                       type="submit"
                       onClick={this.handleUnsubscribe}
                       className="btn btn-default"
                       >Unsubscribe</button>
-                  :
-                    <span>
+                  : <span>
                       <button
                         type="submit"
                         onClick={this.handleSubscribe}

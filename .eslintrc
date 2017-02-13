@@ -1,0 +1,16 @@
+{
+  "parser": "babel-eslint",
+  "extends": "eslint-config-semistandard",
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "react/jsx-uses-vars": "error",
+    "no-var": "error",
+    "prefer-const": "warn"
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  }
+}

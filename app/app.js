@@ -2,36 +2,33 @@
 
 require('dotenv').load();
 
-var http           = require('http'),
-    express        = require('express'),
-    session        = require('cookie-session'),
-    bodyParser     = require('body-parser'),
-    basicAuth      = require('basic-auth-connect'),
-    cas            = require('grand_master_cas'),
-    fs             = require('fs'),
-    path           = require('path'),
-    crypto         = require('crypto'),
-    spawn          = require('child_process').spawn,
-    bayeux         = require('./lib/bayeux'),
-    store          = require('./lib/store'),
-    cookieSessions = require('./lib/cookie_sessions'),
-    logger         = require('./lib/logger'),
-    statsd         = require('./lib/statsd'),
-    routes         = require('./routes'),
-    httpMetrics    = require('./lib/http_metrics');
+const http = require('http');
+const express = require('express');
+const session = require('cookie-session');
+const bodyParser = require('body-parser');
+const basicAuth = require('basic-auth-connect');
+const cas = require('grand_master_cas');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const spawn = require('child_process').spawn;
+const bayeux = require('./lib/bayeux');
+const store = require('./lib/store');
+const logger = require('./lib/logger');
+const routes = require('./routes');
+const httpMetrics = require('./lib/http_metrics');
 
-var app = express(),
-    server = http.Server(app);
-
+const app = express();
+const server = http.Server(app);
 
 // create session private key if one is not provided
 
-var sessionPrivateKey = process.env.SESSION_PRIVATE_KEY;
+let sessionPrivateKey = process.env.SESSION_PRIVATE_KEY;
 if (!sessionPrivateKey) {
-  var destdir = path.resolve(__dirname, '../localdata');
-  var filename = destdir + '/session.key';
+  const destdir = path.resolve(__dirname, '../localdata');
+  const filename = destdir + '/session.key';
 
-  console.log("WARNING: no SESSION_PRIVATE_KEY configured, using one in " + filename);
+  console.log('WARNING: no SESSION_PRIVATE_KEY configured, using one in ' + filename);
   if (!fs.existsSync(destdir)) {
     fs.mkdirSync(destdir);
   }
@@ -43,12 +40,11 @@ if (!sessionPrivateKey) {
   sessionPrivateKey = fs.readFileSync(filename);
 }
 
-
 // configure admin auth
-var adminAuth = {
-  logout: function(req, res, next) { next(); },
-  bouncer: function(req, res, next) { res.send(403, "Unauthorized"); },
-  blocker: function(req, res, next) { res.send(403, "Unauthorized"); }
+let adminAuth = {
+  logout: function (req, res, next) { next(); },
+  bouncer: function (req, res, next) { res.send(403, 'Unauthorized'); },
+  blocker: function (req, res, next) { res.send(403, 'Unauthorized'); }
 };
 
 if (process.env.CAS_HOST) {
@@ -61,14 +57,11 @@ if (process.env.CAS_HOST) {
   });
 
   adminAuth = cas;
-}
-else if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
-  var auth = basicAuth(process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD);
+} else if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
+  const auth = basicAuth(process.env.ADMIN_USERNAME, process.env.ADMIN_PASSWORD);
 
   adminAuth = {
-    logout: function(req, res, next) {
-      next();
-    },
+    logout: function (req, res, next) { next(); },
     bouncer: auth,
     blocker: auth
   };
@@ -77,8 +70,8 @@ else if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
 // If redis conn info was not provided, start our own local process
 // This is mostly for local development.
 if (!process.env.REDIS_HOSTS && !process.env.REDIS_URL_ENV_VARS) {
-  spawn("/usr/bin/redis-server", ["--port", "6379"], { detached: true });
-  process.env.REDIS_HOSTS = "localhost:6379";
+  spawn('/usr/bin/redis-server', ['--port', '6379'], { detached: true });
+  process.env.REDIS_HOSTS = 'localhost:6379';
 }
 
 // attach bayeux handlers
@@ -86,7 +79,6 @@ bayeux.attach(server);
 
 // set up http metric gatherer (needs to happen after bayeux.attach)
 httpMetrics(server, logger.log);
-
 
 // configure Express application
 
@@ -96,14 +88,13 @@ app.use(logger.middleware);
 app.use(session({ keys: [ sessionPrivateKey ] }));
 app.use(bodyParser.json());
 routes.map(app, adminAuth);
-app.use(express.static(__dirname + '/../ui/public'));
-
+app.use(express.static(path.join(__dirname, '../ui/public')));
 
 // start some utility modules
-store.init(bayeux, function() {
+store.init(bayeux, function () {
   // start server
-  var port = process.env.PORT || 3000;
-  server.listen(port, function() {
-    console.log("listening on port " + port);
+  const port = process.env.PORT || 3000;
+  server.listen(port, function () {
+    console.log('listening on port ' + port);
   });
 });

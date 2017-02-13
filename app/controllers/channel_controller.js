@@ -1,11 +1,10 @@
-var path   = require('path'),
-    bayeux = require('../lib/bayeux').getClient;
+const bayeux = require('../lib/bayeux').getClient;
 
-var unauthorized = function(res) {
+const unauthorized = function (res) {
   res.send(403, 'Unauthorized');
 };
 
-var authFromRequest = function(req) {
+const authFromRequest = function (req) {
   // first look for token in query string (least desired method)
   if (req.query.token) {
     return {
@@ -14,11 +13,11 @@ var authFromRequest = function(req) {
   }
 
   // extract auth from headers
-  var auth = req.get('authorization');
+  let auth = req.get('authorization');
   if (!auth) return;
 
-  var auth = auth.split(' ', 2);
-  if (auth.length < 2 || auth[1].length == 0) {
+  auth = auth.split(' ', 2);
+  if (auth.length < 2 || auth[1].length === 0) {
     return;
   }
 
@@ -31,28 +30,27 @@ var authFromRequest = function(req) {
       key: auth[1],
       secret: auth[2]
     };
-  }
-  else if (auth[0] === 'Token') {
+  } else if (auth[0] === 'Token') {
     return {
       token: auth[1]
-    }
+    };
   }
 
   return;
 };
 
-exports.post = function(req, res) {
-  var auth = authFromRequest(req);
+exports.post = function (req, res) {
+  const auth = authFromRequest(req);
   if (!auth) {
     return unauthorized(res);
   }
 
-  var applicationId = req.params[0],
-      type = req.params[1],
-      path = req.params[2];
+  const applicationId = req.params[0];
+  const type = req.params[1];
+  const path = req.params[2];
 
-  var channel = '/' + applicationId + '/' + type + path;
-  var payload = req.body;
+  const channel = '/' + applicationId + '/' + type + path;
+  const payload = req.body;
 
   if (!payload) {
     return res.send(400, 'No payload');
@@ -66,13 +64,13 @@ exports.post = function(req, res) {
   // we'll clean it out in a Faye extension.
   payload.__auth = auth;
 
-  pub = bayeux().publish(channel, payload);
+  const pub = bayeux().publish(channel, payload);
 
-  pub.callback(function() {
+  pub.callback(function () {
     res.send(200, 'OK');
   });
 
-  pub.errback(function(error) {
+  pub.errback(function (error) {
     res.send(400, error);
   });
-}
+};

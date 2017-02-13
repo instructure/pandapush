@@ -2,21 +2,16 @@
 
 'use strict';
 
-var Faye    = require('faye'),
-    program = require('commander'),
-    jwt     = require('jsonwebtoken'),
-    _       = require('lodash'),
-    async   = require('async');
+const Faye = require('faye');
+const program = require('commander');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
+const async = require('async');
 
-program
-  .version('0.0.1');
+program.version('0.0.1');
 
-function range(i) {
-  return i ? range1(i - 1).concat(i - 1) : []
-}
-
-function makeToken(channel, key, secret, pub, sub) {
-  var payload = {
+function makeToken (channel, key, secret, pub, sub) {
+  const payload = {
     keyId: key,
     channel: channel,
     pub: pub,
@@ -30,53 +25,53 @@ function makeToken(channel, key, secret, pub, sub) {
 program
   .command('loadtest <url> <appid> <keyid> <secret> <numusers> <pushesperuser> <pushrate>')
   .description('perform a loadtest')
-  .action(function(url, appid, keyid, secret, numusers, ppu, pushrate, options) {
-    var userIds = _.range(numusers);
+  .action(function (url, appid, keyid, secret, numusers, ppu, pushrate, options) {
+    const userIds = _.range(numusers);
 
-    var waitingReceive = numusers * ppu;
-    var waitingPush = numusers * ppu;
-    var subscribed = [];
+    let waitingReceive = numusers * ppu;
+    let waitingPush = numusers * ppu;
+    const subscribed = [];
 
-    async.parallelLimit(_.map(userIds, function(n) {
-      return function(done) {
-        var channel = '/' + appid + '/private/users/' + n;
-        var token = makeToken(channel, keyid, secret, false, true);
+    async.parallelLimit(_.map(userIds, function (n) {
+      return function (done) {
+        const channel = '/' + appid + '/private/users/' + n;
+        const token = makeToken(channel, keyid, secret, false, true);
 
-        var client = new Faye.Client(url);
+        const client = new Faye.Client(url);
         client.addExtension({
-          outgoing: function(message, callback) {
+          outgoing: function (message, callback) {
             message.ext = message.ext || {};
             message.ext.auth = { token: token };
             callback(message);
           }
         });
 
-        var start = Date.now();
-        client.subscribe(channel, function(message) {
+        const start = Date.now();
+        client.subscribe(channel, function (message) {
           waitingReceive -= 1;
           subscribed[n] -= 1;
-          console.log("" + n + " received message " + message.msg + " (waiting for " + waitingReceive + " more)");
-          if (waitingPush == 0 && waitingReceive == 0) {
-            console.log("exiting SUCCESS");
+          console.log(`${n} received message ${message.msg} (waiting for ${waitingReceive} more)`);
+          if (waitingPush === 0 && waitingReceive === 0) {
+            console.log('exiting SUCCESS');
             process.exit(0);
           }
-        }).then(function() {
+        }).then(function () {
           subscribed[n] = 0;
-          console.log("" + n + " subscribed in " + (Date.now() - start) + " ms (" + subscribed.length + " subscribed)");
+          console.log(`${n} subscribed in ${Date.now() - start} ms (${subscribed.length} subscribed)`);
           done();
-        }, function(err) {
-          console.log("" + n + " FAILED SUBSCRIBE in " + (Date.now() - start) + " ms");
-          console.log("err:", err);
+        }, function (err) {
+          console.log(`${n} FAILED SUBSCRIBE in ${Date.now() - start} ms`);
+          console.log('err:', err);
           done(err);
         });
       };
     }), 50);
 
     // wait 5 seconds before we start publishing
-    setTimeout(function() {
-      var client = new Faye.Client(url);
+    setTimeout(function () {
+      const client = new Faye.Client(url);
       client.addExtension({
-        outgoing: function(message, callback) {
+        outgoing: function (message, callback) {
           message.ext = message.ext || {};
           message.ext.auth = {
             key: keyid,
@@ -86,26 +81,25 @@ program
         }
       });
 
-      function doNext() {
-        var n = _.sample(_.keys(subscribed));
+      function doNext () {
+        const n = _.sample(_.keys(subscribed));
         subscribed[n] += 1;
         waitingPush -= 1;
 
-        var channel = '/' + appid + '/private/users/' + n;
-        var start = Date.now();
+        const channel = '/' + appid + '/private/users/' + n;
+        const start = Date.now();
         client.publish(channel, {
           msg: 'publish to ' + channel
-        }).then(function() {
-          console.log("" + n + " published in " + (Date.now() - start) + " ms");
-        }, function() {
-          console.log("" + n + " FAILED PUBLISH in " + (Date.now() - start) + " ms");
+        }).then(function () {
+          console.log(`${n} published in ${Date.now() - start} ms`);
+        }, function () {
+          console.log(`${n} FAILED PUBLISH in ${Date.now() - start} ms`);
         });
 
         if (waitingPush > 0) {
           setTimeout(doNext, 1000 / pushrate);
-        }
-        else {
-          console.log("done publishing");
+        } else {
+          console.log('done publishing');
         }
       }
       doNext();

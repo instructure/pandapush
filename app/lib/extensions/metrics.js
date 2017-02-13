@@ -1,11 +1,11 @@
-var channels = require('../channels'),
-    statsd   = require('../statsd'),
-    _        = require('lodash');
+const channels = require('../channels');
+const statsd = require('../statsd');
+const _ = require('lodash');
 
-exports.setup = function(bayeux, client) {
-  var stats, appStats;
+exports.setup = function (bayeux, client) {
+  let stats, appStats;
 
-  function resetStats() {
+  function resetStats () {
     stats = {
       handshake: 0,
       close: 0,
@@ -25,22 +25,22 @@ exports.setup = function(bayeux, client) {
 
   resetStats();
 
-  bayeux.on('handshake', function(clientId) {
+  bayeux.on('handshake', function (clientId) {
     stats.handshake += 1;
   });
 
-  bayeux.on('close', function(clientId) {
+  bayeux.on('close', function (clientId) {
     stats.close += 1;
   });
 
-  bayeux.on('disconnect', function(clientId) {
+  bayeux.on('disconnect', function (clientId) {
     stats.disconnect += 1;
   });
 
-  function getAppId(channel) {
-    var channelInfo = channels.parse(channel);
+  function getAppId (channel) {
+    const channelInfo = channels.parse(channel);
     if (!channelInfo) {
-      console.log("unknown channel: " + channel);
+      console.log('unknown channel: ' + channel);
       return;
     }
 
@@ -52,8 +52,8 @@ exports.setup = function(bayeux, client) {
     return channelInfo.applicationId;
   }
 
-  function incrementAppMetric(metric, channel) {
-    var appId = getAppId(channel);
+  function incrementAppMetric (metric, channel) {
+    const appId = getAppId(channel);
 
     if (appId) {
       metric[appId] = metric[appId] || 0;
@@ -61,47 +61,45 @@ exports.setup = function(bayeux, client) {
     }
   }
 
-  bayeux.on('subscribe', function(clientId, channel) {
+  bayeux.on('subscribe', function (clientId, channel) {
     stats.subscribe += 1;
     incrementAppMetric(appStats.subscribe, channel);
   });
 
-  bayeux.on('unsubscribe', function(clientId, channel) {
+  bayeux.on('unsubscribe', function (clientId, channel) {
     stats.unsubscribe += 1;
     incrementAppMetric(appStats.unsubscribe, channel);
   });
 
-  bayeux.on('publish', function(clientId, channel, data) {
+  bayeux.on('publish', function (clientId, channel, data) {
     stats.publish += 1;
     incrementAppMetric(appStats.publish, channel);
   });
 
-
-  var pushToStatsd = function(stats, appStats) {
-    _.each(stats, function(count, stat) {
+  const pushToStatsd = function (stats, appStats) {
+    _.each(stats, function (count, stat) {
       statsd.count(stat, count);
     });
 
-    _.each(appStats, function(appCounts, stat) {
-      _.each(appCounts, function(count, appId) {
-        var prefix = 'apps.' + appId;
+    _.each(appStats, function (appCounts, stat) {
+      _.each(appCounts, function (count, appId) {
         statsd.count('apps.' + appId + '.' + stat, count);
       });
     });
   };
 
-  var pushToClients = function(stats, appStats) {
+  const pushToClients = function (stats, appStats) {
     // TODO: revisit what stats to push out to clients
 
-    //_.each(stats.applications, function(appStats, appId) {
-    //  client.publish('/' + appId + '/meta/statistics', {
-    //    source: process.env.HOSTNAME + '-' + process.pid,
-    //    stats: appStats
-    //  })
-    //});
+    // _.each(stats.applications, function(appStats, appId) {
+    //   client.publish('/' + appId + '/meta/statistics', {
+    //     source: process.env.HOSTNAME + '-' + process.pid,
+    //     stats: appStats
+    //   })
+    // });
   };
 
-  var updateStatistics = function() {
+  const updateStatistics = function () {
     pushToStatsd(stats, appStats);
     pushToClients(stats, appStats);
 

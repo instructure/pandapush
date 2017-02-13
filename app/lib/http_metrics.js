@@ -1,25 +1,25 @@
-var statsd = require('./statsd'),
-    bayeux = require('./bayeux'),
-    _      = require('lodash');
+const statsd = require('./statsd');
+const bayeux = require('./bayeux');
+const _ = require('lodash');
 
-var interval = process.env.CONNECTIONS_STATS_INTERVAL || 5000;
+const interval = process.env.CONNECTIONS_STATS_INTERVAL || 5000;
 
-module.exports = function(http, log) {
-  var connections = 0,
-      wsConnections = 0;
+module.exports = function (http, log) {
+  let connections = 0;
+  let wsConnections = 0;
 
-  http.on('connection', function(socket) {
+  http.on('connection', function (socket) {
     connections += 1;
 
-    socket.on('close', function(error) {
+    socket.on('close', function () {
       connections -= 1;
     });
   });
 
-  http.on('upgrade', function(request, socket) {
+  http.on('upgrade', function (request, socket) {
     wsConnections += 1;
 
-    socket.on('close', function(error) {
+    socket.on('close', function () {
       wsConnections -= 1;
     });
   });
@@ -27,7 +27,7 @@ module.exports = function(http, log) {
   const sourceId = process.env.HOSTNAME + '-' + process.pid;
 
   // periodically send to the number of open connections to all servers
-  function sendStats() {
+  function sendStats () {
     bayeux.getInternalClient().publish('/internal/meta/statistics', {
       source: sourceId,
       stats: {
@@ -41,16 +41,16 @@ module.exports = function(http, log) {
   // collect all the responses from all clients for the interval * 2, aggregate
   // them, and send to statsd. (yes, this will result in duplicate information
   // to statsd, but that's fine because it's a gauge)
-  var stats = {};
-  bayeux.getInternalClient().subscribe("/internal/meta/statistics", function(data) {
+  let stats = {};
+  bayeux.getInternalClient().subscribe('/internal/meta/statistics', function (data) {
     stats[data.source] = data.stats;
   });
 
-  function sendStatsToStatsd() {
-    var totalConnections = 0,
-        totalWsConnections = 0;
+  function sendStatsToStatsd () {
+    let totalConnections = 0;
+    let totalWsConnections = 0;
 
-    _.each(_.values(stats), function(stat) {
+    _.each(_.values(stats), function (stat) {
       totalConnections += stat.connections;
       totalWsConnections += stat.wsConnections;
     });

@@ -1,39 +1,38 @@
-var bunyan = require('bunyan');
-var statsd = require('./statsd');
+const bunyan = require('bunyan');
+const statsd = require('./statsd');
 
-var log_streams = [];
+const logStreams = [];
 
 if (process.env.LOG_PATH) {
-  log_streams.push({
+  logStreams.push({
     level: 'trace',
     type: 'rotating-file',
     path: process.env.LOG_PATH + '/pandapush.log.json',
     period: '1h',
     count: 24
   });
-}
-else {
-  log_streams.push({
+} else {
+  logStreams.push({
     level: 'trace',
     stream: process.stdout
   });
 }
 
-var log = null;
+let log;
 exports.log = log = bunyan.createLogger({
   name: 'pandapush',
-  streams: log_streams
+  streams: logStreams
 });
 
-exports.middleware = function(req, res, next) {
+exports.middleware = function (req, res, next) {
   req.log = log.child({
     request_id: req.id
   });
 
-  var start = Date.now();
+  const start = Date.now();
 
-  var logResponse = function() {
-    var duration = Date.now() - start;
+  const logResponse = function () {
+    const duration = Date.now() - start;
 
     res.removeListener('finish', logResponse);
     res.removeListener('close', logResponse);
@@ -47,7 +46,7 @@ exports.middleware = function(req, res, next) {
       'duration': duration,
       'status': res.statusCode,
       'response_length': res['_headers']['content-length']
-    }, "%s %s finished in %d", req.method, req.url, duration);
+    }, '%s %s finished in %d', req.method, req.url, duration);
 
     statsd.increment('responses.all.' + res.statusCode);
     statsd.timing('duration.all.' + duration);

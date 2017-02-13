@@ -1,7 +1,7 @@
-var https = require('https');
+const https = require('https');
 
-module.exports = function(endpoint) {
-  var options = {};
+module.exports = function (endpoint) {
+  const options = {};
 
   if (endpoint) {
     options.endpoint = endpoint;
@@ -11,7 +11,7 @@ module.exports = function(endpoint) {
     options.sslEnabled = false;
   } else {
     // See: https://github.com/aws/aws-sdk-js/issues/116
-    var agent = new https.Agent();
+    const agent = new https.Agent();
     agent.maxSockets = 500;
     agent.rejectUnauthorized = true;
 

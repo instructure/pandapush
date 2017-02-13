@@ -4,24 +4,22 @@ import _ from 'lodash';
 
 class Keys extends React.Component {
   state = {
-    parsedExpires: ""
+    parsedExpires: ''
   }
 
   handleExpiresChange = (e) => {
-    var m = moment(e.target.value);
+    const m = moment(e.target.value);
     if (!m.isValid()) {
       this.setState({
-        parsedExpires: "Uhhhh.... (could not parse expires date)"
+        parsedExpires: 'Uhhhh.... (could not parse expires date)'
       });
-    }
-    else if (m.isBefore(moment())) {
+    } else if (m.isBefore(moment())) {
       this.setState({
-        parsedExpires: "Date is in the past."
+        parsedExpires: 'Date is in the past.'
       });
-    }
-    else {
+    } else {
       this.setState({
-        parsedExpires: "(" + m.toISOString() + ", " + m.fromNow() + ")"
+        parsedExpires: '(' + m.toISOString() + ', ' + m.fromNow() + ')'
       });
     }
 
@@ -31,26 +29,26 @@ class Keys extends React.Component {
   handleKeySubmit = (e) => {
     e.preventDefault();
 
-    var purpose = this.keyPurposeInput.value,
-        expiresRaw = this.keyExpiresInput.value;
+    const purpose = this.keyPurposeInput.value;
+    const expiresRaw = this.keyExpiresInput.value;
 
     if (!purpose) {
-      alert("Purpose is required!");
+      alert('Purpose is required!');
       return false;
     }
 
-    var m = moment(expiresRaw);
+    const m = moment(expiresRaw);
     if (!m.isValid()) {
-      alert("Expires is not valid.");
+      alert('Expires is not valid.');
       return false;
     }
 
     if (m.isBefore(moment())) {
-      alert("Expires is in the past.");
+      alert('Expires is in the past.');
       return false;
     }
 
-    var expires = m.toISOString();
+    const expires = m.toISOString();
 
     fetch('/admin/api/application/' + this.props.params.id + '/keys', {
       method: 'POST',
@@ -69,37 +67,40 @@ class Keys extends React.Component {
 
         this.props.reload();
 
-        this.keyPurposeInput.value = "";
-        this.keyExpiresInput.value = "";
-      })
+        this.keyPurposeInput.value = '';
+        this.keyExpiresInput.value = '';
+      });
 
     return false;
   }
 
-  renderKeys() {
-    return _.map(_.sortBy(_.values(this.props.app.keys), 'created_at'), function(key) {
-      var status = 'active';
-      if (key.revoked_at) {
-        status = 'revoked ' + key.revoked_at;
-      }
-      else if (moment(key.expires).isBefore(moment())) {
-        status = 'expired';
-      }
+  renderKeys () {
+    return _(this.props.app.keys)
+      .values()
+      .sortBy('created_at')
+      .map(key => {
+        let status = 'active';
+        if (key.revoked_at) {
+          status = 'revoked ' + key.revoked_at;
+        } else if (moment(key.expires).isBefore(moment())) {
+          status = 'expired';
+        }
 
-      return (
-        <tr key={key.key_id}>
-          <td className="identifier">{key.key_id}</td>
-          <td>{key.purpose}</td>
-          <td>{key.created_at} ({key.created_by})</td>
-          <td>{key.expires}</td>
-          <td>{status}</td>
-          <td> </td>
-        </tr>
-      );
-    });
+        return (
+          <tr key={key.key_id}>
+            <td className="identifier">{key.key_id}</td>
+            <td>{key.purpose}</td>
+            <td>{key.created_at} ({key.created_by})</td>
+            <td>{key.expires}</td>
+            <td>{status}</td>
+            <td> </td>
+          </tr>
+        );
+      })
+      .value();
   }
 
-  render() {
+  render () {
     return (
       <div className="container">
         <table className="table">
@@ -125,13 +126,13 @@ class Keys extends React.Component {
           <div className="form-group">
             <label className="col-sm-2 control-label" htmlFor="keyPurpose">Purpose</label>
             <div className="col-sm-6">
-              <input type="text" className="form-control" ref={e => this.keyPurposeInput = e} name="purpose" id="keyPurpose" />
+              <input type="text" className="form-control" ref={e => (this.keyPurposeInput = e)} name="purpose" id="keyPurpose" />
             </div>
           </div>
           <div className="form-group">
             <label className="col-sm-2 control-label" htmlFor="keyExpires">Expires</label>
             <div className="col-sm-4">
-              <input onChange={this.handleExpiresChange} ref={e => this.keyExpiresInput = e} type="text" className="form-control" name="expires" id="keyExpires" placeholder="iso8601 format plz" />
+              <input onChange={this.handleExpiresChange} ref={e => (this.keyExpiresInput = e)} type="text" className="form-control" name="expires" id="keyExpires" placeholder="iso8601 format plz" />
               <span>{this.state.parsedExpires}</span>
             </div>
           </div>

@@ -1,27 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router';
-import moment from 'moment';
 import _ from 'lodash';
-import Info from './application/info';
-import Keys from './application/keys';
-import Console from './application/console';
 import Pandapush from '../../client/dist/client';
 
 class Application extends React.Component {
   state = {
     app: {
-      application_id: "?",
+      application_id: '?',
       keys: {},
       admins: []
     },
     stats: {}
   }
 
-  loadData() {
-    fetch('/admin/api/applications', { credentials: 'same-origin', })
+  loadData () {
+    fetch('/admin/api/applications', { credentials: 'same-origin' })
       .then(response => response.json())
       .then(json => {
-        var app = _.find(json, { application_id: this.props.params.id });
+        const app = _.find(json, { application_id: this.props.params.id });
         this.setState({ app: app });
       })
       .catch(e => {
@@ -29,7 +25,7 @@ class Application extends React.Component {
       });
   }
 
-  handleStats(source, received, stats) {
+  handleStats (source, received, stats) {
     this.state.stats[source] = {
       received: received,
       stats: stats
@@ -38,7 +34,7 @@ class Application extends React.Component {
     this.forceUpdate();
   }
 
-  getToken(appId, channel, presence, done) {
+  getToken (appId, channel, presence, done) {
     fetch('/admin/api/application/' + appId + '/token', {
       method: 'POST',
       credentials: 'same-origin',
@@ -53,25 +49,25 @@ class Application extends React.Component {
       })
     }).then(response => response.json())
       .then(json => {
-        done(null, json.token)
+        done(null, json.token);
       })
       .catch(e => {
         console.log('error getting token', e);
       });
   }
 
-  createClient() {
+  createClient () {
     this.client = new Pandapush.Client('/push');
     this.client.addExtension({
-      outgoing: function(message, callback) {
-        if (message.channel == '/meta/subscribe') {
+      outgoing: (message, callback) => {
+        if (message.channel === '/meta/subscribe') {
           if (message.ext && message.ext.auth) {
             callback(message);
             return;
           }
 
           // get a token (cause we didn't already have one)
-          this.getToken(this.props.params.id, message.subscription, null, function(err, token) {
+          this.getToken(this.props.params.id, message.subscription, null, (err, token) => {
             if (err) {
               alert('error getting a token: ' + err);
               return;
@@ -80,29 +76,28 @@ class Application extends React.Component {
             if (!message.ext) message.ext = {};
             message.ext.auth = { token: token };
             callback(message);
-          }.bind(this));
-        }
-        else {
+          });
+        } else {
           callback(message);
         }
-      }.bind(this)
+      }
     });
   }
 
-  componentDidMount() {
+  componentDidMount () {
     this.loadData();
 
     this.createClient();
-    this.client.subscribe('/' + this.props.params.id + '/meta/statistics', function(msg) {
+    this.client.subscribe('/' + this.props.params.id + '/meta/statistics', (msg) => {
       this.handleStats(msg.data.source, msg.received, msg.data.stats);
-    }.bind(this));
+    });
   }
 
   handleReload = (e) => {
     this.loadData();
   }
 
-  render() {
+  render () {
     return (
       <div className="container">
         <h1>{this.state.app.name} <span style={{ fontSize: '0.6em' }}>(<span className="identifier">{this.props.params.id}</span>)</span></h1>
@@ -125,7 +120,7 @@ class Application extends React.Component {
           })}
         </div>
       </div>
-    )
+    );
   }
 }
 

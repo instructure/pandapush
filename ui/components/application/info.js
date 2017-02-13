@@ -1,7 +1,7 @@
 import React from 'react';
 
 class Info extends React.Component {
-  render() {
+  render () {
     return (
       <div className="container">
         <table className="table">
@@ -28,7 +28,7 @@ class Info extends React.Component {
             </tr>
             <tr>
               <td>Admins</td>
-              <td>{this.props.app.admins.join(", ")}</td>
+              <td>{this.props.app.admins.join(', ')}</td>
             </tr>
           </tbody>
         </table>

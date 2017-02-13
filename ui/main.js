@@ -10,15 +10,15 @@ import ApplicationConsole from './components/application/console';
 window.React = React; // for the React chrome extension
 
 class App extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props);
     this.state = {
-      username: ""
+      username: ''
     };
   }
 
-  componentDidMount() {
-    fetch('/admin/api/info', { credentials: 'same-origin', })
+  componentDidMount () {
+    fetch('/admin/api/info', { credentials: 'same-origin' })
       .then(response => response.json())
       .then(json => {
         this.setState({
@@ -29,7 +29,7 @@ class App extends React.Component {
       });
   }
 
-  render() {
+  render () {
     return (
       <div>
         <nav className="navbar navbar-default" role="navigation">
@@ -62,7 +62,7 @@ class App extends React.Component {
       </div>
     );
   }
-};
+}
 
 render((
   <Router history={hashHistory}>

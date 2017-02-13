@@ -3,21 +3,17 @@ import React from 'react';
 class ChannelPicker extends React.Component {
   state = {}
 
-  handleType(val) {
-    return function(e) {
-      e.preventDefault();
+  handleType = (val, e) => {
+    e.preventDefault();
 
-      this.setState({
-        type: val
-      });
+    this.setState({
+      type: val
+    });
 
-      this.props.updateParams({
-        channelType: val,
-        path: this.inputElement.value
-      });
-
-      return false;
-    }.bind(this);
+    this.props.updateParams({
+      channelType: val,
+      path: this.inputElement.value
+    });
   }
 
   updateParams = () => {
@@ -33,7 +29,7 @@ class ChannelPicker extends React.Component {
            '/' + this.inputElement.value;
   }
 
-  render() {
+  render () {
     return (
       <div className="input-group">
         <div className="input-group-btn">
@@ -43,15 +39,15 @@ class ChannelPicker extends React.Component {
           <div className="btn-group">
             <button type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown">{this.state.type || this.props.type} <span className="caret"></span></button>
             <ul className="dropdown-menu" role="menu">
-              <li><a onClick={this.handleType('public')} href="#">public</a></li>
-              <li><a onClick={this.handleType('private')} href="#">private</a></li>
-              <li className={this.props.showPresence ? '' : 'hidden'}><a onClick={this.handleType('presence')} href="#">presence</a></li>
-              <li className={this.props.showMeta ? '' : 'hidden'}><a onClick={this.handleType('meta')} href="#">meta</a></li>
+              <li><a onClick={this.handleType.bind(this, 'public')} href="#">public</a></li>
+              <li><a onClick={this.handleType.bind(this, 'private')} href="#">private</a></li>
+              <li className={this.props.showPresence ? '' : 'hidden'}><a onClick={this.handleType.bind(this, 'presence')} href="#">presence</a></li>
+              <li className={this.props.showMeta ? '' : 'hidden'}><a onClick={this.handleType.bind(this, 'meta')} href="#">meta</a></li>
             </ul>
           </div>
           <button type="button" className="btn btn-default" disabled="disabled">/</button>
         </div>
-        <input onChange={this.updateParams} type="text" ref={e => this.inputElement = e} className="form-control" value={this.props.path} />
+        <input onChange={this.updateParams} type="text" ref={e => (this.inputElement = e)} className="form-control" value={this.props.path} />
       </div>
     );
   }

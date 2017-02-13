@@ -1,22 +1,22 @@
-var jwt          = require('jsonwebtoken'),
-    channels     = require('../channels'),
-    store        = require('../store'),
-    _            = require('lodash'),
-    moment       = require('moment');
+const jwt = require('jsonwebtoken');
+const channels = require('../channels');
+const store = require('../store');
+const _ = require('lodash');
+const moment = require('moment');
 
-var error = function(message, callback, error) {
+const error = function (message, callback, error) {
   message.error = error;
   callback(message);
   return;
 };
 
-var verifyAuth = function(channel, auth, allowPublic, done) {
-  var channelInfo = channels.parse(channel);
+const verifyAuth = function (channel, auth, allowPublic, done) {
+  const channelInfo = channels.parse(channel);
   if (!channelInfo) {
     return done('Invalid channel name');
   }
 
-  store.getByIdCached(channelInfo.applicationId, function(err, application) {
+  store.getByIdCached(channelInfo.applicationId, function (err, application) {
     if (err) {
       return done('Error loading application');
     }
@@ -34,31 +34,29 @@ var verifyAuth = function(channel, auth, allowPublic, done) {
       return done('No auth supplied');
     }
 
-    var keyId = null;
+    let keyId;
 
     if (auth.token) {
-      var tokenContents = jwt.decode(auth.token);
+      const tokenContents = jwt.decode(auth.token);
       if (!tokenContents || !tokenContents.keyId) {
         return done('Invalid token');
       }
 
       keyId = tokenContents.keyId;
-    }
-    else if (auth.key) {
+    } else if (auth.key) {
       keyId = auth.key;
-    }
-    else {
+    } else {
       return done('Auth information does not include token or key');
     }
 
-    var key = application.keys[keyId];
+    const key = application.keys[keyId];
 
     if (!key) {
       return done('Could not find key');
     }
 
     if (auth.key) {
-      if (auth.secret != key.secret) {
+      if (auth.secret !== key.secret) {
         return done('Invalid secret');
       }
 
@@ -71,9 +69,8 @@ var verifyAuth = function(channel, auth, allowPublic, done) {
       }
 
       done(null);
-    }
-    else {
-      jwt.verify(auth.token, key.secret, {}, function(err, decoded) {
+    } else {
+      jwt.verify(auth.token, key.secret, {}, function (err, decoded) {
         if (err || !decoded) {
           return done('Invalid token provided');
         }
@@ -104,16 +101,16 @@ var verifyAuth = function(channel, auth, allowPublic, done) {
       });
     }
   });
-}
+};
 
-var checks = {
-  '/meta/subscribe': function(message, callback) {
-    var msgError = _.partial(error, message, callback);
+const checks = {
+  '/meta/subscribe': function (message, callback) {
+    const msgError = _.partial(error, message, callback);
 
-    var subscription = message.subscription,
-        auth         = message.ext && message.ext.auth;
+    const subscription = message.subscription;
+    const auth = message.ext && message.ext.auth;
 
-    verifyAuth(subscription, auth, true, function(err, decoded) {
+    verifyAuth(subscription, auth, true, function (err, decoded) {
       if (err) {
         return msgError(err);
       }
@@ -138,13 +135,13 @@ var checks = {
     });
   },
 
-  publish: function(message, callback) {
-    var msgError = _.partial(error, message, callback);
+  publish: function (message, callback) {
+    const msgError = _.partial(error, message, callback);
 
-    var auth = (message.ext && message.ext.auth) ||
-               (message.data && message.data.__auth);
+    const auth = (message.ext && message.ext.auth) ||
+                 (message.data && message.data.__auth);
 
-    verifyAuth(message.channel, auth, false, function(err, decoded) {
+    verifyAuth(message.channel, auth, false, function (err, decoded) {
       if (err) {
         return msgError(err, callback);
       }
@@ -164,12 +161,11 @@ var checks = {
   }
 };
 
-module.exports = function(internalToken) {
+module.exports = function (internalToken) {
   return {
-    incoming: function(message, callback) {
-
+    incoming: function (message, callback) {
       // allow any operations specifying the correct internalToken
-      if (message.ext && message.ext.internalToken == internalToken) {
+      if (message.ext && message.ext.internalToken === internalToken) {
         return callback(message);
       }
 
@@ -178,7 +174,7 @@ module.exports = function(internalToken) {
       }
 
       if (message.channel.indexOf('/meta/') === 0) {
-        var check = checks[message.channel];
+        const check = checks[message.channel];
         if (check) {
           check(message, callback);
           return;
@@ -193,7 +189,7 @@ module.exports = function(internalToken) {
       return;
     },
 
-    outgoing: function(message, callback) {
+    outgoing: function (message, callback) {
       // strip out any auth token
       if (message.ext) {
         delete message.ext.auth;
