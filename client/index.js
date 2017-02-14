@@ -1,18 +1,19 @@
 const Faye = require('faye/src/faye_browser');
 const Class = require('faye/src/util/class');
 
-const Client = Class({
-  initialize: function (base) {
+const Client = Class(Faye.Client, {
+  initialize: function (base, options) {
+    Faye.Client.prototype.initialize.call(this, base, options);
+
     const self = this;
-    self._faye = new Faye.Client(base);
     self._tokens = {};
     self._presenceCBs = {};
 
-    self._faye.addExtension({
+    this.addExtension({
       outgoing: function (message, callback) {
         let token;
 
-        if (message.data._originalData) {
+        if (message.data && message.data._originalData) {
           token = message.data._token;
           message.data = message.data._originalData;
         }
@@ -34,21 +35,15 @@ const Client = Class({
         callback(message);
       },
       incoming: function (message, callback) {
-        if (message.channel === '/meta/subscribe') {
-          if (message.ext && message.ext.presence) {
-            const presenceCB = self._presenceCBs[message.subscription];
-            if (presenceCB) {
-              presenceCB(message.ext.presence, message.subscription);
-            }
+        if (message.channel === '/meta/subscribe' && message.ext && message.ext.presence) {
+          const presenceCB = self._presenceCBs[message.subscription];
+          if (presenceCB) {
+            presenceCB(message.ext.presence, message.subscription);
           }
         }
         callback(message);
       }
     });
-  },
-
-  addExtension: function (extension) {
-    return this._faye.addExtension(extension);
   },
 
   /**
@@ -59,10 +54,10 @@ const Client = Class({
    *   @param channel [String]
    * @returns {Promise}
    *
-   * subscribe(channel, callback)
-   * subscribe(channel, token, callback);
+   * subscribeTo(channel, callback)
+   * subscribeTo(channel, token, callback);
    */
-  subscribe: function () {
+  subscribeTo: function () {
     const channel = arguments[0];
     let callback;
     if (typeof arguments[arguments.length - 1] === 'function') {
@@ -79,13 +74,11 @@ const Client = Class({
 
     this._presenceCBs[channel] = callback;
 
-    if (callback) {
-      return this._faye.subscribe(channel).withChannel(function (channel, message) {
+    return this.subscribe(channel).withChannel(function (channel, message) {
+      if (callback) {
         callback(message, channel);
-      });
-    } else {
-      return this._faye.subscribe(channel);
-    }
+      }
+    });
   },
 
   /**
@@ -94,17 +87,13 @@ const Client = Class({
    * @param message [Object]
    * @returns {Promise}
    */
-  publish: function (channel, token, data) {
+  publishTo: function (channel, token, data) {
     const wrappedData = {
       _originalData: data,
       _token: token
     };
 
-    return self._faye.publish(channel, wrappedData);
-  },
-
-  unsubscribe: function (channel) {
-    return this._faye.unsubscribe(channel);
+    return this.publish(channel, wrappedData);
   }
 });
 

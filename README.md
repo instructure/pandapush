@@ -50,21 +50,16 @@ Examples below will use these values:
 Use the client library to subscribe to a public channel (see discussion
 below about public vs private).
 
-For now we are using the Faye client directly, but in the future would
-like to create our own wrapper to hide implementation details like
-including the application id in the channel name.
-
 ```html
 <!-- pull in the client in your html -->
-<script src="http://localhost:5000/push/client.js"></script>
+<script src="http://localhost:5000/client.js"></script>
 ```
 
 ```javascript
-var client = new Faye.Client('http://localhost:5000/push');
+var client = new Pandapush.Client('http://localhost:5000/push');
 client.subscribe('/fRP0y2aVpYCKiW6PIFOK/public/messages', function(message) {
   console.log("got message: ", message);
 });
-
 ```
 
 ### Push an event
@@ -140,20 +135,21 @@ browsers. (You never want to give your key secret to a browser, as it
 should be kept... secret.)
 
 Tokens are scoped to publishing/subscribing to a specific channel. You
-only need a token to subscribe to `/private/` channels. Generally, you
+need a token to subscribe to `/private/` and `/presence/` channels. Generally, you
 will be using private channels. You should generate the tokens server
 side, because they require using the token secret to sign.
 
 Tokens are [JWTs](http://www.intridea.com/blog/2013/11/7/json-web-token-the-useful-little-standard-you-haven-t-heard-about).
 You should use a library to generate them. The payload has the contents:
 
-| Field   | Required? | Description |
-| ------- | --------- | ----------- |
-| keyId   | required  | The id of the key used for signing the token. |
-| channel | required  | The channel name the token works for. Must start with `/<app>/private/` or `/<app>/public/`. |
-| pub     | optional  | `true` if this token allows publishing. |
-| sub     | optional  | `true` if this token allows subscribing. Note that `sub` on a public channel is redundant. |
-| exp     | optional  | Unix timestamp of when the token should expire. |
+| Field    | Required? | Description |
+| -------- | --------- | ----------- |
+| keyId    | required  | The id of the key used for signing the token. |
+| channel  | required  | The channel name the token works for. Must start with `/<app>/private/` or `/<app>/public/`. |
+| pub      | optional  | `true` if this token allows publishing. |
+| sub      | optional  | `true` if this token allows subscribing. Note that `sub` on a public channel is redundant. |
+| presence | optional  | An object identifying the user for presence channels. |
+| exp      | optional  | Unix timestamp of when the token should expire. |
 
 [jwt.io](http://jwt.io) is useful when debugging JSON web tokens.
 
@@ -197,38 +193,13 @@ This is easiest to do by using the Pandapush client:
 const CHANNEL = "/applicationid/private/foo"; // sent by server
 const TOKEN = "...";                          // sent by server
 client = new Pandapush.Client("https://pandapush.hostname/push");
-client.subscribe(CHANNEL, TOKEN, function(message) {
+client.subscribeTo(CHANNEL, TOKEN, function(message) {
   console.log('got message!');
 });
 ```
 
-## Subscribing to a Private channel without Pandapush Client
-
-To subscribe to a `/private/` channel, you must provide a token. You can
-either supply this on your page at render time, or have the browser ask
-your server for one. Make sure to verify that the user requesting
-the token has permissions to view the associated resources.
-
-Here's how to add the token to your subscription request with the Faye
-client.
-
-```javascript
-client.addExtension({
-  outgoing: function(message, callback) {
-    if (message.channel !== '/meta/subscribe')
-      return callback(message);
-
-    // The channel being subscribed to is stored in `message.subscription`
-    // if you need to inspect it.
-
-    message.ext = message.ext || {};
-    message.ext.auth = { token: TOKEN_FROM_SERVER };
-    callback(message);
-  }
-});
-```
-
-(Read more about this pattern in the [Faye documentation](http://faye.jcoglan.com/security/authentication.html).)
+The Pandapush client is also a Faye client, and supports all the
+method described in the [Faye documentation](http://faye.jcoglan.com/security/authentication.html).
 
 
 ## Presence

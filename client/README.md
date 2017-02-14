@@ -43,9 +43,11 @@ var client = new Pandapush.Client('https://pandapush-server/push');
 
 ## Usage
 
-The Pandapush client is a thin wrapper over the Faye client, described here: http://faye.jcoglan.com/browser/subscribing.html
+The Pandapush client is a thin wrapper over the Faye client, described here: http://faye.jcoglan.com/browser/subscribing.html.
+It supports all the normal Faye client calls, along with the following in order to make
+passing tokens around simpler:
 
-### `subscribe`
+### `subscribeTo`
 
 Param      | Type   |          | Description
 -----------|--------|----------|------------
@@ -53,10 +55,20 @@ Param      | Type   |          | Description
 `token`    | String | optional | The token to use when subscribing. Must be specified if the channel is not public.
 `callback` | Function |        | Function called on every new message.
 
-### `unsubscribe`
+The callback is be called with 2 parameters - the `message` payload and the `channel`.
 
-See Faye documentation
+Example:
 
-### `addExtension`
+```javascript
+client.subscribeTo('/utJEM9A6Z21Iolb6o8RL/private/foo/bar', 'jwt...', (message, channel) => {
+  console.log('recieved', message, 'on channel', channel);
+});
+```
 
-See Faye documentation
+### `publishTo`
+
+Param      | Type   |          | Description
+-----------|--------|----------|------------
+`channel`  | String |          | The channel to subscribe to.
+`token`    | String |          | The token to use.
+`message`  | Object |          | The message to send.

@@ -31,7 +31,7 @@ class Console extends React.Component {
     this.loadData();
   }
 
-  handlePublish = (e) => {
+  handlePublish = (useClient, e) => {
     e.preventDefault();
 
     const channel = this.pubChannel.get();
@@ -48,36 +48,49 @@ class Console extends React.Component {
     }
 
     this.props.getToken(this.props.app.application_id, channel, null, (err, token) => {
+      window.pp = this.props.client;
+
       if (err) {
         alert('error getting token.\n\n' + err);
         return;
       }
 
-      fetch('/channel' + channel + '?token=' + token, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8'
-        },
-        body: JSON.stringify(payload)
-      })
-      .then(response => {
-        if (response.ok) {
-          this.setState({
-            publishStatus: true
+      if (useClient) {
+        this.props.client.publishTo(channel, token, payload)
+          .then(() => {
+            this.setState({ publishStatus: true });
+          }, (err) => {
+            this.setState({ publishStatus: {
+              body: JSON.stringify(err)
+            }});
           });
-        } else {
-          response.json().then(json => {
+      } else {
+        fetch('/channel' + channel + '?token=' + token, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+          },
+          body: JSON.stringify(payload)
+        })
+        .then(response => {
+          if (response.ok) {
             this.setState({
-              publishStatus: {
-                status: response.status,
-                statusText: response.statusText,
-                body: json.message
-              }
+              publishStatus: true
             });
-          });
-        }
-      });
+          } else {
+            response.json().then(json => {
+              this.setState({
+                publishStatus: {
+                  status: response.status,
+                  statusText: response.statusText,
+                  body: json.message
+                }
+              });
+            });
+          }
+        });
+      }
     });
   }
 
@@ -121,7 +134,7 @@ class Console extends React.Component {
         return;
       }
 
-      this.currentSubscription = this.props.client.subscribe(channel, token, presenceData, (message, channel) => {
+      this.currentSubscription = this.props.client.subscribeTo(channel, token, (message, channel) => {
         const event = {
           data: message,
           channel: channel,
@@ -372,8 +385,14 @@ class Console extends React.Component {
               <div className="col-sm-4">
                 <button
                   type="submit"
+                  onClick={this.handlePublish.bind(this, true)}
                   disabled={this.channelButtonDisabled(this.props.location.query.pubChannelPath)}
-                  className="btn btn-default">Publish</button>
+                  className="btn btn-default">Publish (client)</button>
+                <button
+                  type="submit"
+                  onClick={this.handlePublish.bind(this, false)}
+                  disabled={this.channelButtonDisabled(this.props.location.query.pubChannelPath)}
+                  className="btn btn-default">Publish (REST)</button>
                 {this.renderPublishStatus()}
               </div>
             </div>

@@ -7,5 +7,14 @@ module.exports = {
     library: 'Pandapush',
     libraryTarget: 'umd'
   },
-  module: {}
+  module: {
+    loaders: [{
+      test: /\.js$/,
+      exclude: /node_modules/,
+      loader: 'babel-loader',
+      query: {
+        presets: ['es2015']
+      }
+    }]
+  }
 };
