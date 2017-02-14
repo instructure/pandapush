@@ -10,10 +10,19 @@ const Client = Class({
 
     self._faye.addExtension({
       outgoing: function (message, callback) {
-        const channel = (message.channel === '/meta/subscribe'
-          ? message.subscription
-          : message.channel);
-        const token = self._tokens[channel];
+        let token;
+
+        if (message.data._originalData) {
+          token = message.data._token;
+          message.data = message.data._originalData;
+        }
+
+        if (!token) {
+          const channel = (message.channel === '/meta/subscribe'
+            ? message.subscription
+            : message.channel);
+          token = self._tokens[channel];
+        }
 
         if (token) {
           if (!message.ext) message.ext = {};
@@ -63,20 +72,19 @@ const Client = Class({
     if (typeof arguments[1] === 'string') {
       token = arguments[1];
     }
-    const self = this;
 
     if (token) {
-      self._tokens[channel] = token;
+      this._tokens[channel] = token;
     }
 
-    self._presenceCBs[channel] = callback;
+    this._presenceCBs[channel] = callback;
 
     if (callback) {
-      return self._faye.subscribe(channel).withChannel(function (channel, message) {
+      return this._faye.subscribe(channel).withChannel(function (channel, message) {
         callback(message, channel);
       });
     } else {
-      return self._faye.subscribe(channel);
+      return this._faye.subscribe(channel);
     }
   },
 
@@ -86,14 +94,13 @@ const Client = Class({
    * @param message [Object]
    * @returns {Promise}
    */
-  publish: function (channel, token, message) {
-    const self = this;
+  publish: function (channel, token, data) {
+    const wrappedData = {
+      _originalData: data,
+      _token: token
+    };
 
-    if (token) {
-      self._tokens[channel] = token;
-    }
-
-    return self._faye.publish(channel, message);
+    return self._faye.publish(channel, wrappedData);
   },
 
   unsubscribe: function (channel) {
