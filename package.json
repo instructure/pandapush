@@ -54,6 +54,8 @@
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-router": "^3.0.0",
+    "react-token-autocomplete": "^0.5.3",
+    "react-tokenizer": "^0.3.0",
     "should": "^11.2.0",
     "sinon": "^1.10.3",
     "snazzy": "^6.0.0",

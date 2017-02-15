@@ -16,61 +16,82 @@ exports.getInfo = function (req, res) {
   });
 };
 
-exports.getApplications = function (req, res) {
-  store.getAllForUser(req.user || req.session.cas_user, function (err, apps) {
+const loadUserFromRequest = function(req, res, next) {
+  const user = req.user || req.session.cas_user;
+  if (!user) {
+    console.log('no user in request');
+    return res.send(403, 'No user.');
+  }
+
+  req.user = user;
+
+  next();
+};
+
+const loadApplicationsForUser = function (req, res, next) {
+  store.getAllForUser(req.user, function (err, apps) {
     if (err) {
       console.log('error getting applications', err);
-      return res.send(500, 'an error occurred');
+      return res.send(500, 'Error loading applications.');
     }
 
-    // redact keys
-    _.forEach(apps, function (app) {
-      _.forEach(app.keys, function (key) {
-        key.secret = '********************';
-      });
-    });
+    req.applications = apps;
 
-    res.json(200, _.values(apps));
+    next();
   });
 };
 
-exports.generateKey = function (req, res) {
-  store.getAllForUser(req.user || req.session.cas_user, function (err, apps) {
+const loadApplication = function (req, res, next) {
+  console.log('applications', req.applications, req.params.applicationId);
+  const application = req.applications[req.params.applicationId];
+  if (!application) {
+    console.log('could not find application');
+    return res.send(404, 'Not found');
+  }
+
+  req.application = application;
+
+  next();
+};
+
+exports.getApplications = [ loadUserFromRequest, loadApplicationsForUser, function (req, res) {
+  const applications = req.applications;
+
+  // redact keys
+  _.forEach(applications, function (application) {
+    _.forEach(application.keys, function (key) {
+      key.secret = '********************';
+    });
+  });
+
+  res.json(200, _.values(applications));
+}];
+
+exports.generateKey = [ loadUserFromRequest, loadApplicationsForUser, loadApplication, function (req, res) {
+  const application = req.application;
+
+  store.addKey(application.application_id, {
+    user: req.user || req.session.cas_user,
+    expires: req.body.expires,
+    purpose: req.body.purpose
+  }, function (err, info) {
     if (err) {
-      console.log('error getting applications', err);
+      console.log('error generating key:', err);
       return res.send(500, 'error');
     }
 
-    // find app
-    const application = apps[req.params.applicationId];
-    if (!application) {
-      console.log('could not find application');
-      return res.send(404, 'could not find application');
-    }
-
-    store.addKey(application.application_id, {
-      user: req.user || req.session.cas_user,
-      expires: req.body.expires,
-      purpose: req.body.purpose
-    }, function (err, info) {
-      if (err) {
-        console.log('error generating key:', err);
-        return res.send(500, 'error');
-      }
-
-      return res.json(200, info);
-    });
+    return res.json(200, info);
   });
-};
+}];
 
 exports.revokeKey = function (req, res) {
 };
 
-exports.createApplication = function (req, res) {
+exports.createApplication = [ loadUserFromRequest, function (req, res) {
   store.addApplication({
     name: req.body.name,
-    user: req.user || req.session.cas_user,
-    admins: [ req.user || req.session.cas_user ]
+    created_by: req.user,
+    admins: [ req.user ]
   }, function (err, applicationId) {
     if (err) {
       console.log('error creating application', err);
@@ -80,7 +101,29 @@ exports.createApplication = function (req, res) {
       application_id: applicationId
     });
   });
-};
+}];
+
+exports.updateApplication = [ loadUserFromRequest, loadApplicationsForUser, loadApplication, function (req, res) {
+  const user = req.user;
+  const application = req.application;
+
+  const attributes = _.extend({}, application, {
+    name: req.body.name,
+    updated_at: moment().toISOString(),
+    admins: req.body.admins
+  });
+
+  store.updateApplication(application.application_id, attributes, function (err) {
+    if (err) {
+      console.log('error updating application', err);
+      return res.send(500, 'error updating application');
+    }
+
+    return res.json(200, {
+      application_id: application.id
+    });
+  });
+}];
 
 exports.generateToken = function (req, res) {
   const user = req.user || req.session.cas_user;

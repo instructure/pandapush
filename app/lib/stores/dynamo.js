@@ -49,7 +49,62 @@ const queryAll = function (dynamo, tableName, keyConditions, done) {
 };
 
 module.exports = function (table) {
-  const dynamo = new AWS.DynamoDB(awsOptions(process.env.DYNAMO_ENDPOINT));
+  const dynamo = new AWS.DynamoDB.DocumentClient(awsOptions(process.env.DYNAMO_ENDPOINT));
+
+  const saveApplication = function (existing, id, attributes, done) {
+    const newAttributes = _.pick(attributes, [
+      'name', 'created_by', 'admins'
+    ]);
+
+    if (newAttributes.admins) {
+      newAttributes.admins = dynamo.createSet(newAttributes.admins);
+    }
+
+    const params = {
+      TableName: table.applications,
+      Key: {
+        application_id: id
+      },
+      AttributeUpdates: _.mapValues(newAttributes, attr => {
+        return {
+          Action: 'PUT',
+          Value: attr
+        };
+      })
+    };
+
+    if (existing) {
+      params.AttributeUpdates.updated_at = {
+        Action: 'PUT',
+        Value: moment().toISOString()
+      };
+      params.Expected = {
+        application_id: {
+          Exists: true,
+          Value: id
+        }
+      };
+    } else {
+      params.AttributeUpdates.created_at = {
+        Action: 'PUT',
+        Value: moment().toISOString()
+      };
+      params.Expected = {
+        application_id: {
+          Exists: false
+        }
+      };
+    }
+
+    dynamo.update(params, function (err, data) {
+      if (err) {
+        done(err);
+        return;
+      }
+
+      done(null, id);
+    });
+  };
 
   return {
     get: function (done) {
@@ -60,6 +115,12 @@ module.exports = function (table) {
           return;
         }
 
+        applicationItems.forEach(item => {
+          if (item.admins) {
+            item.admins = item.admins.values;
+          }
+        });
+
         scanAll(dynamo, table.keys, function (err, keyItems) {
           if (err) {
             console.log('err loading keys', err);
@@ -68,17 +129,13 @@ module.exports = function (table) {
           }
 
           const apps = _.reduce(applicationItems, function (obj, item) {
-            obj[item['application_id'].S] = _.mapValues(item, function (value) {
-              return value.S || value.N || value.B || value.SS || value.NS || value.BS;
-            });
+            obj[item['application_id']] = item;
             return obj;
           }, {});
 
           _.each(keyItems, function (item) {
-            apps[item['application_id'].S].keys = apps[item['application_id'].S].keys || {};
-            apps[item['application_id'].S].keys[item['key_id'].S] = _.mapValues(item, function (value) {
-              return value.S || value.N || value.B || value.SS || value.NS || value.BS;
-            });
+            apps[item['application_id']].keys = apps[item['application_id']].keys || {};
+            apps[item['application_id']].keys[item['key_id']] = item;
           });
 
           done(null, apps);
@@ -90,7 +147,7 @@ module.exports = function (table) {
       dynamo.getItem({
         TableName: table.applications,
         Key: {
-          application_id: { S: id }
+          application_id: id
         }
       }, function (err, data) {
         if (err) {
@@ -103,15 +160,16 @@ module.exports = function (table) {
           done();
           return;
         }
+        const application = item;
 
-        const application = _.mapValues(item, function (value) {
-          return value.S || value.N || value.B || value.SS || value.NS || value.BS;
-        });
+        if (application.admins) {
+          application.admins = application.admins.values;
+        }
 
         queryAll(dynamo, table.keys, {
           application_id: {
             ComparisonOperator: 'EQ',
-            AttributeValueList: [{ S: id }]
+            AttributeValueList: [ id ]
           }
         }, function (err, keyItems) {
           if (err) {
@@ -123,9 +181,7 @@ module.exports = function (table) {
           application.keys = {};
 
           _.each(keyItems, function (item) {
-            application.keys[item['key_id'].S] = _.mapValues(item, function (value) {
-              return value.S || value.N || value.B || value.SS || value.NS || value.BS;
-            });
+            application.keys[item['key_id']] = item;
           });
 
           done(null, application);
@@ -135,29 +191,12 @@ module.exports = function (table) {
 
     addApplication: function (attributes, done) {
       token.generate(20, function (id) {
-        dynamo.putItem({
-          TableName: table.applications,
-          Item: {
-            application_id: { S: id },
-            name: { S: attributes.name },
-            created_at: { S: moment().toISOString() },
-            created_by: { S: attributes.user },
-            admins: { SS: attributes.admins }
-          },
-          Expected: {
-            application_id: {
-              Exists: false
-            }
-          }
-        }, function (err, data) {
-          if (err) {
-            done(err);
-            return;
-          }
-
-          done(null, id);
-        });
+        saveApplication(false, id, attributes, done);
       });
+    },
+
+    updateApplication: function (id, attributes, done) {
+      saveApplication(true, id, attributes, done);
     },
 
     addKey: function (applicationId, attributes, done) {
@@ -181,12 +220,9 @@ module.exports = function (table) {
             purpose: attributes.purpose
           };
 
-          // each attribute is a string, so the dynamo item is easy to make
-          const item = _.mapValues(key, v => { return { S: v }; });
-
-          dynamo.putItem({
+          dynamo.put({
             TableName: table.keys,
-            Item: item
+            Item: key
           }, function (err, data) {
             if (err) {
               done(err);
@@ -203,13 +239,13 @@ module.exports = function (table) {
       dynamo.updateItem({
         TableName: table.keys,
         Key: {
-          application_id: { S: applicationId },
-          key_id: { s: keyId }
+          application_id: applicationId,
+          key_id: keyId
         },
         AttributeUpdates: {
           revoked_at: {
             Action: 'PUT',
-            Value: { S: moment().toISOString() }
+            Value: moment().toISOString()
           }
         }
       }, function (err, data) {

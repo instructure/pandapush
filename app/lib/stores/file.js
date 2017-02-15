@@ -80,6 +80,20 @@ module.exports = function (dbpath) {
       });
     },
 
+    updateApplication: function (id, attributes, done) {
+      database[id] = attributes;
+
+      writeDatabase(database, function (err) {
+        if (err) {
+          console.log('error writing database: ', err);
+          done(err);
+          return;
+        }
+
+        done(null, id);
+      });
+    }
+
     addKey: function (applicationId, attributes, done) {
       const expiresAt = moment(attributes.expires);
       if (!expiresAt.isValid()) {

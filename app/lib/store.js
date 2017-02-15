@@ -16,6 +16,7 @@ exports.addApplication = function (attributes, done) {
   });
 };
 
+exports.updateApplication = function (applicationId, attributes, done) { store.updateApplication.apply(store, arguments); };
 exports.addKey = function () { store.addKey.apply(store, arguments); };
 exports.revokeKey = function () { store.revokeKey.apply(store, arguments); };
 
