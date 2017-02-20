@@ -111,6 +111,20 @@ exports.createApplication = [ loadUserFromRequest, function (req, res) {
     });
 }];
 
+exports.deleteApplication = [ loadUserFromRequest, loadApplicationForUser, function (req, res) {
+  const application = req.application;
+
+  store.removeApplication(application.id)
+    .then(() => {
+      console.log('done removing');
+      res.send(200);
+    })
+    .catch(err => {
+      console.log('error removing application', err)
+      res.send(500, 'error removing application');
+    });
+}];
+
 exports.updateApplication = [ loadUserFromRequest, loadApplicationForUser, function (req, res) {
   const application = req.application;
 

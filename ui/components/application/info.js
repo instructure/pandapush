@@ -60,6 +60,24 @@ class Info extends React.Component {
       });
   }
 
+  handleDelete = () => {
+    if (prompt('Are you sure you want to delete this app? Type "confirm" to continue.') === 'confirm') {
+      fetch(`/admin/api/application/${this.props.app.id}`, {
+        method: 'DELETE',
+        credentials: 'same-origin'
+      })
+      .then(response => {
+        this.context.router.push({
+          pathname: `/`
+        });
+      })
+      .catch(e => {
+        console.log('error saving application', e);
+        alert('error saving application', e);
+      });
+    }
+  }
+
   render () {
     return (
       <div className="container">
@@ -108,15 +126,23 @@ class Info extends React.Component {
         {
           this.state.editing
           ? <div>
+              <button onClick={this.handleDelete} className="btn btn-danger">Delete</button>&nbsp;
               <button onClick={this.handleSave} className="btn btn-default">Save</button>&nbsp;
               <button onClick={this.handleCancel} className="btn btn-default">Cancel</button>
             </div>
-          : <button onClick={this.handleEdit} className="btn btn-default">Edit</button>
+          : <div>
+              <button onClick={this.handleDelete} className="btn btn-danger">Delete</button>&nbsp;
+              <button onClick={this.handleEdit} className="btn btn-default">Edit</button>
+            </div>
         }
 
       </div>
     );
   }
 }
+
+Info.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
 
 module.exports = Info;

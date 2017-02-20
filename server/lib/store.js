@@ -35,12 +35,13 @@ function scopedToUser (query, userId) {
 // exist without looking in the database. Even for installations with
 // lots of applications and keys, this dataset will be tiny.
 function populateCache () {
-  let count = 0;
   knex('keys').select('id', 'application_id', 'secret', 'expires').map(key => {
     cache.put('key:' + key.application_id + ':' + key.id, key);
-    count += 1;
+    return key.id;
+  })
+  .then(keyIds => {
+    console.log('reloaded cache with %d items', keyIds.length);
   });
-  console.log('reloaded cache with %d items', count);
 }
 setInterval(populateCache, CACHE_TTL_MS);
 setTimeout(populateCache, 0);
@@ -139,6 +140,25 @@ module.exports = {
             });
         })
         .then(() => resolve(attributes));
+    });
+  },
+
+  removeApplication: (applicationId) => {
+    return knex.transaction(tx => {
+      return tx('application_users')
+        .where('application_id', applicationId)
+        .del()
+        .then(() => {
+          return tx('keys')
+            .where('application_id', applicationId)
+            .del();
+        })
+        .then(() => {
+          notifyClient.publish(NOTIFY_CHANNEL, {});
+          return tx('applications')
+            .where('id', applicationId)
+            .del();
+        });
     });
   },
 
