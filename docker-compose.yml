@@ -33,8 +33,8 @@ webpack:
 web:
   build: .
   command: bash -c "
-    knex --knexfile app/knexfile.js migrate:latest &&
-    ./node_modules/.bin/nodemon --watch app/ app/app.js"
+    knex --knexfile server/knexfile.js migrate:latest &&
+    ./node_modules/.bin/nodemon --watch server/ server/index.js"
   volumes:
     - ".:/usr/src/app"
   links:

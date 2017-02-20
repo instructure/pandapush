@@ -2,6 +2,7 @@ const path = require('path');
 
 let config = {
   client: 'sqlite3',
+  useNullAsDefault: true,
   connection: {
     filename: process.env.DATABASE_PATH || path.join(__dirname, '../localdata/db.sqlite')
   }

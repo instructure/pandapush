@@ -42,6 +42,10 @@ setInterval(populateCache, CACHE_TTL_MS);
 setTimeout(populateCache, 0);
 
 module.exports = {
+  getApplications: () => {
+    return knex('applications');
+  },
+
   getApplicationsForUser: (userId) => {
     return scopedToUser(knex('applications'), userId);
   },
@@ -55,6 +59,13 @@ module.exports = {
   getApplicationKeys: (applicationId) => {
     return knex('keys')
       .where('application_id', applicationId);
+  },
+
+  getApplicationKey: (applicationId, keyId) => {
+    return knex('keys')
+      .where('application_id', applicationId)
+      .where('id', keyId)
+      .first();
   },
 
   getApplicationUsers: (applicationId) => {

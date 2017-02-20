@@ -14,7 +14,7 @@ ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/src/a
 
 ADD package.json /usr/src/app/package.json
 ADD ./bin /usr/src/app/bin
-ADD ./app /usr/src/app/app
+ADD ./server /usr/src/app/server
 ADD ./ui /usr/src/app/ui
 ADD ./client /usr/src/app/client
 
@@ -26,7 +26,7 @@ USER docker
 
 # to expose the application to passenger
 RUN ln -s /usr/src/app/ui/public /usr/src/app/public
-RUN ln -s /usr/src/app/app/app.js /usr/src/app/app.js
+RUN ln -s /usr/src/app/server/index.js /usr/src/app/app.js
 
 RUN NODE_ENV=dev npm install && \
     NODE_ENV=production node_modules/.bin/webpack -p --config ui/webpack.config.js && \

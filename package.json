@@ -1,11 +1,11 @@
 {
   "name": "pandapush",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "description": "multi-tenant pub/sub system for web (built on faye)",
   "author": "Zach Wily <zach@instructure.com>",
   "readmeFilename": "README.md",
   "license": "2014 Copyright Instructure",
-  "main": "server.js",
+  "main": "server/index.js",
   "scripts": {
     "eslint": "eslint .",
     "test": "node_modules/.bin/mocha --require should --ui bdd $(find test -name \"*.spec.js\")",
