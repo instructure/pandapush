@@ -19,7 +19,7 @@ class Console extends React.Component {
     fetch('/admin/api/applications', { credentials: 'same-origin' })
       .then(response => response.json())
       .then(json => {
-        const app = _.find(json, { application_id: this.props.params.id });
+        const app = _.find(json, { id: this.props.params.id });
         this.setState({ app: app });
       })
       .catch(e => {
@@ -47,7 +47,7 @@ class Console extends React.Component {
       return;
     }
 
-    this.props.getToken(this.props.app.application_id, channel, null, (err, token) => {
+    this.props.getToken(this.props.app.id, channel, null, (err, token) => {
       window.pp = this.props.client;
 
       if (err) {
@@ -128,7 +128,7 @@ class Console extends React.Component {
       presenceData.id = presenceId;
     }
 
-    this.props.getToken(this.props.app.application_id, channel, presenceData, (err, token) => {
+    this.props.getToken(this.props.app.id, channel, presenceData, (err, token) => {
       if (err) {
         alert('Error getting token', err);
         return;

@@ -6,7 +6,7 @@ import Pandapush from '../../client/dist/client';
 class Application extends React.Component {
   state = {
     app: {
-      application_id: '?',
+      id: '?',
       keys: {},
       admins: []
     },
@@ -14,11 +14,10 @@ class Application extends React.Component {
   }
 
   loadData () {
-    fetch('/admin/api/applications', { credentials: 'same-origin' })
+    fetch('/admin/api/application/' + this.props.params.id, { credentials: 'same-origin' })
       .then(response => response.json())
       .then(json => {
-        const app = _.find(json, { application_id: this.props.params.id });
-        this.setState({ app: app });
+        this.setState({ app: json });
       })
       .catch(e => {
         console.log('error getting applications', e);

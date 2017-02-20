@@ -35,7 +35,7 @@ class Info extends React.Component {
   }
 
   handleSave = () => {
-    fetch('/admin/api/application/' + this.props.app.application_id, {
+    fetch('/admin/api/application/' + this.props.app.id, {
       method: 'POST',
       credentials: 'same-origin',
       headers: {

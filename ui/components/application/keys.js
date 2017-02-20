@@ -62,7 +62,7 @@ class Keys extends React.Component {
       })
     }).then(response => response.json())
       .then(json => {
-        alert('Your new key ID is\n\n' + json.key_id + '\n\n and secret is\n\n' + json.secret + '\n\n' +
+        alert('Your new key ID is\n\n' + json.id + '\n\n and secret is\n\n' + json.secret + '\n\n' +
               'Copy the secret to a safe place, as you won\'t see it again here.');
 
         this.props.reload();
@@ -87,8 +87,8 @@ class Keys extends React.Component {
         }
 
         return (
-          <tr key={key.key_id}>
-            <td className="identifier">{key.key_id}</td>
+          <tr key={key.id}>
+            <td className="identifier">{key.id}</td>
             <td>{key.purpose}</td>
             <td>{key.created_at} ({key.created_by})</td>
             <td>{key.expires}</td>

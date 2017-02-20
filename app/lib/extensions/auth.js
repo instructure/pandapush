@@ -16,48 +16,54 @@ const verifyAuth = function (channel, auth, allowPublic, done) {
     return done('Invalid channel name');
   }
 
-  store.getByIdCached(channelInfo.applicationId, function (err, application) {
-    if (err) {
-      return done('Error loading application');
+  if (allowPublic && channelInfo.public) {
+    // public means no auth necessary...
+    return done(null, null);
+  }
+
+  if (!auth) {
+    return done('No auth supplied');
+  }
+
+  let keyId;
+
+  if (auth.token) {
+    const tokenContents = jwt.decode(auth.token);
+    if (!tokenContents || !tokenContents.keyId) {
+      return done('Invalid token');
     }
 
-    if (!application) {
-      return done('Could not find application');
+    keyId = tokenContents.keyId;
+  } else if (auth.key) {
+    keyId = auth.key;
+  } else {
+    return done('Auth information does not include token or key');
+  }
+
+  const key = store.getKeyCachedSync(channelInfo.applicationId, keyId);
+
+  if (!key) {
+    return done('Could not find key');
+  }
+
+  if (auth.key) {
+    if (auth.secret !== key.secret) {
+      return done('Invalid secret');
     }
 
-    if (allowPublic && channelInfo.public) {
-      // public means no auth necessary...
-      return done(null, null);
+    if (moment(key.expires).isBefore(moment())) {
+      return done('Expired key');
     }
 
-    if (!auth) {
-      return done('No auth supplied');
+    if (key.revoked_at) {
+      return done('Revoked key');
     }
 
-    let keyId;
-
-    if (auth.token) {
-      const tokenContents = jwt.decode(auth.token);
-      if (!tokenContents || !tokenContents.keyId) {
-        return done('Invalid token');
-      }
-
-      keyId = tokenContents.keyId;
-    } else if (auth.key) {
-      keyId = auth.key;
-    } else {
-      return done('Auth information does not include token or key');
-    }
-
-    const key = application.keys[keyId];
-
-    if (!key) {
-      return done('Could not find key');
-    }
-
-    if (auth.key) {
-      if (auth.secret !== key.secret) {
-        return done('Invalid secret');
+    done(null);
+  } else {
+    jwt.verify(auth.token, key.secret, {}, function (err, decoded) {
+      if (err || !decoded) {
+        return done('Invalid token provided');
       }
 
       if (moment(key.expires).isBefore(moment())) {
@@ -68,39 +74,23 @@ const verifyAuth = function (channel, auth, allowPublic, done) {
         return done('Revoked key');
       }
 
-      done(null);
-    } else {
-      jwt.verify(auth.token, key.secret, {}, function (err, decoded) {
-        if (err || !decoded) {
-          return done('Invalid token provided');
+      if (channel !== decoded.channel) {
+        if (_.endsWith(decoded.channel, '/*') &&
+            _.startsWith(channel, decoded.channel.slice(0, -2)) &&
+            _.lastIndexOf(channel, '/') === _.lastIndexOf(decoded.channel, '/')) {
+          return done(null, decoded);
         }
 
-        if (moment(key.expires).isBefore(moment())) {
-          return done('Expired key');
+        if (_.endsWith(decoded.channel, '/**') && _.startsWith(channel, decoded.channel.slice(0, -3))) {
+          return done(null, decoded);
         }
 
-        if (key.revoked_at) {
-          return done('Revoked key');
-        }
+        return done('Token does not match channel');
+      }
 
-        if (channel !== decoded.channel) {
-          if (_.endsWith(decoded.channel, '/*') &&
-              _.startsWith(channel, decoded.channel.slice(0, -2)) &&
-              _.lastIndexOf(channel, '/') === _.lastIndexOf(decoded.channel, '/')) {
-            return done(null, decoded);
-          }
-
-          if (_.endsWith(decoded.channel, '/**') && _.startsWith(channel, decoded.channel.slice(0, -3))) {
-            return done(null, decoded);
-          }
-
-          return done('Token does not match channel');
-        }
-
-        done(null, decoded);
-      });
-    }
-  });
+      done(null, decoded);
+    });
+  }
 };
 
 const checks = {

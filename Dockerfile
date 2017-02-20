@@ -10,6 +10,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ENV NODE_ENV production
+ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/src/app/node_modules/.bin
 
 ADD package.json /usr/src/app/package.json
 ADD ./bin /usr/src/app/bin
@@ -31,5 +32,3 @@ RUN NODE_ENV=dev npm install && \
     NODE_ENV=production node_modules/.bin/webpack -p --config ui/webpack.config.js && \
     NODE_ENV=production node_modules/.bin/webpack -p --config client/webpack.config.js && \
     if [ "$prunedev" = "true" ]; then npm prune --production; fi
-
-ENV DATA_STORE FILE

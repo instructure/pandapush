@@ -13,7 +13,6 @@ const path = require('path');
 const crypto = require('crypto');
 const spawn = require('child_process').spawn;
 const bayeux = require('./lib/bayeux');
-const store = require('./lib/store');
 const logger = require('./lib/logger');
 const routes = require('./routes');
 const httpMetrics = require('./lib/http_metrics');
@@ -90,11 +89,7 @@ app.use(bodyParser.json());
 routes.map(app, adminAuth);
 app.use(express.static(path.join(__dirname, '../ui/public')));
 
-// start some utility modules
-store.init(bayeux, function () {
-  // start server
-  const port = process.env.PORT || 3000;
-  server.listen(port, function () {
-    console.log('listening on port ' + port);
-  });
+const port = process.env.PORT || 3000;
+server.listen(port, function () {
+  console.log('listening on port ' + port);
 });

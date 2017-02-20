@@ -40,7 +40,7 @@ class Applications extends React.Component {
     }).then(response => response.json())
       .then(json => {
         this.context.router.push({
-          pathname: `/application/${json.application_id}`
+          pathname: `/application/${json.id}`
         });
       })
       .catch(e => {
@@ -53,9 +53,9 @@ class Applications extends React.Component {
   renderApplications () {
     return _.map(this.state.applications, function (app) {
       return (
-        <tr key={app.application_id}>
+        <tr key={app.id}>
           <td className="identifier">
-            <Link to={`/application/${app.application_id}`}>{app.application_id}</Link>
+            <Link to={`/application/${app.id}`}>{app.id}</Link>
           </td>
           <td>{app.name}</td>
           <td>{app.created_at}</td>

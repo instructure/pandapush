@@ -19,14 +19,6 @@ statsd:
     VIRTUAL_HOST: pandapush-graphite.docker
     VIRTUAL_PORT: 80
 
-dynamo:
-  image: instructure/dynamo-local-admin
-  ports:
-    - "8000"
-  environment:
-    VIRTUAL_HOST: pandapush-dynamo.docker
-    VIRTUAL_PORT: 8000
-
 webpack:
   build: .
   command: bash -c "
@@ -41,7 +33,7 @@ webpack:
 web:
   build: .
   command: bash -c "
-    node ./bin/create_dynamo_tables.js &&
+    knex --knexfile app/knexfile.js migrate:latest &&
     ./node_modules/.bin/nodemon --watch app/ app/app.js"
   volumes:
     - ".:/usr/src/app"
@@ -49,7 +41,6 @@ web:
     - redis1
     - redis2
     - statsd
-    - dynamo
   environment:
     VIRTUAL_HOST: pandapush.docker
     VIRTUAL_PORT: 3000
@@ -58,13 +49,10 @@ web:
     REDIS_URL_ENV_VARS: REDIS1_URL,REDIS2_URL
     REDIS1_URL: tcp://redis1:6379
     REDIS2_URL: tcp://redis2:6379
-    DATA_STORE: DYNAMO
-    DYNAMO_APPLICATIONS: dev_applications
-    DYNAMO_KEYS: dev_keys
-    DYNAMO_ENDPOINT: http://dynamo:8000/
     AWS_REGION: us-east-1
     AWS_ACCESS_KEY_ID: key
     AWS_SECRET_ACCESS_KEY: secret
     NODE_ENV: development
     STATSD_HOST: statsd
     STATSD_PORT: 8125
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/src/app/node_modules/.bin
