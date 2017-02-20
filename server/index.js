@@ -16,6 +16,7 @@ const bayeux = require('./lib/bayeux');
 const logger = require('./lib/logger');
 const routes = require('./routes');
 const httpMetrics = require('./lib/http_metrics');
+const store = require('./lib/store');
 
 const app = express();
 const server = http.Server(app);
@@ -75,6 +76,9 @@ if (!process.env.REDIS_HOSTS && !process.env.REDIS_URL_ENV_VARS) {
 
 // attach bayeux handlers
 bayeux.attach(server);
+
+// initialize the store
+store.init(bayeux.getInternalClient());
 
 // set up http metric gatherer (needs to happen after bayeux.attach)
 httpMetrics(server, logger.log);

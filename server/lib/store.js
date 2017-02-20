@@ -6,6 +6,7 @@ const cache = require('memory-cache');
 const moment = require('moment');
 
 const CACHE_TTL_MS = parseInt(process.env.CACHE_TTL_MS, 10) || 5 * 60 * 1000;
+const NOTIFY_CHANNEL = '/internal/meta/config';
 
 const rootAdmins = process.env.ROOT_ADMINS && process.env.ROOT_ADMINS.split(',') || [];
 function isRootAdmin (user) {
@@ -34,14 +35,26 @@ function scopedToUser (query, userId) {
 // exist without looking in the database. Even for installations with
 // lots of applications and keys, this dataset will be tiny.
 function populateCache () {
+  let count = 0;
   knex('keys').select('id', 'application_id', 'secret', 'expires').map(key => {
     cache.put('key:' + key.application_id + ':' + key.id, key);
+    count += 1;
   });
+  console.log('reloaded cache with %d items', count);
 }
 setInterval(populateCache, CACHE_TTL_MS);
 setTimeout(populateCache, 0);
 
+let notifyClient = null;
+
 module.exports = {
+  init: client => {
+    notifyClient = client;
+    client.subscribe(NOTIFY_CHANNEL, data => {
+      populateCache();
+    });
+  },
+
   getApplications: () => {
     return knex('applications');
   },
@@ -148,7 +161,10 @@ module.exports = {
           attributes.secret = secret;
           return knex('keys').insert(attributes);
         })
-        .then(() => resolve(attributes));
+        .then(() => {
+          notifyClient.publish(NOTIFY_CHANNEL, {});
+          resolve(attributes);
+        });
     });
   }
 };
