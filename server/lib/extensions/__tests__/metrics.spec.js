@@ -5,18 +5,18 @@ const statsd = require('../../statsd');
 const metrics = require('../metrics');
 
 let handlers = {};
-const bayeuxStub = {
+const fayeStub = {
   on: (event, func) => {
     handlers[event] = func;
   }
 };
 
-describe('bayeux metrics extension', function () {
+describe('faye metrics extension', function () {
   let m;
 
   beforeEach(() => {
     handlers = {};
-    m = metrics(bayeuxStub);
+    m = metrics(fayeStub);
     statsd.count.mockClear();
   });
 

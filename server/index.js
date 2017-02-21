@@ -12,7 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const spawn = require('child_process').spawn;
-const bayeux = require('./lib/bayeux');
+const faye = require('./lib/faye');
 const logger = require('./lib/logger');
 const routes = require('./routes');
 const httpMetrics = require('./lib/http_metrics');
@@ -74,14 +74,14 @@ if (!process.env.REDIS_HOSTS && !process.env.REDIS_URL_ENV_VARS) {
   process.env.REDIS_HOSTS = 'localhost:6379';
 }
 
-// attach bayeux handlers
-bayeux.attach(server);
+// attach faye handlers
+const fayeInstance = faye(server);
 
 // initialize the store
-store.init(bayeux.getInternalClient());
+store.init(faye.internalClient);
 
-// set up http metric gatherer (needs to happen after bayeux.attach)
-httpMetrics(server, logger.log);
+// set up http metric gatherer (needs to happen after faye initialization)
+httpMetrics(server, logger.log, faye.internalClient).start();
 
 // configure Express application
 
@@ -90,6 +90,13 @@ app.use(require('connect-requestid'));
 app.use(logger.middleware);
 app.use(session({ keys: [ sessionPrivateKey ] }));
 app.use(bodyParser.json());
+
+// some requests will need access to the internal faye client
+app.use((req, res, next) => {
+  req.faye = fayeInstance;
+  next();
+});
+
 routes.map(app, adminAuth);
 app.use(express.static(path.join(__dirname, '../ui/public')));
 

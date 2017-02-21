@@ -2,7 +2,7 @@ const channels = require('../channels');
 const statsd = require('../statsd');
 const _ = require('lodash');
 
-module.exports = function (bayeux) {
+module.exports = function (faye) {
   let stats, appStats;
 
   function resetStats () {
@@ -25,15 +25,15 @@ module.exports = function (bayeux) {
 
   resetStats();
 
-  bayeux.on('handshake', function (clientId) {
+  faye.on('handshake', function (clientId) {
     stats.handshake += 1;
   });
 
-  bayeux.on('close', function (clientId) {
+  faye.on('close', function (clientId) {
     stats.close += 1;
   });
 
-  bayeux.on('disconnect', function (clientId) {
+  faye.on('disconnect', function (clientId) {
     stats.disconnect += 1;
   });
 
@@ -61,17 +61,17 @@ module.exports = function (bayeux) {
     }
   }
 
-  bayeux.on('subscribe', function (clientId, channel) {
+  faye.on('subscribe', function (clientId, channel) {
     stats.subscribe += 1;
     incrementAppMetric(appStats.subscribe, channel);
   });
 
-  bayeux.on('unsubscribe', function (clientId, channel) {
+  faye.on('unsubscribe', function (clientId, channel) {
     stats.unsubscribe += 1;
     incrementAppMetric(appStats.unsubscribe, channel);
   });
 
-  bayeux.on('publish', function (clientId, channel, data) {
+  faye.on('publish', function (clientId, channel, data) {
     stats.publish += 1;
     incrementAppMetric(appStats.publish, channel);
   });

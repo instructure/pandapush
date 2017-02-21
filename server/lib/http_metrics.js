@@ -1,10 +1,9 @@
 const statsd = require('./statsd');
-const bayeux = require('./bayeux');
 const _ = require('lodash');
 
 const interval = process.env.CONNECTIONS_STATS_INTERVAL || 5000;
 
-module.exports = function (http, log) {
+module.exports = function (http, log, client) {
   let connections = 0;
   let wsConnections = 0;
 
@@ -28,7 +27,7 @@ module.exports = function (http, log) {
 
   // periodically send to the number of open connections to all servers
   function sendStats () {
-    bayeux.getInternalClient().publish('/internal/meta/statistics', {
+    client.publish('/internal/meta/statistics', {
       source: sourceId,
       stats: {
         connections: connections,
@@ -36,13 +35,12 @@ module.exports = function (http, log) {
       }
     });
   }
-  setInterval(sendStats, interval);
 
   // collect all the responses from all clients for the interval * 2, aggregate
   // them, and send to statsd. (yes, this will result in duplicate information
   // to statsd, but that's fine because it's a gauge)
   let stats = {};
-  bayeux.getInternalClient().subscribe('/internal/meta/statistics', function (data) {
+  client.subscribe('/internal/meta/statistics', function (data) {
     stats[data.source] = data.stats;
   });
 
@@ -55,8 +53,8 @@ module.exports = function (http, log) {
       totalWsConnections += stat.wsConnections;
     });
 
-    log.info('local_http=' + stats[sourceId].connections +
-             ' local_ws=' + stats[sourceId].wsConnections +
+    log.info('local_http=' + connections +
+             ' local_ws=' + wsConnections +
              ' http=' + totalConnections +
              ' ws=' + totalWsConnections);
 
@@ -64,5 +62,14 @@ module.exports = function (http, log) {
     statsd.gauge('connections.ws', totalWsConnections);
     stats = {};
   }
-  setInterval(sendStatsToStatsd, interval * 2);
+
+  return {
+    start: () => {
+      setInterval(sendStats, interval);
+      setInterval(sendStatsToStatsd, interval * 2);
+    },
+
+    sendStats: sendStats,
+    sendStatsToStatsd: sendStatsToStatsd
+  };
 };

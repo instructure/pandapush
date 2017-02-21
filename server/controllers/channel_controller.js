@@ -1,5 +1,3 @@
-const bayeux = require('../lib/bayeux').getClient;
-
 const unauthorized = function (res) {
   res.send(403, 'Unauthorized');
 };
@@ -64,7 +62,7 @@ exports.post = function (req, res) {
   // we'll clean it out in a Faye extension.
   payload.__auth = auth;
 
-  const pub = bayeux().publish(channel, payload);
+  const pub = req.faye.client.publish(channel, payload);
 
   pub.callback(function () {
     res.send(200, 'OK');
