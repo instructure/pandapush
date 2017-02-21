@@ -44,17 +44,24 @@ function populateCache () {
   });
 }
 
-let notifyClient = null;
+let notifyClient;
+let populateInterval;
+let notifySubscription;
 
 module.exports = {
   init: client => {
     notifyClient = client;
-    client.subscribe(NOTIFY_CHANNEL, data => {
+    notifySubscription = client.subscribe(NOTIFY_CHANNEL, data => {
       populateCache();
     });
 
-    setInterval(populateCache, CACHE_TTL_MS);
-    setTimeout(populateCache, 0);
+    populateInterval = setInterval(populateCache, CACHE_TTL_MS);
+    populateCache();
+  },
+
+  stop: () => {
+    clearInterval(populateInterval);
+    notifySubscription.cancel();
   },
 
   getApplications: () => {

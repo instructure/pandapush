@@ -1,0 +1,17 @@
+version: '2'
+services:
+  web: &web-base
+    build:
+      args:
+        prunedev: 'false'
+
+    volumes:
+      - node_modules:/usr/src/app/node_modules
+      - .:/usr/src/app
+
+  webpack:
+    <<: *web-base
+
+volumes:
+  node_modules:
+    driver: local

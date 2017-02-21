@@ -3,3 +3,4 @@ client/dist
 .git
 ui/public/**
 coverage
+public/

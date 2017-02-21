@@ -1,58 +1,55 @@
-redis1:
-  image: redis:latest
-  ports:
-    - "6379"
-  command: redis-server --save ""
+version: '2'
+services:
+  redis1:
+    image: redis:latest
+    ports:
+      - "6379"
+    command: redis-server --save ""
 
-redis2:
-  image: redis:latest
-  ports:
-    - "6379"
-  command: redis-server --save ""
+  redis2:
+    image: redis:latest
+    ports:
+      - "6379"
+    command: redis-server --save ""
 
-statsd:
-  image: hopsoft/graphite-statsd
-  ports:
-    - "80"
-    - "8125/udp"
-  environment:
-    VIRTUAL_HOST: pandapush-graphite.docker
-    VIRTUAL_PORT: 80
+  statsd:
+    image: hopsoft/graphite-statsd
+    ports:
+      - "80"
+      - "8125/udp"
+    environment:
+      VIRTUAL_HOST: pandapush-graphite.docker
+      VIRTUAL_PORT: 80
 
-webpack:
-  build: .
-  command: bash -c "
-    node_modules/.bin/webpack --watch --devtool inline-source-map --config ui/webpack.config.js &
-    node_modules/.bin/webpack --watch --devtool inline-source-map --config client/webpack.config.js"
-  working_dir: /usr/src/app
-  volumes:
-    - "./:/usr/src/app"
-  environment:
-    NODE_ENV: development
+  webpack:
+    build: .
+    command: bash -c "
+      node_modules/.bin/webpack --watch --devtool inline-source-map --config ui/webpack.config.js &
+      node_modules/.bin/webpack --watch --devtool inline-source-map --config client/webpack.config.js"
+    environment:
+      NODE_ENV: development
 
-web:
-  build: .
-  command: bash -c "
-    knex --knexfile server/knexfile.js migrate:latest &&
-    ./node_modules/.bin/nodemon --watch server/ server/index.js"
-  volumes:
-    - ".:/usr/src/app"
-  links:
-    - redis1
-    - redis2
-    - statsd
-  environment:
-    VIRTUAL_HOST: pandapush.docker
-    VIRTUAL_PORT: 3000
-    ADMIN_USERNAME: admin
-    ADMIN_PASSWORD: password
-    REDIS_URL_ENV_VARS: REDIS1_URL,REDIS2_URL
-    REDIS1_URL: tcp://redis1:6379
-    REDIS2_URL: tcp://redis2:6379
-    AWS_REGION: us-east-1
-    AWS_ACCESS_KEY_ID: key
-    AWS_SECRET_ACCESS_KEY: secret
-    NODE_ENV: development
-    STATSD_HOST: statsd
-    STATSD_PORT: 8125
-    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/src/app/node_modules/.bin
+  web:
+    build: .
+    command: bash -c "
+      knex --knexfile server/knexfile.js migrate:latest &&
+      ./node_modules/.bin/nodemon --watch server/ server/index.js"
+    links:
+      - redis1
+      - redis2
+      - statsd
+    environment:
+      VIRTUAL_HOST: pandapush.docker
+      VIRTUAL_PORT: 3000
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: password
+      REDIS_URL_ENV_VARS: REDIS1_URL,REDIS2_URL
+      REDIS1_URL: tcp://redis1:6379
+      REDIS2_URL: tcp://redis2:6379
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: key
+      AWS_SECRET_ACCESS_KEY: secret
+      NODE_ENV: development
+      STATSD_HOST: statsd
+      STATSD_PORT: 8125
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/src/app/node_modules/.bin

@@ -13,6 +13,9 @@ ENV NODE_ENV production
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/src/app/node_modules/.bin
 
 ADD package.json /usr/src/app/package.json
+ADD .babelrc /usr/src/app/.babelrc
+ADD .eslintignore /usr/src/app/.eslintignore
+ADD .eslintrc /usr/src/app/.eslintrc
 ADD ./bin /usr/src/app/bin
 ADD ./server /usr/src/app/server
 ADD ./ui /usr/src/app/ui

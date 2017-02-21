@@ -1,0 +1,10 @@
+version: '2'
+services:
+  web:
+    build:
+      context: .
+      args:
+        prunedev: 'false'
+    # this container is run in the background and jenkins will exec
+    # commands inside it, then kill it when done.
+    command: sleep 100000000000
