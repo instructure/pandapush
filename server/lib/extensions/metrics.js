@@ -2,7 +2,7 @@ const channels = require('../channels');
 const statsd = require('../statsd');
 const _ = require('lodash');
 
-exports.setup = function (bayeux, client) {
+module.exports = function (bayeux) {
   let stats, appStats;
 
   function resetStats () {
@@ -78,34 +78,29 @@ exports.setup = function (bayeux, client) {
 
   const pushToStatsd = function (stats, appStats) {
     _.each(stats, function (count, stat) {
-      statsd.count(stat, count);
+      if (count > 0) {
+        statsd.count(stat, count);
+      }
     });
 
     _.each(appStats, function (appCounts, stat) {
       _.each(appCounts, function (count, appId) {
-        statsd.count('apps.' + appId + '.' + stat, count);
+        if (count > 0) {
+          statsd.count('apps.' + appId + '.' + stat, count);
+        }
       });
     });
   };
 
-  const pushToClients = function (stats, appStats) {
-    // TODO: revisit what stats to push out to clients
-
-    // _.each(stats.applications, function(appStats, appId) {
-    //   client.publish('/' + appId + '/meta/statistics', {
-    //     source: process.env.HOSTNAME + '-' + process.pid,
-    //     stats: appStats
-    //   })
-    // });
-  };
-
-  const updateStatistics = function () {
+  const flushStatistics = () => {
     pushToStatsd(stats, appStats);
-    pushToClients(stats, appStats);
-
     resetStats();
   };
 
-  setInterval(updateStatistics, 5000);
+  return {
+    start: () => {
+      setInterval(flushStatistics, 5000);
+    },
+    flush: flushStatistics
+  };
 };
-

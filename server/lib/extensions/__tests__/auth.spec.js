@@ -1,4 +1,4 @@
-/* eslint-env node, mocha */
+/* eslint-env mocha */
 
 require('sinon');
 const proxyquire = require('proxyquire');
@@ -55,6 +55,62 @@ const auth = proxyquire('../auth', { '../store': storeStub })('internalToken');
 // explosion happening...)
 
 describe('auth extension', function () {
+  it('fails on an invalid channel', function (done) {
+    auth.incoming({
+      channel: '/meta/subscribe',
+      subscription: '/appid/invalid/channel'
+    }, function (message) {
+      assert(message.error);
+      done();
+    });
+  });
+
+  it('fails on an invalid token', function (done) {
+    auth.incoming({
+      channel: '/meta/subscribe',
+      subscription: '/appid/private/channel',
+      ext: {
+        auth: {
+          token: 'badtoken'
+        }
+      }
+    }, function (message) {
+      assert(message.error);
+      done();
+    });
+  });
+
+  it('fails without any auth', function (done) {
+    auth.incoming({
+      channel: '/meta/subscribe',
+      subscription: '/appid/private/channel',
+      ext: {
+        auth: {
+          foo: 'bar'
+        }
+      }
+    }, function (message) {
+      assert(message.error);
+      done();
+    });
+  });
+
+  it('fails with a bad secret', function (done) {
+    auth.incoming({
+      channel: '/meta/subscribe',
+      subscription: '/appid/private/channel',
+      ext: {
+        auth: {
+          key: 'goodkey',
+          secret: 'wrongsecret'
+        }
+      }
+    }, function (message) {
+      assert(message.error);
+      done();
+    });
+  });
+
   it('strips auth info from outgoing messages', function (done) {
     auth.outgoing({
       ext: {
@@ -70,6 +126,36 @@ describe('auth extension', function () {
     }, function (message) {
       assert(message.ext.auth === undefined);
       assert(message.__auth === undefined);
+      done();
+    });
+  });
+
+  it('allows subscribing with internal token', function (done) {
+    auth.incoming({
+      channel: '/meta/subscribe',
+      subscription: '/appid/private/channel',
+      ext: {
+        internalToken: 'internalToken'
+      }
+    }, function (message) {
+      assert(message.error === undefined);
+      done();
+    });
+  });
+
+  it('does not fail for non-subscribing meta channels', function (done) {
+    auth.incoming({
+      channel: '/meta/foo',
+      subscription: '/appid/private/channel'
+    }, function (message) {
+      assert(message.error === undefined);
+      done();
+    });
+  });
+
+  it('does not fail when there\'s nothing to strip', function (done) {
+    auth.outgoing({}, function(message) {
+      assert(message);
       done();
     });
   });

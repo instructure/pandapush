@@ -77,7 +77,7 @@ exports.attach = function (server) {
     servers: redisHostList
   });
 
-  metrics.setup(bayeux, internalClient);
+  metrics(bayeux).start();
 
   bayeux.attach(server);
 };
