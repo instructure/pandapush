@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router';
-import _ from 'lodash';
 import Pandapush from '../../client/dist/client';
 
 class Application extends React.Component {

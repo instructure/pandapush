@@ -4,22 +4,23 @@ require('sinon');
 const proxyquire = require('proxyquire');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const assert = require('power-assert');
 
 const database = {
   'appid': {
     keys: {
       'goodkey': {
-        key_id: 'goodkey',
+        id: 'goodkey',
         secret: 'goodkeysecret',
         expires: '2100-01-01T00:00:00Z'
       },
       'expiredkey': {
-        key_id: 'expiredkey',
+        id: 'expiredkey',
         secret: 'expiredkeysecret',
         expires: '2000-01-01T00:00:00Z'
       },
       'revokedkey': {
-        key_id: 'revokedkey',
+        id: 'revokedkey',
         secret: 'revokedkeysecret',
         expires: '2100-01-01T00:00:00Z',
         revoked_at: '2010-01-01T00:00:00Z'
@@ -40,12 +41,15 @@ const token = function (attrs, secret) {
 };
 
 const storeStub = {
-  getByIdCached: function (id, done) {
-    done(null, database[id]);
+  getKeyCachedSync: function (applicationId, keyId) {
+    if (database[applicationId]) {
+      return database[applicationId].keys[keyId];
+    }
+    return null;
   }
 };
 
-const auth = proxyquire('../../../../app/lib/extensions/auth', { '../store': storeStub })('internalToken');
+const auth = proxyquire('../auth', { '../store': storeStub })('internalToken');
 
 // These tests could use some DRY'ing up (there's some combinatorial
 // explosion happening...)
@@ -64,8 +68,8 @@ describe('auth extension', function () {
         }
       }
     }, function (message) {
-      message.ext.should.not.have.property('auth');
-      message.should.not.have.property('__auth');
+      assert(message.ext.auth === undefined);
+      assert(message.__auth === undefined);
       done();
     });
   });
@@ -77,7 +81,7 @@ describe('auth extension', function () {
           channel: '/meta/subscribe',
           subscription: '/appid/public/channel'
         }, function (message) {
-          message.should.not.have.property('error');
+          assert(message.error === undefined);
           done();
         });
       });
@@ -89,7 +93,7 @@ describe('auth extension', function () {
           channel: '/meta/subscribe',
           subscription: '/appid/private/channel'
         }, function (message) {
-          message.should.have.property('error');
+          assert(message.error);
           done();
         });
       });
@@ -105,7 +109,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.not.have.property('error');
+            assert(message.error === undefined);
             done();
           });
         });
@@ -120,7 +124,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.not.have.property('error');
+            assert(message.error === undefined);
             done();
           });
         });
@@ -135,7 +139,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.not.have.property('error');
+            assert(message.error === undefined);
             done();
           });
         });
@@ -150,7 +154,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -165,7 +169,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -180,7 +184,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -195,7 +199,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -210,7 +214,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -225,7 +229,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -240,7 +244,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -255,7 +259,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -275,7 +279,7 @@ describe('auth extension', function () {
             subscription: '/appid/private/channel',
             ext: { auth: authForKey('goodkey') }
           }, function (message) {
-            message.should.not.have.property('error');
+            assert(message.error === undefined);
             done();
           });
         });
@@ -286,7 +290,7 @@ describe('auth extension', function () {
             subscription: '/appid/private/channel',
             ext: { auth: authForKey('expiredkey') }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -297,7 +301,7 @@ describe('auth extension', function () {
             subscription: '/appid/private/channel',
             ext: { auth: authForKey('revokedkey') }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -308,7 +312,7 @@ describe('auth extension', function () {
             subscription: '/appid2/private/channel',
             ext: { auth: authForKey('goodkey') }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -324,7 +328,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -338,7 +342,7 @@ describe('auth extension', function () {
         auth.incoming({
           channel: '/appid/public/channel'
         }, function (message) {
-          message.should.have.property('error');
+          assert(message.error);
           done();
         });
       });
@@ -349,7 +353,7 @@ describe('auth extension', function () {
         auth.incoming({
           channel: '/appid/private/channel'
         }, function (message) {
-          message.should.have.property('error');
+          assert(message.error);
           done();
         });
       });
@@ -364,7 +368,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.not.have.property('error');
+            assert(message.error === undefined);
             done();
           });
         });
@@ -378,7 +382,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.not.have.property('error');
+            assert(message.error === undefined);
             done();
           });
         });
@@ -392,7 +396,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.not.have.property('error');
+            assert(message.error === undefined);
             done();
           });
         });
@@ -406,7 +410,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -420,7 +424,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -434,7 +438,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -448,7 +452,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -462,7 +466,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -476,7 +480,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -490,7 +494,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -504,7 +508,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -523,7 +527,7 @@ describe('auth extension', function () {
             channel: '/appid/private/channel',
             ext: { auth: authForKey('goodkey') }
           }, function (message) {
-            message.should.not.have.property('error');
+            assert(message.error === undefined);
             done();
           });
         });
@@ -533,7 +537,7 @@ describe('auth extension', function () {
             channel: '/appid/private/channel',
             ext: { auth: authForKey('expiredkey') }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -543,7 +547,7 @@ describe('auth extension', function () {
             channel: '/appid/private/channel',
             ext: { auth: authForKey('revokedkey') }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -553,7 +557,7 @@ describe('auth extension', function () {
             channel: '/appid2/private/channel',
             ext: { auth: authForKey('goodkey') }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });
@@ -568,7 +572,7 @@ describe('auth extension', function () {
               }
             }
           }, function (message) {
-            message.should.have.property('error');
+            assert(message.error);
             done();
           });
         });

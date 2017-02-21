@@ -120,7 +120,7 @@ exports.deleteApplication = [ loadUserFromRequest, loadApplicationForUser, funct
       res.send(200);
     })
     .catch(err => {
-      console.log('error removing application', err)
+      console.log('error removing application', err);
       res.send(500, 'error removing application');
     });
 }];

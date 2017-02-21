@@ -2,3 +2,4 @@ node_modules
 client/dist
 .git
 ui/public/**
+coverage

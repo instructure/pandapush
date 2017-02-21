@@ -43,8 +43,6 @@ function populateCache () {
     console.log('reloaded cache with %d items', keyIds.length);
   });
 }
-setInterval(populateCache, CACHE_TTL_MS);
-setTimeout(populateCache, 0);
 
 let notifyClient = null;
 
@@ -54,6 +52,9 @@ module.exports = {
     client.subscribe(NOTIFY_CHANNEL, data => {
       populateCache();
     });
+
+    setInterval(populateCache, CACHE_TTL_MS);
+    setTimeout(populateCache, 0);
   },
 
   getApplications: () => {
