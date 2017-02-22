@@ -78,10 +78,10 @@ if (!process.env.REDIS_HOSTS && !process.env.REDIS_URL_ENV_VARS) {
 const fayeInstance = faye(server);
 
 // initialize the store
-store.init(faye.internalClient);
+store.init(fayeInstance.internalClient);
 
 // set up http metric gatherer (needs to happen after faye initialization)
-httpMetrics(server, logger.log, faye.internalClient).start();
+httpMetrics(server, logger.log, fayeInstance.internalClient).start();
 
 // configure Express application
 
