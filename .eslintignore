@@ -4,3 +4,4 @@ client/dist
 ui/public/**
 coverage
 public/
+app.js
