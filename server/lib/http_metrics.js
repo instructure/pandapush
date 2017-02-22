@@ -40,11 +40,27 @@ module.exports = function (http, log, client) {
   // them, and send to statsd. (yes, this will result in duplicate information
   // to statsd, but that's fine because it's a gauge)
   let stats = {};
-  client.subscribe('/internal/meta/statistics', function (data) {
-    stats[data.source] = data.stats;
-  });
+  let subscription;
+
+  function resubscribe () {
+    if (subscription) {
+      subscription.cancel();
+      subscription = null;
+    }
+
+    subscription = client.subscribe('/internal/meta/statistics', function (data) {
+      stats[data.source] = data.stats;
+    });
+  }
+  resubscribe();
 
   function sendStatsToStatsd () {
+    if (_.size(stats) === 0) {
+      log.info('Did not receive any http stats - resubscribing.');
+      resubscribe();
+      return;
+    }
+
     let totalConnections = 0;
     let totalWsConnections = 0;
 
@@ -58,8 +74,14 @@ module.exports = function (http, log, client) {
              ' http=' + totalConnections +
              ' ws=' + totalWsConnections);
 
-    statsd.gauge('connections.http', totalConnections);
-    statsd.gauge('connections.ws', totalWsConnections);
+    if (totalConnections > 0) {
+      statsd.gauge('connections.http', totalConnections);
+    }
+
+    if (totalWsConnections > 0) {
+      statsd.gauge('connections.ws', totalWsConnections);
+    }
+
     stats = {};
   }
 

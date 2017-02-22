@@ -32,6 +32,25 @@ const clientMock = () => {
 
 const log = { info: jest.fn() };
 
+it('resubscribes when no messages received', () => {
+  const unsubscribeMock = jest.fn();
+  const clientMock2 = {
+    publish: jest.fn(),
+    subscribe: jest.fn(() => {
+      return { cancel: unsubscribeMock };
+    })
+  };
+
+  const h = httpMetrics(httpStub, log, clientMock2);
+
+  expect(clientMock2.subscribe).toHaveBeenCalledTimes(1);
+  expect(unsubscribeMock).toHaveBeenCalledTimes(0);
+
+  h.sendStatsToStatsd();
+  expect(unsubscribeMock).toHaveBeenCalledTimes(1);
+  expect(clientMock2.subscribe).toHaveBeenCalledTimes(2);
+});
+
 it('tracks open http connections', () => {
   const h = httpMetrics(httpStub, log, clientMock());
   let close;
@@ -41,18 +60,15 @@ it('tracks open http connections', () => {
 
   h.sendStats();
   h.sendStatsToStatsd();
-  expect(statsd.gauge).toHaveBeenCalledTimes(2);
+  expect(statsd.gauge).toHaveBeenCalledTimes(1);
   expect(statsd.gauge).toHaveBeenCalledWith('connections.http', 1);
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.ws', 0);
   statsd.gauge.mockClear();
 
   close();
 
   h.sendStats();
   h.sendStatsToStatsd();
-  expect(statsd.gauge).toHaveBeenCalledTimes(2);
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.http', 0);
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.ws', 0);
+  expect(statsd.gauge).toHaveBeenCalledTimes(0);
 });
 
 it('tracks open ws connections', () => {
@@ -64,8 +80,7 @@ it('tracks open ws connections', () => {
 
   h.sendStats();
   h.sendStatsToStatsd();
-  expect(statsd.gauge).toHaveBeenCalledTimes(2);
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.http', 0);
+  expect(statsd.gauge).toHaveBeenCalledTimes(1);
   expect(statsd.gauge).toHaveBeenCalledWith('connections.ws', 1);
   statsd.gauge.mockClear();
 
@@ -73,9 +88,7 @@ it('tracks open ws connections', () => {
 
   h.sendStats();
   h.sendStatsToStatsd();
-  expect(statsd.gauge).toHaveBeenCalledTimes(2);
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.http', 0);
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.ws', 0);
+  expect(statsd.gauge).toHaveBeenCalledTimes(0);
 });
 
 it('aggregates the data from multiple sources', () => {
