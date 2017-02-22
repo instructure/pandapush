@@ -13,7 +13,9 @@ const path = require('path');
 const crypto = require('crypto');
 const spawn = require('child_process').spawn;
 const faye = require('./lib/faye');
-const logger = require('./lib/logger');
+const logger = require('./lib/logger')();
+const loggerMiddleware = require('./lib/middlewares/logger');
+const statsdMiddleware = require('./lib/middlewares/statsd');
 const routes = require('./routes');
 const httpMetrics = require('./lib/http_metrics');
 const store = require('./lib/store');
@@ -81,13 +83,14 @@ const fayeInstance = faye(server);
 store.init(fayeInstance.internalClient);
 
 // set up http metric gatherer (needs to happen after faye initialization)
-httpMetrics(server, logger.log, fayeInstance.internalClient).start();
+httpMetrics(server, logger, fayeInstance.internalClient).start();
 
 // configure Express application
 
 app.enable('trust proxy');
 app.use(require('connect-requestid'));
-app.use(logger.middleware);
+app.use(loggerMiddleware(logger));
+app.use(statsdMiddleware());
 app.use(session({ keys: [ sessionPrivateKey ] }));
 app.use(bodyParser.json());
 
