@@ -122,8 +122,8 @@ const checks = {
       if (message.ext) {
         message.ext.presence = null;
 
-        if (appKeyInfo && appKeyInfo.decoded) {
-          message.ext.presence = appKeyInfo.decoded.presence;
+        if (appKeyInfo && appKeyInfo.decodedToken) {
+          message.ext.presence = appKeyInfo.decodedToken.presence;
         }
       }
 

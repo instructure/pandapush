@@ -54,6 +54,27 @@ const auth = require('../auth')('internalToken');
 // explosion happening...)
 
 describe('auth extension', function () {
+  it('injects presence info from token into message', function (done) {
+    auth.incoming({
+      channel: '/meta/subscribe',
+      subscription: '/appid/presence/channel',
+      ext: {
+        auth: {
+          token: token({
+            channel: '/appid/presence/channel',
+            sub: true,
+            presence: {
+              id: 'userid'
+            }
+          })
+        }
+      }
+    }, function (message) {
+      expect(message.ext.presence).toEqual({ id: 'userid' });
+      done();
+    });
+  });
+
   it('fails on an invalid channel', function (done) {
     auth.incoming({
       channel: '/meta/subscribe',
