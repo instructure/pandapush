@@ -203,7 +203,7 @@ module.exports = {
       .where('application_id', applicationId)
       .update({
         'use_count': knex.raw('coalesce(use_count, 0) + ?', [ count ]),
-        'last_used': knex.raw('max(coalesce(last_used, ?), ?)', [ lastUsedISO, lastUsedISO ])
+        'last_used': lastUsedISO
       });
   }
 };
