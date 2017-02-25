@@ -21,7 +21,7 @@ if (process.env.DATABASE === 'postgres') {
   };
 }
 
-config.debug = true;
+// config.debug = true;
 
 // Config is dynamic based on environment, so just pass
 // whatever is set as both dev and prod so knex will use it.

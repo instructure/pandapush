@@ -86,14 +86,20 @@ class Keys extends React.Component {
           status = 'expired';
         }
 
+        let lastUsedString = '';
+        if (key.last_used) {
+          lastUsedString = moment(key.last_used).fromNow();
+        }
+
         return (
           <tr key={key.id}>
             <td className="identifier">{key.id}</td>
             <td>{key.purpose}</td>
-            <td>{key.created_at} ({key.created_by})</td>
-            <td>{key.expires}</td>
+            <td>{moment(key.created_at).fromNow()} ({key.created_by})</td>
+            <td>{moment(key.expires).fromNow()}</td>
             <td>{status}</td>
-            <td> </td>
+            <td>{lastUsedString}</td>
+            <td>{key.use_count}</td>
           </tr>
         );
       })
@@ -111,7 +117,8 @@ class Keys extends React.Component {
               <th>Created</th>
               <th>Expires</th>
               <th>Status</th>
-              <th>Actions</th>
+              <th>Last Used</th>
+              <th>Used</th>
             </tr>
           </thead>
 

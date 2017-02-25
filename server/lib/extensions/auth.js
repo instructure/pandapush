@@ -11,14 +11,17 @@ const error = function (message, callback, error) {
 };
 
 const verifyAuth = function (channel, auth, allowPublic, done) {
+  const appKeyInfo = {};
   const channelInfo = channels.parse(channel);
   if (!channelInfo) {
     return done('Invalid channel name');
   }
 
+  appKeyInfo.applicationId = channelInfo.applicationId;
+
   if (allowPublic && channelInfo.public) {
     // public means no auth necessary...
-    return done(null, null);
+    return done(null, appKeyInfo);
   }
 
   if (!auth) {
@@ -40,6 +43,7 @@ const verifyAuth = function (channel, auth, allowPublic, done) {
     return done('Auth information does not include token or key');
   }
 
+  appKeyInfo.keyId = keyId;
   const key = store.getKeyCachedSync(channelInfo.applicationId, keyId);
 
   if (!key) {
@@ -59,12 +63,14 @@ const verifyAuth = function (channel, auth, allowPublic, done) {
       return done('Revoked key');
     }
 
-    done(null);
+    done(null, appKeyInfo);
   } else {
     jwt.verify(auth.token, key.secret, {}, function (err, decoded) {
       if (err || !decoded) {
         return done('Invalid token provided');
       }
+
+      appKeyInfo.decodedToken = decoded;
 
       if (moment(key.expires).isBefore(moment())) {
         return done('Expired key');
@@ -78,17 +84,17 @@ const verifyAuth = function (channel, auth, allowPublic, done) {
         if (_.endsWith(decoded.channel, '/*') &&
             _.startsWith(channel, decoded.channel.slice(0, -2)) &&
             _.lastIndexOf(channel, '/') === _.lastIndexOf(decoded.channel, '/')) {
-          return done(null, decoded);
+          return done(null, appKeyInfo);
         }
 
         if (_.endsWith(decoded.channel, '/**') && _.startsWith(channel, decoded.channel.slice(0, -3))) {
-          return done(null, decoded);
+          return done(null, appKeyInfo);
         }
 
         return done('Token does not match channel');
       }
 
-      done(null, decoded);
+      done(null, appKeyInfo);
     });
   }
 };
@@ -100,23 +106,24 @@ const checks = {
     const subscription = message.subscription;
     const auth = message.ext && message.ext.auth;
 
-    verifyAuth(subscription, auth, true, function (err, decoded) {
+    verifyAuth(subscription, auth, true, function (err, appKeyInfo) {
       if (err) {
         return msgError(err);
       }
 
-      if (decoded && decoded.sub !== true) {
+      if (appKeyInfo && appKeyInfo.decodedToken && appKeyInfo.decodedToken.sub !== true) {
         return msgError('Token does not allow subscribing');
       }
+
+      message.__internal = appKeyInfo;
 
       // For presence, overwrite anything the user sent in as presence
       // info in ext with what is in the token.
       if (message.ext) {
         message.ext.presence = null;
 
-        if (decoded) {
-          message.ext._decodedToken = decoded;
-          message.ext.presence = decoded.presence;
+        if (appKeyInfo && appKeyInfo.decoded) {
+          message.ext.presence = appKeyInfo.decoded.presence;
         }
       }
 
@@ -131,19 +138,16 @@ const checks = {
     const auth = (message.ext && message.ext.auth) ||
                  (message.data && message.data.__auth);
 
-    verifyAuth(message.channel, auth, false, function (err, decoded) {
+    verifyAuth(message.channel, auth, false, function (err, appKeyInfo) {
       if (err) {
         return msgError(err, callback);
       }
 
-      if (decoded && decoded.pub !== true) {
+      if (appKeyInfo && appKeyInfo.decodedToken && appKeyInfo.decodedToken.pub !== true) {
         return msgError('Token does not allow publishing', callback);
       }
 
-      if (decoded) {
-        message.ext = message.ext || {};
-        message.ext._decodedToken = decoded;
-      }
+      message.__internal = appKeyInfo;
 
       // token verified
       callback(message);
@@ -159,9 +163,8 @@ module.exports = function (internalToken) {
         return callback(message);
       }
 
-      if (message.ext) {
-        delete message.ext._decodedToken;
-      }
+      // This field should never be set by clients.
+      delete message.__internal;
 
       if (message.channel.indexOf('/meta/') === 0) {
         const check = checks[message.channel];
@@ -183,8 +186,9 @@ module.exports = function (internalToken) {
       // strip out any auth token
       if (message.ext) {
         delete message.ext.auth;
-        delete message.ext._decodedToken;
       }
+
+      delete message.__internal;
 
       if (message.data) {
         delete message.data.__auth;
