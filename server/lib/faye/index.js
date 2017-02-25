@@ -45,7 +45,7 @@ module.exports = function (server) {
   const external = faye.getClient();
   const internal = internalClient(internalToken, faye._server);
 
-  presence.setup(faye, internalClient, {
+  presence.setup(faye, internal, {
     channelRe: /^\/\w+\/presence\//,
     servers: redisHosts[0]
   });
