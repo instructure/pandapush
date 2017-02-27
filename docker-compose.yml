@@ -17,6 +17,8 @@ services:
     ports:
       - "80"
       - "8125/udp"
+    volumes:
+      - "./docker/statsd-config.json:/opt/statsd/config.js"
     environment:
       VIRTUAL_HOST: pandapush-graphite.docker
       VIRTUAL_PORT: 80
