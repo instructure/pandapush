@@ -1,9 +1,10 @@
-const dbConfig = require('../knexfile');
-const knex = require('knex')(dbConfig[process.env.NODE_ENV]);
+const dbConfig = require('../knexfile')[process.env.NODE_ENV];
+const knex = require('knex')(dbConfig);
 const _ = require('lodash');
 const token = require('./token');
 const cache = require('memory-cache');
 const moment = require('moment');
+const path = require('path');
 
 const CACHE_TTL_MS = parseInt(process.env.CACHE_TTL_MS, 10) || 5 * 60 * 1000;
 const NOTIFY_CHANNEL = '/internal/meta/config';
@@ -51,6 +52,15 @@ let notifySubscription;
 module.exports = {
   init: client => {
     notifyClient = client;
+
+    // if this is a sqlite store, make sure it's migrated
+    // (for ease of use in non-production settings.)
+    if (dbConfig.client === 'sqlite3') {
+      knex.migrate.latest({
+        directory: path.join(__dirname, '../migrations')
+      });
+    }
+
     notifySubscription = client.subscribe(NOTIFY_CHANNEL, data => {
       populateCache();
     });
