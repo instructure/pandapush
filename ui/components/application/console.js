@@ -15,22 +15,6 @@ class Console extends React.Component {
     };
   }
 
-  loadData () {
-    fetch('/admin/api/applications', { credentials: 'same-origin' })
-      .then(response => response.json())
-      .then(json => {
-        const app = _.find(json, { id: this.props.params.id });
-        this.setState({ app: app });
-      })
-      .catch(e => {
-        console.log('error getting applications', e);
-      });
-  }
-
-  componentDidMount () {
-    this.loadData();
-  }
-
   handlePublish = (useClient, e) => {
     e.preventDefault();
 

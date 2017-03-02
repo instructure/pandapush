@@ -12,18 +12,6 @@ class LoadTest extends React.Component {
     };
   }
 
-  loadData () {
-    fetch('/admin/api/applications', { credentials: 'same-origin' })
-      .then(response => response.json())
-      .then(json => {
-        const app = _.find(json, { id: this.props.params.id });
-        this.setState({ app: app });
-      })
-      .catch(e => {
-        console.log('error getting applications', e);
-      });
-  }
-
   subscribeToWorkers () {
     const presenceChannel = `/${this.props.params.id}/presence/workers`;
 
@@ -49,7 +37,6 @@ class LoadTest extends React.Component {
   }
 
   componentDidMount () {
-    this.loadData();
     this.subscribeToWorkers();
   }
 
@@ -128,7 +115,9 @@ class LoadTest extends React.Component {
     const sums = {
       subscribed: 0,
       waitingPush: 0,
-      waitingReceive: 0
+      waitingReceive: 0,
+      failedSubscribe: 0,
+      failedPublish: 0
     };
 
     const workerDivs = _.map(this.state.workers, (worker, name) => {
@@ -138,6 +127,8 @@ class LoadTest extends React.Component {
       sums.subscribed += (status.subscribed || 0);
       sums.waitingPush += (status.waitingPush || 0);
       sums.waitingReceive += (status.waitingReceive || 0);
+      sums.failedSubscribe += (status.failedSubscribe || 0);
+      sums.failedPublish += (status.failedPublish || 0);
 
       return (
         <tr key={name} className={className}>
@@ -146,6 +137,8 @@ class LoadTest extends React.Component {
           <td>{status.subscribed}</td>
           <td>{status.waitingPush}</td>
           <td>{status.waitingReceive}</td>
+          <td>{status.failedSubscribe}</td>
+          <td>{status.failedPublish}</td>
         </tr>
       );
     });
@@ -160,6 +153,8 @@ class LoadTest extends React.Component {
               <th>Subscribed</th>
               <th>Waiting Push</th>
               <th>Waiting Receive</th>
+              <th>Failed Subscribe</th>
+              <th>Failed Publish</th>
             </tr>
           </thead>
           <tbody>
@@ -169,6 +164,8 @@ class LoadTest extends React.Component {
               <td>{sums.subscribed}</td>
               <td>{sums.waitingPush}</td>
               <td>{sums.waitingReceive}</td>
+              <td>{sums.failedSubscribe}</td>
+              <td>{sums.failedPublish}</td>
             </tr>
 
             {workerDivs}

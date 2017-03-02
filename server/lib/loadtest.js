@@ -17,14 +17,32 @@ function makeToken (channel, key, secret, pub, sub) {
   return jwt.sign(payload, secret);
 }
 
-function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, clientId, progress, doneLT) {
+function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, clientId, progress, done) {
   const userIds = _.range(numusers);
 
   let waitingReceive = numusers * ppu;
   let waitingPush = numusers * ppu;
-  const subscribed = [];
+  let failedSubscribe = 0;
+  let failedPublish = 0;
+  const subscribed = {};
+
+  function sendProgress () {
+    progress({
+      waitingReceive,
+      waitingPush,
+      subscribed: _.size(subscribed),
+      failedSubscribe,
+      failedPublish
+    });
+  }
 
   const clients = [];
+
+  function finish () {
+    sendProgress();
+    clients.forEach(client => client.disconnect());
+    done();
+  }
 
   async.parallelLimit(_.map(userIds, function (n) {
     return function (done) {
@@ -45,30 +63,33 @@ function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, clientId,
       client.subscribe(channel, function (message) {
         waitingReceive -= 1;
         subscribed[n] -= 1;
-        progress({ subscribed: subscribed.length, waitingPush, waitingReceive });
+        sendProgress();
         console.log(`${n} received message ${message.msg} (waiting for ${waitingReceive} more)`);
         if (waitingPush === 0 && waitingReceive === 0) {
           console.log('done');
-          clients.forEach(client => client.disconnect())
-          doneLT();
+          finish();
           return;
         }
       }).then(function () {
         subscribed[n] = 0;
-        progress({ subscribed: subscribed.length, waitingPush, waitingReceive });
-        console.log(`${n} subscribed in ${Date.now() - start} ms (${subscribed.length} subscribed)`);
+        sendProgress();
+        console.log(`${n} subscribed in ${Date.now() - start} ms (${_.size(subscribed)} subscribed)`);
         done();
       }, function (err) {
-        progress({ subscribed: subscribed.length, waitingPush, waitingReceive });
+        failedSubscribe += 1;
+        sendProgress();
         console.log(`${n} FAILED SUBSCRIBE in ${Date.now() - start} ms`);
         console.log('err:', err);
         done(err);
       });
     };
-  }), 50);
+  }), 50, (err, results) => {
+    if (err) {
+      console.log('error subscribing', err);
+      finish();
+      return;
+    }
 
-  // wait 5 seconds before we start publishing
-  setTimeout(function () {
     const client = new Faye.Client(url);
     clients.push(client);
     client.addExtension({
@@ -92,9 +113,11 @@ function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, clientId,
       client.publish(channel, {
         msg: 'publish to ' + channel
       }).then(function () {
-        progress({ subscribed: subscribed.length, waitingPush, waitingReceive });
+        sendProgress();
         console.log(`${n} published in ${Date.now() - start} ms`);
       }, function (err) {
+        failedPublish += 1;
+        sendProgress();
         console.log(`${n} FAILED PUBLISH in ${Date.now() - start} ms`, err);
       });
 
@@ -105,7 +128,7 @@ function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, clientId,
       }
     }
     doNext();
-  }, 5000);
+  });
 }
 
 exports.loadTest = loadTest;
