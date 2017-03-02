@@ -17,19 +17,22 @@ function makeToken (channel, key, secret, pub, sub) {
   return jwt.sign(payload, secret);
 }
 
-function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, progress, doneLT) {
+function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, clientId, progress, doneLT) {
   const userIds = _.range(numusers);
 
   let waitingReceive = numusers * ppu;
   let waitingPush = numusers * ppu;
   const subscribed = [];
 
+  const clients = [];
+
   async.parallelLimit(_.map(userIds, function (n) {
     return function (done) {
-      const channel = '/' + appid + '/private/users/' + n;
+      const channel = '/' + appid + '/private/' + clientId + '/users/' + n;
       const token = makeToken(channel, keyid, secret, false, true);
 
       const client = new Faye.Client(url);
+      clients.push(client);
       client.addExtension({
         outgoing: function (message, callback) {
           message.ext = message.ext || {};
@@ -46,6 +49,7 @@ function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, progress,
         console.log(`${n} received message ${message.msg} (waiting for ${waitingReceive} more)`);
         if (waitingPush === 0 && waitingReceive === 0) {
           console.log('done');
+          clients.forEach(client => client.disconnect())
           doneLT();
           return;
         }
@@ -66,6 +70,7 @@ function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, progress,
   // wait 5 seconds before we start publishing
   setTimeout(function () {
     const client = new Faye.Client(url);
+    clients.push(client);
     client.addExtension({
       outgoing: function (message, callback) {
         message.ext = message.ext || {};
@@ -82,15 +87,15 @@ function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, progress,
       subscribed[n] += 1;
       waitingPush -= 1;
 
-      const channel = '/' + appid + '/private/users/' + n;
+      const channel = '/' + appid + '/private/' + clientId + '/users/' + n;
       const start = Date.now();
       client.publish(channel, {
         msg: 'publish to ' + channel
       }).then(function () {
         progress({ subscribed: subscribed.length, waitingPush, waitingReceive });
         console.log(`${n} published in ${Date.now() - start} ms`);
-      }, function () {
-        console.log(`${n} FAILED PUBLISH in ${Date.now() - start} ms`);
+      }, function (err) {
+        console.log(`${n} FAILED PUBLISH in ${Date.now() - start} ms`, err);
       });
 
       if (waitingPush > 0) {

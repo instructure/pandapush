@@ -2,18 +2,18 @@
 
 'use strict';
 
-const Faye = require('faye');
+const Client = require('../client/index').Client;
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
-const async = require('async');
 const loadTest = require('./lib/loadtest').loadTest;
 
-function makeToken (channel, key, secret, pub, sub) {
+function makeToken (channel, key, secret, pub, sub, presence) {
   const payload = {
     keyId: key,
     channel: channel,
     pub: pub,
-    sub: sub
+    sub: sub,
+    presence: presence
   };
 
   return jwt.sign(payload, secret);
@@ -26,25 +26,23 @@ const masterSecret = process.env.MASTER_PANDAPUSH_SECRET;
 
 const clientName = process.env.HOSTNAME + '-' + process.pid;
 
-const faye = new Faye.Client(masterBase);
+const client = new Client(masterBase);
 const masterChannelBase = `/${masterApp}/private`;
 const token = makeToken(`${masterChannelBase}/**`, masterKey, masterSecret, true, true);
-faye.addExtension({
-  outgoing: function (message, callback) {
-    message.ext = message.ext || {};
-    message.ext.auth = {
-      token: token
-    };
-    callback(message);
-  }
+
+const presenceChannel = `/${masterApp}/presence/workers`;
+const presenceToken = makeToken(presenceChannel, masterKey, masterSecret, false, true, {
+  id: clientName
 });
 
-const pingChannel = `${masterChannelBase}/ping/${clientName}`;
-setInterval(function () {
-  faye.publish(pingChannel, {});
-}, 5000);
+client.subscribeTo(presenceChannel, presenceToken, () => {})
+  .then(function () {
+    console.log('subscribed to ', presenceChannel);
+  }, function (err) {
+    console.log('error subscribing', err);
+  });
 
-faye.subscribe(`${masterChannelBase}/jobs`, function (message) {
+client.subscribeTo(`${masterChannelBase}/jobs`, token, function (message) {
   console.log('got job', message);
   const testId = message.testId;
   const responseChannel = `${masterChannelBase}/${testId}/${clientName}`;
@@ -52,8 +50,8 @@ faye.subscribe(`${masterChannelBase}/jobs`, function (message) {
   let progress = {};
 
   const publishProgressInterval = setInterval(function () {
-    faye.publish(responseChannel, progress);
-  }, 5000);
+    client.publishTo(responseChannel, token, progress);
+  }, 500);
 
   loadTest(
     message.url,
@@ -63,11 +61,11 @@ faye.subscribe(`${masterChannelBase}/jobs`, function (message) {
     message.numusers,
     message.ppu,
     message.pushrate,
+    clientName,
     function (p) {
       progress = p;
     }, function () {
-      faye.publish(responseChannel, progress);
-      faye.publish(responseChannel, { done: true });
+      client.publishTo(responseChannel, token, _.merge({}, progress, { done: true }));
       clearInterval(publishProgressInterval);
     });
 }).then(function () {

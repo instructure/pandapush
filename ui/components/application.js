@@ -105,6 +105,7 @@ class Application extends React.Component {
             <li><Link to={`/application/${this.props.params.id}/info`} activeClassName="active">Info</Link></li>
             <li><Link to={`/application/${this.props.params.id}/keys`} activeClassName="active">Keys</Link></li>
             <li><Link to={`/application/${this.props.params.id}/console`} activeClassName="active">Console</Link></li>
+            <li><Link to={`/application/${this.props.params.id}/loadtest`} activeClassName="active">Load Tester</Link></li>
           </ul>
 
           <br />

@@ -6,6 +6,7 @@ import Application from './components/application';
 import ApplicationInfo from './components/application/info';
 import ApplicationKeys from './components/application/keys';
 import ApplicationConsole from './components/application/console';
+import ApplicationLoadTest from './components/application/loadtest';
 
 window.React = React; // for the React chrome extension
 
@@ -73,6 +74,7 @@ render((
         <Route path="info" component={ApplicationInfo} />
         <Route path="keys" component={ApplicationKeys} />
         <Route path="console" component={ApplicationConsole} />
+        <Route path="loadtest" component={ApplicationLoadTest} />
       </Route>
     </Route>
   </Router>
