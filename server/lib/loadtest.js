@@ -80,7 +80,7 @@ function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, clientId,
         sendProgress();
         console.log(`${n} FAILED SUBSCRIBE in ${Date.now() - start} ms`);
         console.log('err:', err);
-        done(err);
+        done();
       });
     };
   }), 50, (err, results) => {
