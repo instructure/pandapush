@@ -86,8 +86,6 @@ function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, clientId,
   }), 50, (err, results) => {
     if (err) {
       console.log('error subscribing', err);
-      finish();
-      return;
     }
 
     const client = new Faye.Client(url);
