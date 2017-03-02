@@ -1,6 +1,8 @@
 import React from 'react';
 import moment from 'moment';
 import _ from 'lodash';
+import Presence from '../pandapush/presence';
+import Token from '../pandapush/token';
 
 class LoadTest extends React.Component {
   constructor (props) {
@@ -8,44 +10,12 @@ class LoadTest extends React.Component {
 
     this.state = {
       workers: {},
-      workersStatus: {}
+      workersStatus: {},
+      presenceChannel: `/${this.props.params.id}/presence/workers`
     };
   }
 
-  subscribeToWorkers () {
-    const presenceChannel = `/${this.props.params.id}/presence/workers`;
-
-    this.props.getToken(this.props.params.id, presenceChannel, { id: 'console' }, (err, token) => {
-      if (err) {
-        alert('Error getting token', err);
-        return;
-      }
-
-      this.workersSubscription = this.props.client.subscribeTo(presenceChannel, token, (message, channel) => {
-        const workers = this.state.workers || {};
-
-        const updatedWorkers =
-          _({})
-            .extend(workers, message.subscribe || {})
-            .omit(_.keys(message.unsubscribe))
-            .omit('console')
-            .value();
-
-        this.setState({ workers: updatedWorkers });
-      });
-    });
-  }
-
-  componentDidMount () {
-    this.subscribeToWorkers();
-  }
-
   componentWillUnmount () {
-    if (this.workersSubscription) {
-      this.workersSubscription.cancel();
-      this.workersSubscription = null;
-    }
-
     if (this.jobSubscription) {
       this.jobSubscription.cancel();
       this.jobSubscription = null;
@@ -111,7 +81,7 @@ class LoadTest extends React.Component {
     });
   }
 
-  renderWorkers () {
+  renderWorkerRows (workers) {
     const sums = {
       subscribed: 0,
       waitingPush: 0,
@@ -120,7 +90,7 @@ class LoadTest extends React.Component {
       failedPublish: 0
     };
 
-    const workerDivs = _.map(this.state.workers, (worker, name) => {
+    const workerRows = _.map(_.omit(workers, 'console'), (worker, name) => {
       const className = worker.done ? 'success' : '';
       const status = this.state.workersStatus[name] || {};
 
@@ -143,35 +113,58 @@ class LoadTest extends React.Component {
       );
     });
 
-    return (
-      <div className="row">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Last Msg</th>
-              <th>Subscribed</th>
-              <th>Waiting Push</th>
-              <th>Waiting Receive</th>
-              <th>Failed Subscribe</th>
-              <th>Failed Publish</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr key="sums" className="active">
-              <td>Totals</td>
-              <td></td>
-              <td>{sums.subscribed}</td>
-              <td>{sums.waitingPush}</td>
-              <td>{sums.waitingReceive}</td>
-              <td>{sums.failedSubscribe}</td>
-              <td>{sums.failedPublish}</td>
-            </tr>
+    workerRows.unshift((
+      <tr key="sums" className="active">
+        <td>Totals</td>
+        <td></td>
+        <td>{sums.subscribed}</td>
+        <td>{sums.waitingPush}</td>
+        <td>{sums.waitingReceive}</td>
+        <td>{sums.failedSubscribe}</td>
+        <td>{sums.failedPublish}</td>
+      </tr>
+    ));
 
-            {workerDivs}
-          </tbody>
-        </table>
-      </div>
+    return workerRows;
+  }
+
+  renderWorkers () {
+    return (
+      <Token
+        appId={this.props.params.id}
+        channel={this.state.presenceChannel}
+        presence={{ id: 'console' }}
+        sub={true}>
+        {(token) => (
+          token
+          ? <Presence
+              channel={this.state.presenceChannel}
+              token={token}
+              client={this.props.client}>
+              {(workers) => (
+                <div className="row">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Last Msg</th>
+                        <th>Subscribed</th>
+                        <th>Waiting Push</th>
+                        <th>Waiting Receive</th>
+                        <th>Failed Subscribe</th>
+                        <th>Failed Publish</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {this.renderWorkerRows(workers)}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Presence>
+          : null
+        )}
+      </Token>
     );
   }
 
