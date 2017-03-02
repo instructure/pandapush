@@ -33,7 +33,7 @@ class LoadTest extends React.Component {
         return;
       }
 
-      this.jobSubscription = this.props.client.subscribeTo(presenceChannel, token, (message, channel) => {
+      this.workersSubscription = this.props.client.subscribeTo(presenceChannel, token, (message, channel) => {
         const workers = this.state.workers || {};
 
         const updatedWorkers =
@@ -51,6 +51,18 @@ class LoadTest extends React.Component {
   componentDidMount () {
     this.loadData();
     this.subscribeToWorkers();
+  }
+
+  componentWillUnmount () {
+    if (this.workersSubscription) {
+      this.workersSubscription.cancel();
+      this.workersSubscription = null;
+    }
+
+    if (this.jobSubscription) {
+      this.jobSubscription.cancel();
+      this.jobSubscription = null;
+    }
   }
 
   handleFieldChange = (field, e) => {
