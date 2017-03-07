@@ -1,11 +1,10 @@
 const admin = require('./controllers/admin_controller');
 const channel = require('./controllers/channel_controller');
+const healthCheck = require('./controllers/health_check_controller');
 
 exports.map = function (app, auth) {
   app.post(/^\/channel\/([a-zA-Z0-9]+)\/(public|private)((?:\/[a-zA-Z0-9-_~]+)+)$/, channel.post);
-  app.get('/health_check.json', function (req, res) {
-    res.json(200, {});
-  });
+  app.get('/health_check.json', healthCheck.get);
 
   if (auth) {
     app.get('/logout', auth.logout);
