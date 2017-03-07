@@ -259,3 +259,4 @@ Presence data should be kept small, as it is persisted in redis in memory.
 Note that this is *not* a "Push Notification" service like for iOS and
 Android. There do appear to be some open-source Faye clients
 for iOS and Android, but I have not tested any of them yet.
+
