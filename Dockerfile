@@ -19,6 +19,7 @@ ADD .eslintrc /usr/src/app/.eslintrc
 ADD ./server /usr/src/app/server
 ADD ./ui /usr/src/app/ui
 ADD ./client /usr/src/app/client
+RUN mkdir /usr/src/app/localdata
 
 # for legacy purposes
 RUN ln -s /usr/src/app /app
