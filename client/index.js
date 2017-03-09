@@ -26,6 +26,10 @@ const Client = Class(Faye.Client, {
         }
 
         if (token) {
+          if (typeof token === 'function') {
+            token = token()
+          }
+
           if (!message.ext) message.ext = {};
           message.ext.auth = {
             token: token
@@ -48,26 +52,16 @@ const Client = Class(Faye.Client, {
 
   /**
    * @param channel [String]
-   * @param token [String] (optional)
-   * @callback [function(message, channel)] (optional)
+   * @param token [String, Function] Either a string, or a function that will return a string.
+   *   Can be useful for specifying new tokens without needing to resubscribe.
+   * @callback [function(message, channel)]
    *   @param message [Object]
    *   @param channel [String]
    * @returns {Promise}
    *
-   * subscribeTo(channel, callback)
    * subscribeTo(channel, token, callback);
    */
-  subscribeTo: function () {
-    const channel = arguments[0];
-    let callback;
-    if (typeof arguments[arguments.length - 1] === 'function') {
-      callback = arguments[arguments.length - 1];
-    }
-    let token;
-    if (typeof arguments[1] === 'string') {
-      token = arguments[1];
-    }
-
+  subscribeTo: function (channel, token, callback) {
     if (token) {
       this._tokens[channel] = token;
     }

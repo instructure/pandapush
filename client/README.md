@@ -52,7 +52,7 @@ passing tokens around simpler:
 Param      | Type   |          | Description
 -----------|--------|----------|------------
 `channel`  | String |          | The channel to subscribe to.
-`token`    | String | optional | The token to use when subscribing. Must be specified if the channel is not public.
+`token`    | String, Function |          | The token to use when subscribing. `null` if no token is necessary. Can also be a function which returns the token as a string.
 `callback` | Function |        | Function called on every new message.
 
 The callback is be called with 2 parameters - the `message` payload and the `channel`.
