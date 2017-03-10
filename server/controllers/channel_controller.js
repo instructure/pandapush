@@ -33,8 +33,6 @@ const authFromRequest = function (req) {
       token: auth[1]
     };
   }
-
-  return;
 };
 
 exports.post = function (req, res) {

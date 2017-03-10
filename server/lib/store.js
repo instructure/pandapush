@@ -9,7 +9,7 @@ const path = require('path');
 const CACHE_TTL_MS = parseInt(process.env.CACHE_TTL_MS, 10) || 5 * 60 * 1000;
 const NOTIFY_CHANNEL = '/internal/meta/config';
 
-const rootAdmins = process.env.ROOT_ADMINS && process.env.ROOT_ADMINS.split(',') || [];
+const rootAdmins = process.env.ROOT_ADMINS ? process.env.ROOT_ADMINS.split(',') : [];
 function isRootAdmin (user) {
   return _.indexOf(rootAdmins, user) >= 0;
 }

@@ -27,7 +27,7 @@ const Client = Class(Faye.Client, {
 
         if (token) {
           if (typeof token === 'function') {
-            token = token()
+            token = token();
           }
 
           if (!message.ext) message.ext = {};

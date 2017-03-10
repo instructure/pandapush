@@ -68,7 +68,6 @@ function loadTest (url, appid, keyid, secret, numusers, ppu, pushrate, clientId,
         if (waitingPush === 0 && waitingReceive === 0) {
           console.log('done');
           finish();
-          return;
         }
       }).then(function () {
         subscribed[n] = 0;

@@ -179,7 +179,7 @@ exports.generateToken = [ loadUserFromRequest, loadApplicationForUser, function 
       return store.addKey(application.id, expires, 'web console', user);
     })
     .then(key => {
-      const expires = req.body.expires && moment(req.body.expires) || moment().add('hours', 1);
+      const expires = (req.body.expires && moment(req.body.expires)) || moment().add('hours', 1);
 
       const payload = {
         keyId: key.id,

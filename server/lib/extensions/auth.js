@@ -7,7 +7,6 @@ const moment = require('moment');
 const error = function (message, callback, error) {
   message.error = error;
   callback(message);
-  return;
 };
 
 const verifyAuth = function (channel, auth, allowPublic, done) {
@@ -179,7 +178,6 @@ module.exports = function (internalToken) {
       }
 
       checks.publish(message, callback);
-      return;
     },
 
     outgoing: function (message, callback) {

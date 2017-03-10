@@ -332,8 +332,6 @@ class Console extends React.Component {
         </span>
       );
     }
-
-    return;
   }
 
   channelButtonDisabled (path) {
