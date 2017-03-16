@@ -67,6 +67,7 @@ exports.post = function (req, res) {
   });
 
   pub.errback(function (error) {
+    req.log.info(error);
     res.send(400, error);
   });
 };
