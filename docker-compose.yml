@@ -52,6 +52,9 @@ services:
       AWS_ACCESS_KEY_ID: key
       AWS_SECRET_ACCESS_KEY: secret
       NODE_ENV: development
+      DEV_APPLICATION_ID: 'devapp'
+      DEV_KEY_ID: 'devkey'
+      DEV_KEY_SECRET: 'devsecret'
       STATSD_HOST: statsd
       STATSD_PORT: 8125
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/src/app/node_modules/.bin

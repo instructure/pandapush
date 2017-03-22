@@ -10,6 +10,10 @@ const CACHE_TTL_MS = parseInt(process.env.CACHE_TTL_MS, 10) || 5 * 60 * 1000;
 const NOTIFY_CHANNEL = '/internal/meta/config';
 
 const rootAdmins = process.env.ROOT_ADMINS ? process.env.ROOT_ADMINS.split(',') : [];
+if (process.env.ADMIN_USERNAME) {
+  rootAdmins.push(process.env.ADMIN_USERNAME);
+}
+
 function isRootAdmin (user) {
   return _.indexOf(rootAdmins, user) >= 0;
 }
@@ -50,6 +54,46 @@ let populateInterval;
 let notifySubscription;
 
 module.exports = {
+  insertDevCredentials: () => {
+    // if dev credentials were specified via env, make sure they
+    // exist
+    if (process.env.DEV_APPLICATION_ID &&
+        process.env.DEV_KEY_ID &&
+        process.env.DEV_KEY_SECRET) {
+      const applicationId = process.env.DEV_APPLICATION_ID;
+      const keyId = process.env.DEV_KEY_ID;
+      const keySecret = process.env.DEV_KEY_SECRET;
+
+      const devAppAttributes = {
+        id: applicationId,
+        name: 'dev',
+        created_by: 'admin',
+        created_at: moment().toISOString()
+      };
+
+      const insertKey = () => {
+        const devKeyAttributes = {
+          id: keyId,
+          secret: keySecret,
+          application_id: applicationId,
+          created_by: 'admin',
+          expires: moment().add(100, 'years').toISOString(),
+          created_at: moment().toISOString(),
+          purpose: 'dev'
+        };
+        knex('keys').insert(devKeyAttributes)
+          .then(() => populateCache())
+          .catch(() => populateCache());
+      };
+
+      // We just ignore the error that might come (usually
+      // primary key conflict).
+      knex('applications').insert(devAppAttributes)
+        .then(() => insertKey())
+        .catch(() => insertKey());
+    }
+  },
+
   init: client => {
     notifyClient = client;
 
@@ -58,7 +102,10 @@ module.exports = {
     if (dbConfig.client === 'sqlite3') {
       knex.migrate.latest({
         directory: path.join(__dirname, '../migrations')
-      });
+      })
+      .then(() => module.exports.insertDevCredentials());
+    } else {
+      module.exports.insertDevCredentials();
     }
 
     notifySubscription = client.subscribe(NOTIFY_CHANNEL, data => {
