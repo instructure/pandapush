@@ -1,8 +1,8 @@
-import React from 'react';
-import _ from 'lodash';
+import React from "react";
+import _ from "lodash";
 
 class Presence extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -10,22 +10,22 @@ class Presence extends React.Component {
     };
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.getToken(this.props);
   }
 
-  componentWillReceiveProps (newProps) {
+  componentWillReceiveProps(newProps) {
     if (!_.isEqual(newProps, this.props)) {
       this.getToken(newProps);
     }
   }
 
-  getToken (props) {
+  getToken(props) {
     fetch(`/admin/api/application/${props.appId}/token`, {
-      method: 'POST',
-      credentials: 'same-origin',
+      method: "POST",
+      credentials: "same-origin",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8'
+        "Content-Type": "application/json; charset=utf-8"
       },
       body: JSON.stringify({
         channel: props.channel,
@@ -33,16 +33,17 @@ class Presence extends React.Component {
         pub: props.pub,
         sub: props.sub
       })
-    }).then(response => response.json())
+    })
+      .then(response => response.json())
       .then(json => {
         this.setState({ token: json.token });
       })
       .catch(e => {
-        console.log('error getting token', e);
+        console.log("error getting token", e);
       });
   }
 
-  render () {
+  render() {
     return this.props.children(this.state.token);
   }
 }

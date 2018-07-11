@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require("crypto");
 
 /**
  * Generates an alphanumeric cryptographically random string of
@@ -8,13 +8,16 @@ const crypto = require('crypto');
  * @callback cb [function(token)]
  *   @param token [String] The generated token
  */
-exports.generate = function (length, cb) {
+exports.generate = function(length, cb) {
   return new Promise((resolve, reject) => {
-    crypto.randomBytes(length * 2, function (ex, buf) {
+    crypto.randomBytes(length * 2, function(ex, buf) {
       // converting the string to base64 will expand the size and put
       // in some characters we don't want... so we'll replace them and
       // then just get the requested string length.
-      const result = buf.toString('base64').replace(/[^a-zA-Z0-9]/g, '').slice(0, length);
+      const result = buf
+        .toString("base64")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .slice(0, length);
 
       if (cb) {
         cb(result);

@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-jest.mock('../statsd');
-const statsd = require('../statsd');
+jest.mock("../statsd");
+const statsd = require("../statsd");
 
-const httpMetrics = require('../http_metrics');
+const httpMetrics = require("../http_metrics");
 
 let handlers = {};
 const httpStub = {
@@ -32,7 +32,7 @@ const clientMock = () => {
 
 const log = { info: jest.fn() };
 
-it('resubscribes when no messages received', () => {
+it("resubscribes when no messages received", () => {
   const unsubscribeMock = jest.fn();
   const clientMock2 = {
     publish: jest.fn(),
@@ -51,17 +51,19 @@ it('resubscribes when no messages received', () => {
   expect(clientMock2.subscribe).toHaveBeenCalledTimes(2);
 });
 
-it('tracks open http connections', () => {
+it("tracks open http connections", () => {
   const h = httpMetrics(httpStub, log, clientMock());
   let close;
-  handlers.connection({ on: (event, fn) => {
-    close = fn;
-  }});
+  handlers.connection({
+    on: (event, fn) => {
+      close = fn;
+    }
+  });
 
   h.sendStats();
   h.sendStatsToStatsd();
   expect(statsd.gauge).toHaveBeenCalledTimes(1);
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.http', 1);
+  expect(statsd.gauge).toHaveBeenCalledWith("connections.http", 1);
   statsd.gauge.mockClear();
 
   close();
@@ -71,17 +73,19 @@ it('tracks open http connections', () => {
   expect(statsd.gauge).toHaveBeenCalledTimes(0);
 });
 
-it('tracks open ws connections', () => {
+it("tracks open ws connections", () => {
   const h = httpMetrics(httpStub, log, clientMock());
   let close;
-  handlers.upgrade(null, { on: (event, fn) => {
-    close = fn;
-  }});
+  handlers.upgrade(null, {
+    on: (event, fn) => {
+      close = fn;
+    }
+  });
 
   h.sendStats();
   h.sendStatsToStatsd();
   expect(statsd.gauge).toHaveBeenCalledTimes(1);
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.ws', 1);
+  expect(statsd.gauge).toHaveBeenCalledWith("connections.ws", 1);
   statsd.gauge.mockClear();
 
   close();
@@ -91,18 +95,18 @@ it('tracks open ws connections', () => {
   expect(statsd.gauge).toHaveBeenCalledTimes(0);
 });
 
-it('aggregates the data from multiple sources', () => {
+it("aggregates the data from multiple sources", () => {
   const client = clientMock();
   const h = httpMetrics(httpStub, log, client);
-  client.publish('channel', {
-    source: 'host1',
+  client.publish("channel", {
+    source: "host1",
     stats: {
       connections: 2,
       wsConnections: 1
     }
   });
-  client.publish('channel', {
-    source: 'host2',
+  client.publish("channel", {
+    source: "host2",
     stats: {
       connections: 5,
       wsConnections: 2
@@ -111,6 +115,6 @@ it('aggregates the data from multiple sources', () => {
   h.sendStats();
   h.sendStatsToStatsd();
 
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.http', 7);
-  expect(statsd.gauge).toHaveBeenCalledWith('connections.ws', 3);
+  expect(statsd.gauge).toHaveBeenCalledWith("connections.http", 7);
+  expect(statsd.gauge).toHaveBeenCalledWith("connections.ws", 3);
 });

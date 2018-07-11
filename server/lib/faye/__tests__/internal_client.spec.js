@@ -1,23 +1,23 @@
 /* eslint-env jest */
 
-jest.mock('faye');
-const Faye = require('faye');
+jest.mock("faye");
+const Faye = require("faye");
 Faye.Client = class {
-  constructor (server) {
+  constructor(server) {
     this.extensions = [];
   }
 
-  addExtension (ext) {
+  addExtension(ext) {
     this.extensions.push(ext);
   }
 };
 
-const internalClient = require('../internal_client');
+const internalClient = require("../internal_client");
 
-it('adds the internal token to outgoing messages', done => {
-  const client = internalClient('token', {});
+it("adds the internal token to outgoing messages", done => {
+  const client = internalClient("token", {});
   client.extensions[0].outgoing({}, message => {
-    expect(message).toEqual({ ext: { internalToken: 'token' } });
+    expect(message).toEqual({ ext: { internalToken: "token" } });
     done();
   });
 });

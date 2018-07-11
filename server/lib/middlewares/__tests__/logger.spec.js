@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-const logger = require('../logger');
+const logger = require("../logger");
 
 const mockLog = {
-  info: (obj) => {
+  info: obj => {
     mockLog.obj = obj;
   },
   child: () => mockLog
@@ -22,8 +22,9 @@ const mockReq = {
   log: mockLog
 };
 
-it('logs the duration of a request', (done) => {
-  const nowSpy = jest.spyOn(Date, 'now')
+it("logs the duration of a request", done => {
+  const nowSpy = jest
+    .spyOn(Date, "now")
     .mockReturnValueOnce(100)
     .mockReturnValueOnce(250);
 
@@ -31,7 +32,7 @@ it('logs the duration of a request', (done) => {
     mockRes.cb();
 
     expect(nowSpy).toHaveBeenCalledTimes(2);
-    expect(mockLog.obj['duration']).toBe(150);
+    expect(mockLog.obj["duration"]).toBe(150);
     done();
   });
 });

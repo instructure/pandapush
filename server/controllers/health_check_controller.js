@@ -1,9 +1,7 @@
-'use strict';
+const rev = require("../rev.json");
+const pkg = require("../../package.json");
 
-const rev = require('../rev.json');
-const pkg = require('../../package.json');
-
-exports.get = function (req, res) {
+exports.get = function(req, res) {
   res.json(200, {
     version: pkg.version,
     rev: rev.rev,

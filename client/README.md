@@ -36,9 +36,9 @@ $ npm install pandapush-client --save-dev
 ```
 
 ```javascript
-var Pandapush = require('pandapush-client');
+var Pandapush = require("pandapush-client");
 
-var client = new Pandapush.Client('https://pandapush-server/push');
+var client = new Pandapush.Client("https://pandapush-server/push");
 ```
 
 ## Usage
@@ -49,26 +49,30 @@ passing tokens around simpler:
 
 ### `subscribeTo`
 
-Param      | Type   |          | Description
------------|--------|----------|------------
-`channel`  | String |          | The channel to subscribe to.
-`token`    | String, Function |          | The token to use when subscribing. `null` if no token is necessary. Can also be a function which returns the token as a string.
-`callback` | Function |        | Function called on every new message.
+| Param      | Type             |     | Description                                                                                                                     |
+| ---------- | ---------------- | --- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `channel`  | String           |     | The channel to subscribe to.                                                                                                    |
+| `token`    | String, Function |     | The token to use when subscribing. `null` if no token is necessary. Can also be a function which returns the token as a string. |
+| `callback` | Function         |     | Function called on every new message.                                                                                           |
 
 The callback is be called with 2 parameters - the `message` payload and the `channel`.
 
 Example:
 
 ```javascript
-client.subscribeTo('/utJEM9A6Z21Iolb6o8RL/private/foo/bar', 'jwt...', (message, channel) => {
-  console.log('recieved', message, 'on channel', channel);
-});
+client.subscribeTo(
+  "/utJEM9A6Z21Iolb6o8RL/private/foo/bar",
+  "jwt...",
+  (message, channel) => {
+    console.log("recieved", message, "on channel", channel);
+  }
+);
 ```
 
 ### `publishTo`
 
-Param      | Type   |          | Description
------------|--------|----------|------------
-`channel`  | String |          | The channel to subscribe to.
-`token`    | String |          | The token to use.
-`message`  | Object |          | The message to send.
+| Param     | Type   |     | Description                  |
+| --------- | ------ | --- | ---------------------------- |
+| `channel` | String |     | The channel to subscribe to. |
+| `token`   | String |     | The token to use.            |
+| `message` | Object |     | The message to send.         |

@@ -1,8 +1,12 @@
-FROM instructure/node-passenger:6
+FROM instructure/node-passenger:10
 
 ARG prunedev=true
 
 USER root
+
+# Working around https://github.com/npm/npm/issues/19989, waiting until main
+# image gets upgraded.
+RUN npm install -g npm@"6.1.0"
 
 RUN apt-get update \
     && apt-get install -y redis-server \

@@ -1,8 +1,8 @@
-const Lynx = require('lynx');
+const Lynx = require("lynx");
 
-const host = process.env.STATSD_HOST || 'localhost';
+const host = process.env.STATSD_HOST || "localhost";
 const port = process.env.STATSD_PORT || 8125;
-const prefix = process.env.STATSD_PREFIX || 'pandapush';
+const prefix = process.env.STATSD_PREFIX || "pandapush";
 
 const instance = new Lynx(host, port, { scope: prefix });
 

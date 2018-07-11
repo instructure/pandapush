@@ -1,57 +1,58 @@
-import React from 'react';
-import { Link } from 'react-router';
-import _ from 'lodash';
+import React from "react";
+import { Link } from "react-router";
+import _ from "lodash";
 
 class Applications extends React.Component {
   state = {
     applications: []
-  }
+  };
 
-  componentDidMount () {
-    fetch('/admin/api/applications', { credentials: 'same-origin' })
+  componentDidMount() {
+    fetch("/admin/api/applications", { credentials: "same-origin" })
       .then(response => response.json())
       .then(json => {
         this.setState({ applications: json });
       })
       .catch(e => {
-        console.log('error getting applications', e);
+        console.log("error getting applications", e);
       });
   }
 
-  handleAppSubmit = (e) => {
+  handleAppSubmit = e => {
     e.preventDefault();
 
     const name = this.newAppNameInput.value;
 
     if (!name) {
-      alert('Name is required!');
+      alert("Name is required!");
       return false;
     }
 
-    fetch('/admin/api/applications', {
-      method: 'POST',
-      credentials: 'same-origin',
+    fetch("/admin/api/applications", {
+      method: "POST",
+      credentials: "same-origin",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8'
+        "Content-Type": "application/json; charset=utf-8"
       },
       body: JSON.stringify({
         name: name
       })
-    }).then(response => response.json())
+    })
+      .then(response => response.json())
       .then(json => {
         this.context.router.push({
           pathname: `/application/${json.id}`
         });
       })
       .catch(e => {
-        console.log('error creating application', e);
+        console.log("error creating application", e);
       });
 
     return false;
-  }
+  };
 
-  renderApplications () {
-    return _.map(this.state.applications, function (app) {
+  renderApplications() {
+    return _.map(this.state.applications, function(app) {
       return (
         <tr key={app.id}>
           <td className="identifier">
@@ -65,7 +66,7 @@ class Applications extends React.Component {
     });
   }
 
-  render () {
+  render() {
     return (
       <div className="container">
         <h1>Applications</h1>
@@ -85,17 +86,31 @@ class Applications extends React.Component {
 
         <h2>Create Application</h2>
 
-        <form onSubmit={this.handleAppSubmit} className="form-horizontal" role="form">
+        <form
+          onSubmit={this.handleAppSubmit}
+          className="form-horizontal"
+          role="form"
+        >
           <div className="form-group">
-            <label className="col-sm-2 control-label" htmlFor="appName">Name</label>
+            <label className="col-sm-2 control-label" htmlFor="appName">
+              Name
+            </label>
             <div className="col-sm-6">
-              <input type="text" className="form-control" ref={e => (this.newAppNameInput = e)} name="name" id="appName" />
+              <input
+                type="text"
+                className="form-control"
+                ref={e => (this.newAppNameInput = e)}
+                name="name"
+                id="appName"
+              />
             </div>
           </div>
           <div className="form-group">
-            <label className="col-sm-2 control-label"></label>
+            <label className="col-sm-2 control-label" />
             <div className="col-sm-4">
-              <button type="submit" className="btn btn-default">Create</button>
+              <button type="submit" className="btn btn-default">
+                Create
+              </button>
             </div>
           </div>
         </form>

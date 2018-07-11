@@ -1,33 +1,33 @@
-const statsd = require('./statsd');
-const _ = require('lodash');
+const statsd = require("./statsd");
+const _ = require("lodash");
 
 const interval = process.env.CONNECTIONS_STATS_INTERVAL || 5000;
 
-module.exports = function (http, log, client) {
+module.exports = function(http, log, client) {
   let connections = 0;
   let wsConnections = 0;
 
-  http.on('connection', function (socket) {
+  http.on("connection", function(socket) {
     connections += 1;
 
-    socket.on('close', function () {
+    socket.on("close", function() {
       connections -= 1;
     });
   });
 
-  http.on('upgrade', function (request, socket) {
+  http.on("upgrade", function(request, socket) {
     wsConnections += 1;
 
-    socket.on('close', function () {
+    socket.on("close", function() {
       wsConnections -= 1;
     });
   });
 
-  const sourceId = process.env.HOSTNAME + '-' + process.pid;
+  const sourceId = process.env.HOSTNAME + "-" + process.pid;
 
   // periodically send to the number of open connections to all servers
-  function sendStats () {
-    client.publish('/internal/meta/statistics', {
+  function sendStats() {
+    client.publish("/internal/meta/statistics", {
       source: sourceId,
       stats: {
         connections: connections,
@@ -42,21 +42,23 @@ module.exports = function (http, log, client) {
   let stats = {};
   let subscription;
 
-  function resubscribe () {
+  function resubscribe() {
     if (subscription) {
       subscription.cancel();
       subscription = null;
     }
 
-    subscription = client.subscribe('/internal/meta/statistics', function (data) {
+    subscription = client.subscribe("/internal/meta/statistics", function(
+      data
+    ) {
       stats[data.source] = data.stats;
     });
   }
   resubscribe();
 
-  function sendStatsToStatsd () {
+  function sendStatsToStatsd() {
     if (_.size(stats) === 0) {
-      log.info('Did not receive any http stats - resubscribing.');
+      log.info("Did not receive any http stats - resubscribing.");
       resubscribe();
       return;
     }
@@ -64,22 +66,28 @@ module.exports = function (http, log, client) {
     let totalConnections = 0;
     let totalWsConnections = 0;
 
-    _.each(_.values(stats), function (stat) {
+    _.each(_.values(stats), function(stat) {
       totalConnections += stat.connections;
       totalWsConnections += stat.wsConnections;
     });
 
-    log.info('local_http=' + connections +
-             ' local_ws=' + wsConnections +
-             ' http=' + totalConnections +
-             ' ws=' + totalWsConnections);
+    log.info(
+      "local_http=" +
+        connections +
+        " local_ws=" +
+        wsConnections +
+        " http=" +
+        totalConnections +
+        " ws=" +
+        totalWsConnections
+    );
 
     if (totalConnections > 0) {
-      statsd.gauge('connections.http', totalConnections);
+      statsd.gauge("connections.http", totalConnections);
     }
 
     if (totalWsConnections > 0) {
-      statsd.gauge('connections.ws', totalWsConnections);
+      statsd.gauge("connections.ws", totalWsConnections);
     }
 
     stats = {};

@@ -1,9 +1,9 @@
-const Faye = require('faye');
+const Faye = require("faye");
 
-module.exports = function (internalToken, server) {
+module.exports = function(internalToken, server) {
   const client = new Faye.Client(server);
   client.addExtension({
-    outgoing: function (message, callback) {
+    outgoing: function(message, callback) {
       message.ext = message.ext || {};
       message.ext.internalToken = internalToken;
       callback(message);

@@ -1,9 +1,9 @@
-import React from 'react';
-import _ from 'lodash';
-import Pandapush from '../../../client/dist/client';
+import React from "react";
+import _ from "lodash";
+import Pandapush from "../../../client/dist/client";
 
 class Presence extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -11,40 +11,46 @@ class Presence extends React.Component {
     };
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.doSubscribe(this.props);
   }
 
-  componentWillReceiveProps (newProps) {
-    if (newProps.channel !== this.props.channel || newProps.token !== this.props.token) {
+  componentWillReceiveProps(newProps) {
+    if (
+      newProps.channel !== this.props.channel ||
+      newProps.token !== this.props.token
+    ) {
       this.doSubscribe(newProps);
     }
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     if (this.subscription) {
       this.subscription.cancel();
       this.subscription = null;
     }
   }
 
-  doSubscribe (props) {
-    const client = props.client || new Pandapush.Client('/push');
+  doSubscribe(props) {
+    const client = props.client || new Pandapush.Client("/push");
 
     if (props.channel && props.token) {
       const oldSubscription = this.subscription;
 
-      this.subscription = client.subscribeTo(props.channel, props.token, (message) => {
-        const users = this.state.users;
+      this.subscription = client.subscribeTo(
+        props.channel,
+        props.token,
+        message => {
+          const users = this.state.users;
 
-        const updatedUsers =
-          _({})
+          const updatedUsers = _({})
             .extend(users, message.subscribe || {})
             .omit(_.keys(message.unsubscribe))
             .value();
 
-        this.setState({ users: updatedUsers });
-      });
+          this.setState({ users: updatedUsers });
+        }
+      );
 
       this.subscription.then(() => {
         if (oldSubscription) {
@@ -59,7 +65,7 @@ class Presence extends React.Component {
     }
   }
 
-  render () {
+  render() {
     return this.props.children(this.state.users);
   }
 }

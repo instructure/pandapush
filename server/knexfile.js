@@ -1,16 +1,18 @@
-const path = require('path');
+const path = require("path");
 
 let config = {
-  client: 'sqlite3',
+  client: "sqlite3",
   useNullAsDefault: true,
   connection: {
-    filename: process.env.DATABASE_PATH || path.join(__dirname, '../localdata/db.sqlite')
+    filename:
+      process.env.DATABASE_PATH ||
+      path.join(__dirname, "../localdata/db.sqlite")
   }
 };
 
-if (process.env.DATABASE === 'postgres') {
+if (process.env.DATABASE === "postgres") {
   config = {
-    client: 'pg',
+    client: "pg",
     connection: {
       host: process.env.DATABASE_ADDRESS,
       port: process.env.DATABASE_PORT,

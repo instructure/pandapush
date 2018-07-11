@@ -1,22 +1,41 @@
 #!/usr/bin/env node
 
-'use strict';
+const program = require("commander");
+const loadTest = require("./lib/loadtest").loadTest;
 
-const program = require('commander');
-const loadTest = require('./lib/loadtest').loadTest;
+program.version("0.0.1");
 
-program.version('0.0.1');
-
-const clientName = process.env.HOSTNAME + '-' + process.pid;
+const clientName = process.env.HOSTNAME + "-" + process.pid;
 
 program
-  .command('loadtest <url> <appid> <keyid> <secret> <numusers> <pushesperuser> <pushrate>')
-  .description('perform a loadtest')
-  .action(function (url, appid, keyid, secret, numusers, ppu, pushrate, options) {
-    loadTest(url, appid, keyid, secret, numusers, ppu, pushrate, clientName, function (progress) {
-    }, function () {
-      process.exit(0);
-    });
+  .command(
+    "loadtest <url> <appid> <keyid> <secret> <numusers> <pushesperuser> <pushrate>"
+  )
+  .description("perform a loadtest")
+  .action(function(
+    url,
+    appid,
+    keyid,
+    secret,
+    numusers,
+    ppu,
+    pushrate,
+    options
+  ) {
+    loadTest(
+      url,
+      appid,
+      keyid,
+      secret,
+      numusers,
+      ppu,
+      pushrate,
+      clientName,
+      function(progress) {},
+      function() {
+        process.exit(0);
+      }
+    );
   });
 
 program.parse(process.argv);

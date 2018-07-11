@@ -1,8 +1,8 @@
-import React from 'react';
-import AdminInput from './admin_input';
+import React from "react";
+import AdminInput from "./admin_input";
 
 class Info extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -10,17 +10,17 @@ class Info extends React.Component {
     };
   }
 
-  handleAdminChange = (value) => {
+  handleAdminChange = value => {
     this.setState({
       admins: value
     });
-  }
+  };
 
   handleChange = (field, e) => {
     this.setState({
       [field]: e.target.value
     });
-  }
+  };
 
   handleEdit = () => {
     this.setState({
@@ -28,24 +28,25 @@ class Info extends React.Component {
       admins: this.props.app.admins,
       editing: true
     });
-  }
+  };
 
   handleCancel = () => {
     this.setState({ editing: false });
-  }
+  };
 
   handleSave = () => {
-    fetch('/admin/api/application/' + this.props.app.id, {
-      method: 'POST',
-      credentials: 'same-origin',
+    fetch("/admin/api/application/" + this.props.app.id, {
+      method: "POST",
+      credentials: "same-origin",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8'
+        "Content-Type": "application/json; charset=utf-8"
       },
       body: JSON.stringify({
         name: this.state.name,
         admins: this.state.admins
       })
-    }).then(response => response.json())
+    })
+      .then(response => response.json())
       .then(json => {
         this.props.reload();
         this.setState({
@@ -55,36 +56,39 @@ class Info extends React.Component {
         });
       })
       .catch(e => {
-        console.log('error saving application', e);
-        alert('error saving application', e);
+        console.log("error saving application", e);
+        alert("error saving application", e);
       });
-  }
+  };
 
   handleDelete = () => {
-    if (prompt('Are you sure you want to delete this app? Type "confirm" to continue.') === 'confirm') {
+    if (
+      prompt(
+        'Are you sure you want to delete this app? Type "confirm" to continue.'
+      ) === "confirm"
+    ) {
       fetch(`/admin/api/application/${this.props.app.id}`, {
-        method: 'DELETE',
-        credentials: 'same-origin'
+        method: "DELETE",
+        credentials: "same-origin"
       })
-      .then(response => {
-        this.context.router.push({
-          pathname: `/`
+        .then(response => {
+          this.context.router.push({
+            pathname: `/`
+          });
+        })
+        .catch(e => {
+          console.log("error saving application", e);
+          alert("error saving application", e);
         });
-      })
-      .catch(e => {
-        console.log('error saving application', e);
-        alert('error saving application', e);
-      });
     }
-  }
+  };
 
-  render () {
+  render() {
     return (
       <div className="container">
         <table className="table">
           <thead>
-            <tr>
-            </tr>
+            <tr />
           </thead>
           <tbody>
             <tr>
@@ -93,11 +97,18 @@ class Info extends React.Component {
             </tr>
             <tr>
               <td>Name</td>
-              <td>{
-                this.state.editing
-                ? <input className="form-control" type="text" value={this.state.name} onChange={this.handleChange.bind(this, 'name')} />
-                : this.props.app.name
-              }</td>
+              <td>
+                {this.state.editing ? (
+                  <input
+                    className="form-control"
+                    type="text"
+                    value={this.state.name}
+                    onChange={this.handleChange.bind(this, "name")}
+                  />
+                ) : (
+                  this.props.app.name
+                )}
+              </td>
             </tr>
             <tr>
               <td>Created At</td>
@@ -109,33 +120,45 @@ class Info extends React.Component {
             </tr>
             <tr>
               <td>Admins</td>
-              <td>{
-                this.state.editing
-                ? <div>
+              <td>
+                {this.state.editing ? (
+                  <div>
                     <AdminInput
                       onChange={this.handleAdminChange}
                       thisUser={this.props.username}
-                      admins={this.state.admins} />
+                      admins={this.state.admins}
+                    />
                   </div>
-                : this.props.app.admins.join(', ')
-              }</td>
+                ) : (
+                  this.props.app.admins.join(", ")
+                )}
+              </td>
             </tr>
           </tbody>
         </table>
 
-        {
-          this.state.editing
-          ? <div>
-              <button onClick={this.handleDelete} className="btn btn-danger">Delete</button>&nbsp;
-              <button onClick={this.handleSave} className="btn btn-default">Save</button>&nbsp;
-              <button onClick={this.handleCancel} className="btn btn-default">Cancel</button>
-            </div>
-          : <div>
-              <button onClick={this.handleDelete} className="btn btn-danger">Delete</button>&nbsp;
-              <button onClick={this.handleEdit} className="btn btn-default">Edit</button>
-            </div>
-        }
-
+        {this.state.editing ? (
+          <div>
+            <button onClick={this.handleDelete} className="btn btn-danger">
+              Delete
+            </button>&nbsp;
+            <button onClick={this.handleSave} className="btn btn-default">
+              Save
+            </button>&nbsp;
+            <button onClick={this.handleCancel} className="btn btn-default">
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div>
+            <button onClick={this.handleDelete} className="btn btn-danger">
+              Delete
+            </button>&nbsp;
+            <button onClick={this.handleEdit} className="btn btn-default">
+              Edit
+            </button>
+          </div>
+        )}
       </div>
     );
   }

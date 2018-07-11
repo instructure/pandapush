@@ -6,7 +6,6 @@ Currently built on [Faye](http://faye.jcoglan.com/) for event routing
 and dispatch. (Pandapush adds a layer of multi-tenancy and
 authentication.)
 
-
 ## Getting Started
 
 ### Using Docker
@@ -22,6 +21,7 @@ in with `admin`/`password`.
 ### From the repository, using docker-compose
 
 ```bash
+$ docker-compose run --rm -u root web chown docker:docker node_modules
 $ docker-compose run --rm web npm install
 $ docker-compose run --rm webpack npm install
 $ docker-compose up
@@ -29,21 +29,19 @@ $ docker-compose up
 
 This will start Pandapush on http://pandapush.docker/admin.
 
-
 ### Create an Application and Key:
 
 Create an application, and a key.
 
 Examples below will use these values:
 
-| Name | Value |
-| ---- | ----- |
-| application name | testapp |
-| application id | fRP0y2aVpYCKiW6PIFOK |
-| key id | PSIDv4ADyV6V9fQ2BgJZ |
-| key secret | aWvMCPXnV599u6hJ71YJqAKSz0t0Lihs09DM92xS |
-| key expires | 2020-01-01T07:00:00.000Z |
-
+| Name             | Value                                    |
+| ---------------- | ---------------------------------------- |
+| application name | testapp                                  |
+| application id   | fRP0y2aVpYCKiW6PIFOK                     |
+| key id           | PSIDv4ADyV6V9fQ2BgJZ                     |
+| key secret       | aWvMCPXnV599u6hJ71YJqAKSz0t0Lihs09DM92xS |
+| key expires      | 2020-01-01T07:00:00.000Z                 |
 
 ### Subscribe to a channel in a browser
 
@@ -56,8 +54,8 @@ below about public vs private).
 ```
 
 ```javascript
-var client = new Pandapush.Client('http://localhost:5000/push');
-client.subscribe('/fRP0y2aVpYCKiW6PIFOK/public/messages', function(message) {
+var client = new Pandapush.Client("http://localhost:5000/push");
+client.subscribe("/fRP0y2aVpYCKiW6PIFOK/public/messages", function(message) {
   console.log("got message: ", message);
 });
 ```
@@ -83,7 +81,6 @@ HTTParty.post("http://localhost:5000/channel/fRP0y2aVpYCKiW6PIFOK/public/message
 ```
 
 You should see the message arrive in your browser console.
-
 
 ## Channel Names
 
@@ -119,12 +116,11 @@ you will receive notifications for `/users/1/foo` and
 `/users/1/foo/bar`. If you subscribe to `/users/1/*` you will receive
 pushes for `/users/1/foo` but not `/users/1/foo/bar`.
 
-|  | sub `/users/1/*` | sub `/users/1/**` |
-| ------------- | ----------- | ------------- |
-| push `/users/1` | not received | not received |
-| push `/users/1/foo` | received | received |
-| push `/users/1/foo/bar` | not received | received |
-
+|                         | sub `/users/1/*` | sub `/users/1/**` |
+| ----------------------- | ---------------- | ----------------- |
+| push `/users/1`         | not received     | not received      |
+| push `/users/1/foo`     | received         | received          |
+| push `/users/1/foo/bar` | not received     | received          |
 
 ## Authentication
 
@@ -142,14 +138,14 @@ side, because they require using the token secret to sign.
 Tokens are [JWTs](http://www.intridea.com/blog/2013/11/7/json-web-token-the-useful-little-standard-you-haven-t-heard-about).
 You should use a library to generate them. The payload has the contents:
 
-| Field    | Required? | Description |
-| -------- | --------- | ----------- |
-| keyId    | required  | The id of the key used for signing the token. |
+| Field    | Required? | Description                                                                                  |
+| -------- | --------- | -------------------------------------------------------------------------------------------- |
+| keyId    | required  | The id of the key used for signing the token.                                                |
 | channel  | required  | The channel name the token works for. Must start with `/<app>/private/` or `/<app>/public/`. |
-| pub      | optional  | `true` if this token allows publishing. |
-| sub      | optional  | `true` if this token allows subscribing. Note that `sub` on a public channel is redundant. |
-| presence | optional  | An object identifying the user for presence channels. |
-| exp      | optional  | Unix timestamp of when the token should expire. |
+| pub      | optional  | `true` if this token allows publishing.                                                      |
+| sub      | optional  | `true` if this token allows subscribing. Note that `sub` on a public channel is redundant.   |
+| presence | optional  | An object identifying the user for presence channels.                                        |
+| exp      | optional  | Unix timestamp of when the token should expire.                                              |
 
 [jwt.io](http://jwt.io) is useful when debugging JSON web tokens.
 
@@ -179,7 +175,6 @@ Using a token for auth:
 $ curl -H "Authorization: Token <token>" -H "Content-Type: application/json" -d '{text:"hello"}' https://pp.instructure.com/channel/<app>/private/users/123/messages
 ```
 
-
 ## Subscribing with the Pandapush client
 
 To subscribe to private channels, you must specify authentication information.
@@ -191,16 +186,15 @@ This is easiest to do by using the Pandapush client:
 
 ```javascript
 const CHANNEL = "/applicationid/private/foo"; // sent by server
-const TOKEN = "...";                          // sent by server
+const TOKEN = "..."; // sent by server
 client = new Pandapush.Client("https://pandapush.hostname/push");
 client.subscribeTo(CHANNEL, TOKEN, function(message) {
-  console.log('got message!');
+  console.log("got message!");
 });
 ```
 
 The Pandapush client is also a Faye client, and supports all the
 method described in the [Faye documentation](http://faye.jcoglan.com/security/authentication.html).
-
 
 ## Presence
 
@@ -212,13 +206,13 @@ at least an `id` field. For example, the token may be an encoded JWT of:
 
 ```json
 {
-  keyId: "PSIDv4ADyV6V9fQ2BgJZ",
-  channel: "/fRP0y2aVpYCKiW6PIFOK/presence/generaltalk",
-  sub: true,
-  presence: {
-    id: 'user1',
-    name: 'Joe',
-    avatar_url: 'https://gravatar/foo'
+  "keyId": "PSIDv4ADyV6V9fQ2BgJZ",
+  "channel": "/fRP0y2aVpYCKiW6PIFOK/presence/generaltalk",
+  "sub": true,
+  "presence": {
+    "id": "user1",
+    "name": "Joe",
+    "avatar_url": "https://gravatar/foo"
   }
 }
 ```
@@ -231,9 +225,9 @@ notification:
 {
   "subscribe": {
     "user1": {
-      "id": 'user1',
-      "name": 'Joe',
-      "avatar_url": 'https://gravatar/foo'
+      "id": "user1",
+      "name": "Joe",
+      "avatar_url": "https://gravatar/foo"
     }
   }
 }
@@ -256,7 +250,6 @@ Presence data should be kept small, as it is persisted in redis in memory.
 
 # Mobile
 
-Note that this is *not* a "Push Notification" service like for iOS and
+Note that this is _not_ a "Push Notification" service like for iOS and
 Android. There do appear to be some open-source Faye clients
 for iOS and Android, but I have not tested any of them yet.
-

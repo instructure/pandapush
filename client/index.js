@@ -1,8 +1,8 @@
-const Faye = require('faye/src/faye_browser');
-const Class = require('faye/src/util/class');
+const Faye = require("faye/src/faye_browser");
+const Class = require("faye/src/util/class");
 
 const Client = Class(Faye.Client, {
-  initialize: function (base, options) {
+  initialize: function(base, options) {
     Faye.Client.prototype.initialize.call(this, base, options);
 
     const self = this;
@@ -10,7 +10,7 @@ const Client = Class(Faye.Client, {
     self._presenceCBs = {};
 
     this.addExtension({
-      outgoing: function (message, callback) {
+      outgoing: function(message, callback) {
         let token;
 
         if (message.data && message.data._originalData) {
@@ -19,14 +19,15 @@ const Client = Class(Faye.Client, {
         }
 
         if (!token) {
-          const channel = (message.channel === '/meta/subscribe'
-            ? message.subscription
-            : message.channel);
+          const channel =
+            message.channel === "/meta/subscribe"
+              ? message.subscription
+              : message.channel;
           token = self._tokens[channel];
         }
 
         if (token) {
-          if (typeof token === 'function') {
+          if (typeof token === "function") {
             token = token();
           }
 
@@ -38,8 +39,12 @@ const Client = Class(Faye.Client, {
 
         callback(message);
       },
-      incoming: function (message, callback) {
-        if (message.channel === '/meta/subscribe' && message.ext && message.ext.presence) {
+      incoming: function(message, callback) {
+        if (
+          message.channel === "/meta/subscribe" &&
+          message.ext &&
+          message.ext.presence
+        ) {
           const presenceCB = self._presenceCBs[message.subscription];
           if (presenceCB) {
             presenceCB(message.ext.presence, message.subscription);
@@ -61,14 +66,14 @@ const Client = Class(Faye.Client, {
    *
    * subscribeTo(channel, token, callback);
    */
-  subscribeTo: function (channel, token, callback) {
+  subscribeTo: function(channel, token, callback) {
     if (token) {
       this._tokens[channel] = token;
     }
 
     this._presenceCBs[channel] = callback;
 
-    return this.subscribe(channel).withChannel(function (channel, message) {
+    return this.subscribe(channel).withChannel(function(channel, message) {
       if (callback) {
         callback(message, channel);
       }
@@ -81,7 +86,7 @@ const Client = Class(Faye.Client, {
    * @param message [Object]
    * @returns {Promise}
    */
-  publishTo: function (channel, token, data) {
+  publishTo: function(channel, token, data) {
     const wrappedData = {
       _originalData: data,
       _token: token

@@ -1,23 +1,23 @@
 /* eslint-env jest */
 
-const generate = require('../token').generate;
+const generate = require("../token").generate;
 
-describe('token', () => {
-  it('returns a token via promise', done => {
+describe("token", () => {
+  it("returns a token via promise", done => {
     generate(10).then(token => {
       expect(token).toBeDefined();
       done();
     });
   });
 
-  it('returns a token via callback', done => {
+  it("returns a token via callback", done => {
     generate(10, token => {
       expect(token).toBeDefined();
       done();
     });
   });
 
-  it('returns a token of the specified length', done => {
+  it("returns a token of the specified length", done => {
     generate(1)
       .then(token1 => {
         expect(token1.length).toBe(1);

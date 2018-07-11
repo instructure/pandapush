@@ -1,8 +1,8 @@
-const unauthorized = function (res) {
-  res.send(403, 'Unauthorized');
+const unauthorized = function(res) {
+  res.send(403, "Unauthorized");
 };
 
-const authFromRequest = function (req) {
+const authFromRequest = function(req) {
   // first look for token in query string (least desired method)
   if (req.query.token) {
     return {
@@ -11,16 +11,16 @@ const authFromRequest = function (req) {
   }
 
   // extract auth from headers
-  let auth = req.get('authorization');
+  let auth = req.get("authorization");
   if (!auth) return;
 
-  auth = auth.split(' ', 2);
+  auth = auth.split(" ", 2);
   if (auth.length < 2 || auth[1].length === 0) {
     return;
   }
 
-  if (auth[0] === 'Basic') {
-    auth = new Buffer(auth[1], 'base64').toString();
+  if (auth[0] === "Basic") {
+    auth = Buffer.from(auth[1], "base64").toString();
     auth = auth.match(/^([^:]*):(.*)$/);
     if (!auth) return;
 
@@ -28,14 +28,14 @@ const authFromRequest = function (req) {
       key: auth[1],
       secret: auth[2]
     };
-  } else if (auth[0] === 'Token') {
+  } else if (auth[0] === "Token") {
     return {
       token: auth[1]
     };
   }
 };
 
-exports.post = function (req, res) {
+exports.post = function(req, res) {
   const auth = authFromRequest(req);
   if (!auth) {
     return unauthorized(res);
@@ -45,15 +45,15 @@ exports.post = function (req, res) {
   const type = req.params[1];
   const path = req.params[2];
 
-  const channel = '/' + applicationId + '/' + type + path;
+  const channel = "/" + applicationId + "/" + type + path;
   const payload = req.body;
 
   if (!payload) {
-    return res.send(400, 'No payload');
+    return res.send(400, "No payload");
   }
 
-  if (typeof payload !== 'object') {
-    return res.send(400, 'Payload must be an object');
+  if (typeof payload !== "object") {
+    return res.send(400, "Payload must be an object");
   }
 
   // afaik, this is the only way to get our auth data into the message.
@@ -62,11 +62,11 @@ exports.post = function (req, res) {
 
   const pub = req.faye.client.publish(channel, payload);
 
-  pub.callback(function () {
-    res.send(200, 'OK');
+  pub.callback(function() {
+    res.send(200, "OK");
   });
 
-  pub.errback(function (error) {
+  pub.errback(function(error) {
     req.log.info(error);
     res.send(400, error);
   });

@@ -1,20 +1,22 @@
-const path = require('path');
+const path = require("path");
 
 module.exports = {
-  entry: path.join(__dirname, './index.js'),
+  entry: path.join(__dirname, "./index.js"),
   output: {
-    filename: './client/dist/client.js',
-    library: 'Pandapush',
-    libraryTarget: 'umd'
+    filename: "./client/dist/client.js",
+    library: "Pandapush",
+    libraryTarget: "umd"
   },
   module: {
-    loaders: [{
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'babel-loader',
-      query: {
-        presets: ['es2015']
+    loaders: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+        query: {
+          presets: ["env"]
+        }
       }
-    }]
+    ]
   }
 };
