@@ -137,20 +137,23 @@ class Console extends React.Component {
               received: moment()
             };
 
-            this.state.events.splice(0, 0, event);
-            this.state.events = this.state.events.splice(0, 50);
-            this.forceUpdate();
+            this.setState(state => {
+              let events = state.events;
+              events.splice(0, 0, event);
+              events = events.splice(0, 50);
+              let newState = { events };
 
-            if (this.state.events.length >= 50) {
-              if (this.currentSubscription) {
-                this.currentSubscription.cancel();
-                this.currentSubscription = null;
+              if (events.length >= 50) {
+                if (this.currentSubscription) {
+                  this.currentSubscription.cancel();
+                  this.currentSubscription = null;
+                }
+
+                newState.subscribed = false;
               }
 
-              this.setState({
-                subscribed: false
-              });
-            }
+              return newState;
+            });
 
             if (presence) {
               const subscribers = this.state.subscribers || {};
@@ -268,7 +271,7 @@ class Console extends React.Component {
 
     let subscribedImg = null;
     if (this.state.subscribed) {
-      subscribedImg = <img src="/loader.gif" />;
+      subscribedImg = <img alt="loading" src="/loader.gif" />;
     }
 
     return (
@@ -386,11 +389,7 @@ class Console extends React.Component {
     return (
       <div className="container">
         <div className="row">
-          <form
-            onSubmit={this.handlePublish}
-            className="form-horizontal"
-            role="form"
-          >
+          <form onSubmit={this.handlePublish} className="form-horizontal">
             <div className="form-group">
               <label className="col-sm-2 control-label" htmlFor="postChannel">
                 Publish to
@@ -459,7 +458,7 @@ class Console extends React.Component {
         </div>
 
         <div className="row">
-          <form className="form-horizontal" role="form">
+          <form className="form-horizontal">
             <div className="form-group">
               <label className="col-sm-2 control-label" htmlFor="postChannel">
                 Subscribe to

@@ -5,3 +5,4 @@ ui/public/admin/bundle.js
 localdata
 coverage
 npm-debug.log
+client/dist

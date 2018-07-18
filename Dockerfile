@@ -36,6 +36,6 @@ RUN ln -s /usr/src/app/ui/public /usr/src/app/public
 RUN ln -s /usr/src/app/server/index.js /usr/src/app/app.js
 
 RUN NODE_ENV=dev npm install && \
-    NODE_ENV=production node_modules/.bin/webpack -p --config ui/webpack.config.js && \
     NODE_ENV=production node_modules/.bin/webpack -p --config client/webpack.config.js && \
+    NODE_ENV=production node_modules/.bin/webpack -p --config ui/webpack.config.js && \
     if [ "$prunedev" = "true" ]; then npm prune --production; fi

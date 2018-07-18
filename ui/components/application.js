@@ -26,12 +26,14 @@ class Application extends React.Component {
   }
 
   handleStats(source, received, stats) {
-    this.state.stats[source] = {
-      received: received,
-      stats: stats
-    };
-
-    this.forceUpdate();
+    this.setState(state => {
+      let newStats = state.stats; // technically should clone this
+      newStats[source] = {
+        received: received,
+        stats: stats
+      };
+      return { stats: newStats };
+    });
   }
 
   getToken(appId, channel, presence, done) {
