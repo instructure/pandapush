@@ -253,7 +253,7 @@ module.exports = {
         .generate(16)
         .then(bytes => {
           attributes.id = "PSID" + bytes;
-          return token.generate(40);
+          return token.generate(256);
         })
         .then(secret => {
           attributes.secret = secret;
