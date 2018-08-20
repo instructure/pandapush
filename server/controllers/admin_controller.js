@@ -11,13 +11,11 @@ exports.index = function(req, res) {
 };
 
 exports.getInfo = function(req, res) {
-  res.json(200, {
-    username: req.user || req.session.cas_user
-  });
+  res.json(200, { username: req.username });
 };
 
 const loadUserFromRequest = function(req, res, next) {
-  const user = req.user || req.session.cas_user;
+  const user = req.username;
   if (!user) {
     console.log("no user in request");
     return res.send(403, "No user.");

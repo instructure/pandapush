@@ -4,8 +4,6 @@ const http = require("http");
 const express = require("express");
 const session = require("cookie-session");
 const bodyParser = require("body-parser");
-const basicAuth = require("basic-auth-connect");
-const cas = require("grand_master_cas");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -17,6 +15,7 @@ const statsdMiddleware = require("./lib/middlewares/statsd");
 const routes = require("./routes");
 const httpMetrics = require("./lib/http_metrics");
 const store = require("./lib/store");
+const createAdminAuth = require("./admin_auth");
 
 const app = express();
 const server = http.Server(app);
@@ -42,43 +41,7 @@ if (!sessionPrivateKey) {
   sessionPrivateKey = fs.readFileSync(filename);
 }
 
-// configure admin auth
-let adminAuth = {
-  logout: function(req, res, next) {
-    next();
-  },
-  bouncer: function(req, res, next) {
-    res.send(403, "Unauthorized");
-  },
-  blocker: function(req, res, next) {
-    res.send(403, "Unauthorized");
-  }
-};
-
-if (process.env.CAS_HOST) {
-  cas.configure({
-    casHost: process.env.CAS_HOST,
-    casPath: process.env.CAS_PATH,
-    service: process.env.CAS_SERVICE,
-    ssl: true,
-    port: 443
-  });
-
-  adminAuth = cas;
-} else if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
-  const auth = basicAuth(
-    process.env.ADMIN_USERNAME,
-    process.env.ADMIN_PASSWORD
-  );
-
-  adminAuth = {
-    logout: function(req, res, next) {
-      next();
-    },
-    bouncer: auth,
-    blocker: auth
-  };
-}
+const adminAuth = createAdminAuth(process.env);
 
 // If redis conn info was not provided, start our own local process
 // This is mostly for local development.
@@ -104,6 +67,10 @@ app.use(loggerMiddleware(logger));
 app.use(statsdMiddleware());
 app.use(session({ keys: [sessionPrivateKey] }));
 app.use(bodyParser.json());
+
+if (adminAuth && adminAuth.router) {
+  app.use(adminAuth.router);
+}
 
 // some requests will need access to the internal faye client
 app.use((req, res, next) => {

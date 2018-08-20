@@ -76,7 +76,7 @@ class App extends React.Component {
                   </p>
                 </li>
                 <li>
-                  <a href="/admin/logout">Logout</a>
+                  <a href="/logout">Logout</a>
                 </li>
               </ul>
             </div>

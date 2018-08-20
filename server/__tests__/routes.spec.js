@@ -30,7 +30,7 @@ it("requires auth.blocker for all admin api calls", () => {
   let expectations = 0;
   app.routes.forEach(route => {
     if (route[1].indexOf && route[1].indexOf("/admin/") === 0) {
-      expect(route[2]).toBe(auth.blocker);
+      expect(route[2][0]).toBe(auth.blocker);
       expectations += 1;
     }
   });

@@ -13,37 +13,47 @@ exports.map = function(app, auth) {
     app.get("/logout", auth.logout);
     app.get("/admin", auth.bouncer, admin.index);
 
-    app.get("/admin/api/info", auth.blocker, admin.getInfo);
-    app.get("/admin/api/applications", auth.blocker, admin.getApplications);
-    app.post("/admin/api/applications", auth.blocker, admin.createApplication);
+    const checkAuthAndLoadUser = [auth.blocker, auth.getUsername];
+
+    app.get("/admin/api/info", checkAuthAndLoadUser, admin.getInfo);
+    app.get(
+      "/admin/api/applications",
+      checkAuthAndLoadUser,
+      admin.getApplications
+    );
+    app.post(
+      "/admin/api/applications",
+      checkAuthAndLoadUser,
+      admin.createApplication
+    );
     app.get(
       "/admin/api/application/:applicationId",
-      auth.blocker,
+      checkAuthAndLoadUser,
       admin.getApplication
     );
     app.delete(
       "/admin/api/application/:applicationId",
-      auth.blocker,
+      checkAuthAndLoadUser,
       admin.deleteApplication
     );
     app.post(
       "/admin/api/application/:applicationId",
-      auth.blocker,
+      checkAuthAndLoadUser,
       admin.updateApplication
     );
     app.post(
       "/admin/api/application/:applicationId/keys",
-      auth.blocker,
+      checkAuthAndLoadUser,
       admin.generateKey
     );
     app.post(
       "/admin/api/application/:applicationId/token",
-      auth.blocker,
+      checkAuthAndLoadUser,
       admin.generateToken
     );
     app.post(
       "/admin/api/application/:applicationId/keys/:keyId/token",
-      auth.blocker,
+      checkAuthAndLoadUser,
       admin.generateToken
     );
   }
