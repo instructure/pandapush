@@ -1,5 +1,6 @@
 import React from "react";
 import AdminInput from "./admin_input";
+import PropTypes from "prop-types";
 
 class Info extends React.Component {
   constructor(props) {
@@ -165,7 +166,7 @@ class Info extends React.Component {
 }
 
 Info.contextTypes = {
-  router: React.PropTypes.object.isRequired
+  router: PropTypes.object.isRequired
 };
 
 module.exports = Info;

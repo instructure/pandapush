@@ -2,6 +2,7 @@ import React from "react";
 import moment from "moment";
 import _ from "lodash";
 import ChannelPicker from "../channel_picker";
+import PropTypes from "prop-types";
 
 class Console extends React.Component {
   constructor(props) {
@@ -520,7 +521,7 @@ class Console extends React.Component {
 }
 
 Console.contextTypes = {
-  router: React.PropTypes.object.isRequired
+  router: PropTypes.object.isRequired
 };
 
 module.exports = Console;

@@ -3,6 +3,7 @@ import moment from "moment";
 import _ from "lodash";
 import Presence from "../pandapush/presence";
 import Token from "../pandapush/token";
+import PropTypes from "prop-types";
 
 class LoadTest extends React.Component {
   constructor(props) {
@@ -191,7 +192,7 @@ class LoadTest extends React.Component {
   render() {
     return (
       <div className="container">
-        <form onSubmit={this.handleStart} className="form" role="form">
+        <form onSubmit={this.handleStart} className="form">
           <div className="row">
             <div className="form-group">
               <label className="col-sm-2 control-label">Test ID</label>
@@ -337,7 +338,7 @@ class LoadTest extends React.Component {
 }
 
 LoadTest.contextTypes = {
-  router: React.PropTypes.object.isRequired
+  router: PropTypes.object.isRequired
 };
 
 module.exports = LoadTest;

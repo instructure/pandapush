@@ -136,11 +136,7 @@ class Keys extends React.Component {
 
         <h2>Generate New Key</h2>
 
-        <form
-          onSubmit={this.handleKeySubmit}
-          className="form-horizontal"
-          role="form"
-        >
+        <form onSubmit={this.handleKeySubmit} className="form-horizontal">
           <div className="form-group">
             <label className="col-sm-2 control-label" htmlFor="keyPurpose">
               Purpose

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router";
 import _ from "lodash";
+import PropTypes from "prop-types";
 
 class Applications extends React.Component {
   state = {
@@ -86,11 +87,7 @@ class Applications extends React.Component {
 
         <h2>Create Application</h2>
 
-        <form
-          onSubmit={this.handleAppSubmit}
-          className="form-horizontal"
-          role="form"
-        >
+        <form onSubmit={this.handleAppSubmit} className="form-horizontal">
           <div className="form-group">
             <label className="col-sm-2 control-label" htmlFor="appName">
               Name
@@ -120,7 +117,7 @@ class Applications extends React.Component {
 }
 
 Applications.contextTypes = {
-  router: React.PropTypes.object.isRequired
+  router: PropTypes.object.isRequired
 };
 
 module.exports = Applications;

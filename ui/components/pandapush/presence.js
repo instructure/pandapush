@@ -1,6 +1,7 @@
 import React from "react";
 import _ from "lodash";
 import Pandapush from "../../../client/dist/client";
+import PropTypes from "prop-types";
 
 class Presence extends React.Component {
   constructor(props) {
@@ -15,12 +16,12 @@ class Presence extends React.Component {
     this.doSubscribe(this.props);
   }
 
-  componentWillReceiveProps(newProps) {
+  componentDidUpdate(prevProps) {
     if (
-      newProps.channel !== this.props.channel ||
-      newProps.token !== this.props.token
+      prevProps.channel !== this.props.channel ||
+      prevProps.token !== this.props.token
     ) {
-      this.doSubscribe(newProps);
+      this.doSubscribe(this.props);
     }
   }
 
@@ -71,7 +72,7 @@ class Presence extends React.Component {
 }
 
 Presence.propTypes = {
-  children: React.PropTypes.func.isRequired
+  children: PropTypes.func.isRequired
 };
 
 module.exports = Presence;

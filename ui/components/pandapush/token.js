@@ -1,7 +1,8 @@
 import React from "react";
 import _ from "lodash";
+import PropTypes from "prop-types";
 
-class Presence extends React.Component {
+class Token extends React.Component {
   constructor(props) {
     super(props);
 
@@ -14,9 +15,9 @@ class Presence extends React.Component {
     this.getToken(this.props);
   }
 
-  componentWillReceiveProps(newProps) {
-    if (!_.isEqual(newProps, this.props)) {
-      this.getToken(newProps);
+  componentDidUpdate(prevProps) {
+    if (!_.isEqual(prevProps, this.props)) {
+      this.getToken(this.props);
     }
   }
 
@@ -48,13 +49,13 @@ class Presence extends React.Component {
   }
 }
 
-Presence.propTypes = {
-  children: React.PropTypes.func.isRequired,
-  appId: React.PropTypes.string.isRequired,
-  channel: React.PropTypes.string.isRequired,
-  presence: React.PropTypes.object,
-  pub: React.PropTypes.bool,
-  sub: React.PropTypes.bool
+Token.propTypes = {
+  children: PropTypes.func.isRequired,
+  appId: PropTypes.string.isRequired,
+  channel: PropTypes.string.isRequired,
+  presence: PropTypes.object,
+  pub: PropTypes.bool,
+  sub: PropTypes.bool
 };
 
-module.exports = Presence;
+module.exports = Token;

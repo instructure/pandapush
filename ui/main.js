@@ -41,7 +41,7 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        <nav className="navbar navbar-default" role="navigation">
+        <nav className="navbar navbar-default">
           <div className="container-fluid">
             <div className="navbar-header">
               <button
@@ -55,7 +55,7 @@ class App extends React.Component {
                 <span className="icon-bar" />
                 <span className="icon-bar" />
               </button>
-              <a className="navbar-brand" href="#">
+              <a className="navbar-brand" href="#/">
                 Pandapush
               </a>
             </div>

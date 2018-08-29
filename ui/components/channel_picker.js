@@ -57,24 +57,36 @@ class ChannelPicker extends React.Component {
             </button>
             <ul className="dropdown-menu" role="menu">
               <li>
-                <a onClick={this.handleType.bind(this, "public")} href="#">
+                <button
+                  className="btn btn-link"
+                  onClick={this.handleType.bind(this, "public")}
+                >
                   public
-                </a>
+                </button>
               </li>
               <li>
-                <a onClick={this.handleType.bind(this, "private")} href="#">
+                <button
+                  className="btn btn-link"
+                  onClick={this.handleType.bind(this, "private")}
+                >
                   private
-                </a>
+                </button>
               </li>
               <li className={this.props.showPresence ? "" : "hidden"}>
-                <a onClick={this.handleType.bind(this, "presence")} href="#">
+                <button
+                  className="btn btn-link"
+                  onClick={this.handleType.bind(this, "presence")}
+                >
                   presence
-                </a>
+                </button>
               </li>
               <li className={this.props.showMeta ? "" : "hidden"}>
-                <a onClick={this.handleType.bind(this, "meta")} href="#">
+                <button
+                  className="btn btn-link"
+                  onClick={this.handleType.bind(this, "meta")}
+                >
                   meta
-                </a>
+                </button>
               </li>
             </ul>
           </div>
