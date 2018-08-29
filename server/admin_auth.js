@@ -1,5 +1,4 @@
 const basicAuth = require("basic-auth-connect");
-const cas = require("grand_master_cas");
 const { ExpressOIDC } = require("@okta/oidc-middleware");
 
 // Returns an object with four functions:
@@ -25,29 +24,7 @@ module.exports = function(env) {
     }
   };
 
-  if (env.AUTH_METHOD === "cas") {
-    if (!env.CAS_HOST || !env.CAS_PATH || !env.CAS_SERVICE) {
-      console.warn("CAS authentication specified, but not configured");
-      return noAdminAreaAuth;
-    }
-    cas.configure({
-      casHost: env.CAS_HOST,
-      casPath: env.CAS_PATH,
-      service: env.CAS_SERVICE,
-      ssl: true,
-      port: 443
-    });
-
-    return {
-      logout: cas.logout,
-      bouncer: cas.bouncer,
-      blocker: cas.blocker,
-      getUsername: function(req, res, next) {
-        req.username = req.session.cas_user;
-        next();
-      }
-    };
-  } else if (env.AUTH_METHOD === "okta") {
+  if (env.AUTH_METHOD === "okta") {
     if (
       !env.OKTA_ISSUER ||
       !env.OKTA_CLIENT_ID ||
