@@ -13,7 +13,23 @@ const { ExpressOIDC } = require("@okta/oidc-middleware");
 // May also include `router` which will be added to app routes at initialization.
 
 module.exports = function(env) {
-  if (env.CAS_HOST) {
+  const noAdminAreaAuth = {
+    logout: function(req, res, next) {
+      next();
+    },
+    bouncer: function(req, res, next) {
+      res.send(403, "Unauthorized");
+    },
+    blocker: function(req, res, next) {
+      res.send(403, "Unauthorized");
+    }
+  };
+
+  if (env.AUTH_METHOD === "cas") {
+    if (!env.CAS_HOST || !env.CAS_PATH || !env.CAS_SERVICE) {
+      console.warn("CAS authentication specified, but not configured");
+      return noAdminAreaAuth;
+    }
     cas.configure({
       casHost: env.CAS_HOST,
       casPath: env.CAS_PATH,
@@ -31,12 +47,17 @@ module.exports = function(env) {
         next();
       }
     };
-  } else if (
-    env.OKTA_ISSUER &&
-    env.OKTA_CLIENT_ID &&
-    env.OKTA_CLIENT_SECRET &&
-    env.OKTA_REDIRECT_URI
-  ) {
+  } else if (env.AUTH_METHOD === "okta") {
+    if (
+      !env.OKTA_ISSUER ||
+      !env.OKTA_CLIENT_ID ||
+      !env.OKTA_CLIENT_SECRET ||
+      !env.OKTA_REDIRECT_URI
+    ) {
+      console.warn("OKTA authentication specified, but not configured");
+      return noAdminAreaAuth;
+    }
+
     const oidc = new ExpressOIDC({
       issuer: env.OKTA_ISSUER,
       client_id: env.OKTA_CLIENT_ID,
@@ -66,7 +87,12 @@ module.exports = function(env) {
         next();
       }
     };
-  } else if (env.ADMIN_USERNAME && env.ADMIN_PASSWORD) {
+  } else if (env.AUTH_METHOD === "basic") {
+    if (!env.ADMIN_USERNAME || !env.ADMIN_PASSWORD) {
+      console.warn("Basic authentication specified, but not configured");
+      return noAdminAreaAuth;
+    }
+
     const auth = basicAuth(env.ADMIN_USERNAME, env.ADMIN_PASSWORD);
 
     return {
@@ -82,15 +108,5 @@ module.exports = function(env) {
     };
   }
 
-  return {
-    logout: function(req, res, next) {
-      next();
-    },
-    bouncer: function(req, res, next) {
-      res.send(403, "Unauthorized");
-    },
-    blocker: function(req, res, next) {
-      res.send(403, "Unauthorized");
-    }
-  };
+  return noAdminAreaAuth;
 };
