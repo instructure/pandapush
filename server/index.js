@@ -1,5 +1,7 @@
 require("dotenv").load();
 
+console.log(process.env);
+
 const http = require("http");
 const express = require("express");
 const session = require("cookie-session");
@@ -16,6 +18,7 @@ const routes = require("./routes");
 const httpMetrics = require("./lib/http_metrics");
 const store = require("./lib/store");
 const createAdminAuth = require("./admin_auth");
+const adminController = require("./controllers/admin_controller");
 
 const app = express();
 const server = http.Server(app);
@@ -80,6 +83,9 @@ app.use((req, res, next) => {
 
 routes.map(app, adminAuth);
 app.use(express.static(path.join(__dirname, "../ui/public")));
+
+// Anything not already routed
+app.get("/admin*", adminController.index);
 
 const port = process.env.PORT || 3000;
 server.listen(port, function() {

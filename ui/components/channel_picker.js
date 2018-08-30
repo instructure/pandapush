@@ -106,4 +106,4 @@ class ChannelPicker extends React.Component {
   }
 }
 
-module.exports = ChannelPicker;
+export default ChannelPicker;

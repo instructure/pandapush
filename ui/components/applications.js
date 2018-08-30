@@ -1,7 +1,6 @@
 import React from "react";
-import { Link } from "react-router";
+import { Link } from "@reach/router";
 import _ from "lodash";
-import PropTypes from "prop-types";
 
 class Applications extends React.Component {
   state = {
@@ -41,9 +40,7 @@ class Applications extends React.Component {
     })
       .then(response => response.json())
       .then(json => {
-        this.context.router.push({
-          pathname: `/application/${json.id}`
-        });
+        this.props.navigate(`application/${json.id}`);
       })
       .catch(e => {
         console.log("error creating application", e);
@@ -57,7 +54,7 @@ class Applications extends React.Component {
       return (
         <tr key={app.id}>
           <td className="identifier">
-            <Link to={`/application/${app.id}`}>{app.id}</Link>
+            <Link to={`application/${app.id}`}>{app.id}</Link>
           </td>
           <td>{app.name}</td>
           <td>{app.created_at}</td>
@@ -116,8 +113,4 @@ class Applications extends React.Component {
   }
 }
 
-Applications.contextTypes = {
-  router: PropTypes.object.isRequired
-};
-
-module.exports = Applications;
+export default Applications;

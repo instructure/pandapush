@@ -341,4 +341,4 @@ LoadTest.contextTypes = {
   router: PropTypes.object.isRequired
 };
 
-module.exports = LoadTest;
+export default LoadTest;

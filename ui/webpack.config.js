@@ -3,17 +3,20 @@ const path = require("path");
 module.exports = {
   entry: ["whatwg-fetch", path.join(__dirname, "./main.js")],
   output: {
-    filename: "./ui/public/admin/bundle.js"
+    path: path.resolve(__dirname, "public/admin"),
+    filename: "bundle.js"
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        loader: "babel-loader",
-        query: {
-          presets: ["env", "react"],
-          plugins: ["transform-class-properties"]
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env", "@babel/preset-react"],
+            plugins: ["@babel/plugin-proposal-class-properties"]
+          }
         }
       }
     ]

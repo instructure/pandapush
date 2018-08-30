@@ -26,8 +26,8 @@ services:
   webpack:
     build: .
     command: bash -c "
-      node_modules/.bin/webpack --watch --devtool inline-source-map --config ui/webpack.config.js &
-      node_modules/.bin/webpack --watch --devtool inline-source-map --config client/webpack.config.js"
+      node_modules/.bin/webpack --watch --mode development --devtool inline-source-map --config ui/webpack.config.js &
+      node_modules/.bin/webpack --watch --mode development --devtool inline-source-map --config client/webpack.config.js"
     environment:
       NODE_ENV: development
 

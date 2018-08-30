@@ -50,7 +50,7 @@ class Keys extends React.Component {
 
     const expires = m.toISOString();
 
-    fetch("/admin/api/application/" + this.props.params.id + "/keys", {
+    fetch("/admin/api/application/" + this.props.app.id + "/keys", {
       method: "POST",
       credentials: "same-origin",
       headers: {
@@ -182,4 +182,4 @@ class Keys extends React.Component {
   }
 }
 
-module.exports = Keys;
+export default Keys;

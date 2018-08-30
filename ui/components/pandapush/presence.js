@@ -75,4 +75,4 @@ Presence.propTypes = {
   children: PropTypes.func.isRequired
 };
 
-module.exports = Presence;
+export default Presence;

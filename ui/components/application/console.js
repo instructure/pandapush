@@ -2,17 +2,16 @@ import React from "react";
 import moment from "moment";
 import _ from "lodash";
 import ChannelPicker from "../channel_picker";
-import PropTypes from "prop-types";
+import qs from "query-string";
 
 class Console extends React.Component {
   constructor(props) {
     super(props);
 
+    const query = qs.parse(this.props.location.search);
     this.state = {
       subChannel: null,
-      presence:
-        this.props.location.params &&
-        this.props.location.params.subChannelType === "presence",
+      presence: query && query.subChannelType === "presence",
       events: [],
       subscribers: {}
     };
@@ -187,14 +186,14 @@ class Console extends React.Component {
   };
 
   updateChannelParams = (channel, newParams) => {
-    const params = this.props.location.query;
+    const params = qs.parse(this.props.location.search);
     params[channel + "Type"] = newParams.channelType;
     params[channel + "Path"] = newParams.path;
 
-    this.context.router.replace({
-      pathname: this.props.location.pathname,
-      query: params
-    });
+    this.props.navigate(
+      `${this.props.location.pathname}?${qs.stringify(params)}`,
+      { replace: true }
+    );
 
     this.setState({
       presenceSub: newParams.channelType === "presence"
@@ -202,7 +201,7 @@ class Console extends React.Component {
   };
 
   handleFieldChange = (field, e) => {
-    const params = this.props.location.query;
+    const params = qs.parse(this.props.location.search);
     const value = this[field].value;
     if (value.length > 1024) {
       params[field] = "";
@@ -210,10 +209,10 @@ class Console extends React.Component {
       params[field] = value;
     }
 
-    this.context.router.replace({
-      pathname: this.props.location.pathname,
-      query: params
-    });
+    this.props.navigate(
+      `${this.props.location.pathname}?${qs.stringify(params)}`,
+      { replace: true }
+    );
   };
 
   renderEventsTable() {
@@ -291,12 +290,9 @@ class Console extends React.Component {
   }
 
   renderSubscribers() {
-    if (
-      !(
-        this.props.location.query.subChannelType === "presence" &&
-        this.state.subChannel
-      )
-    ) {
+    const query = qs.parse(this.props.location.search);
+
+    if (!(query.subChannelType === "presence" && this.state.subChannel)) {
       return <span />;
     }
 
@@ -319,7 +315,9 @@ class Console extends React.Component {
   }
 
   renderPresenceFields() {
-    if (this.props.location.query.subChannelType === "presence") {
+    const query = qs.parse(this.props.location.search);
+
+    if (query.subChannelType === "presence") {
       return (
         <div>
           <div className="form-group">
@@ -331,7 +329,7 @@ class Console extends React.Component {
                 ref={e => (this.presenceIdInput = e)}
                 className="form-control"
                 placeholder={this.props.username}
-                defaultValue={this.props.location.query.presenceIdInput}
+                defaultValue={query.presenceIdInput}
               />
             </div>
           </div>
@@ -347,7 +345,7 @@ class Console extends React.Component {
                 ref={e => (this.presenceDataInput = e)}
                 className="form-control"
                 rows="3"
-                defaultValue={this.props.location.query.presenceDataInput}
+                defaultValue={query.presenceDataInput}
               />
             </div>
           </div>
@@ -372,10 +370,12 @@ class Console extends React.Component {
         <span style={{ paddingLeft: "10px" }}>
           <span className="text-danger">
             {this.state.publishStatus.statusText}
-          </span>&nbsp;
+          </span>
+          &nbsp;
           <span className="text-warning">
             [{this.state.publishStatus.status}]
-          </span>&nbsp;
+          </span>
+          &nbsp;
           <span className="text-muted">{this.state.publishStatus.body}</span>
         </span>
       );
@@ -387,6 +387,8 @@ class Console extends React.Component {
   }
 
   render() {
+    const query = qs.parse(this.props.location.search);
+
     return (
       <div className="container">
         <div className="row">
@@ -398,9 +400,9 @@ class Console extends React.Component {
               <div className="col-sm-6">
                 <ChannelPicker
                   ref={e => (this.pubChannel = e)}
-                  applicationId={this.props.params.id}
-                  type={this.props.location.query.pubChannelType || "public"}
-                  path={this.props.location.query.pubChannelPath || ""}
+                  applicationId={this.props.app.id}
+                  type={query.pubChannelType || "public"}
+                  path={query.pubChannelPath || ""}
                   updateParams={this.updateChannelParams.bind(
                     this,
                     "pubChannel"
@@ -420,7 +422,7 @@ class Console extends React.Component {
                   ref={e => (this.pubPayloadInput = e)}
                   className="form-control"
                   rows="3"
-                  defaultValue={this.props.location.query.pubPayload}
+                  defaultValue={query.pubPayloadInput}
                 />
               </div>
             </div>
@@ -431,9 +433,7 @@ class Console extends React.Component {
                 <button
                   type="submit"
                   onClick={this.handlePublish.bind(this, true)}
-                  disabled={this.channelButtonDisabled(
-                    this.props.location.query.pubChannelPath
-                  )}
+                  disabled={this.channelButtonDisabled(query.pubChannelPath)}
                   className="btn btn-default"
                 >
                   Publish (client)
@@ -441,9 +441,7 @@ class Console extends React.Component {
                 <button
                   type="submit"
                   onClick={this.handlePublish.bind(this, false)}
-                  disabled={this.channelButtonDisabled(
-                    this.props.location.query.pubChannelPath
-                  )}
+                  disabled={this.channelButtonDisabled(query.pubChannelPath)}
                   className="btn btn-default"
                 >
                   Publish (REST)
@@ -467,9 +465,9 @@ class Console extends React.Component {
               <div className="col-sm-6">
                 <ChannelPicker
                   ref={e => (this.subChannel = e)}
-                  applicationId={this.props.params.id}
-                  type={this.props.location.query.subChannelType || "public"}
-                  path={this.props.location.query.subChannelPath || ""}
+                  applicationId={this.props.app.id}
+                  type={query.subChannelType || "public"}
+                  path={query.subChannelPath || ""}
                   updateParams={this.updateChannelParams.bind(
                     this,
                     "subChannel"
@@ -499,7 +497,7 @@ class Console extends React.Component {
                       type="submit"
                       onClick={this.handleSubscribe}
                       disabled={this.channelButtonDisabled(
-                        this.props.location.query.subChannelPath
+                        query.subChannelPath
                       )}
                       className="btn btn-default"
                     >
@@ -520,8 +518,4 @@ class Console extends React.Component {
   }
 }
 
-Console.contextTypes = {
-  router: PropTypes.object.isRequired
-};
-
-module.exports = Console;
+export default Console;

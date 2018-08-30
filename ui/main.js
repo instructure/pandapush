@@ -1,19 +1,8 @@
 import React from "react";
 import { render } from "react-dom";
-import {
-  Router,
-  Route,
-  IndexRoute,
-  IndexRedirect,
-  Link,
-  hashHistory
-} from "react-router";
+import { Router, Link } from "@reach/router";
 import Applications from "./components/applications";
 import Application from "./components/application";
-import ApplicationInfo from "./components/application/info";
-import ApplicationKeys from "./components/application/keys";
-import ApplicationConsole from "./components/application/console";
-import ApplicationLoadTest from "./components/application/loadtest";
 
 window.React = React; // for the React chrome extension
 
@@ -39,6 +28,8 @@ class App extends React.Component {
   }
 
   render() {
+    const childProps = { username: this.state.username };
+
     return (
       <div>
         <nav className="navbar navbar-default">
@@ -66,7 +57,7 @@ class App extends React.Component {
             >
               <ul className="nav navbar-nav">
                 <li>
-                  <Link to="/">Applications</Link>
+                  <Link to="./">Applications</Link>
                 </li>
               </ul>
               <ul className="nav navbar-nav navbar-right">
@@ -83,26 +74,18 @@ class App extends React.Component {
           </div>
         </nav>
 
-        {React.cloneElement(this.props.children, {
-          username: this.state.username
-        })}
+        <Router>
+          <Applications path="/" {...childProps} />
+          <Application path="application/:application_id/*" {...childProps} />
+        </Router>
       </div>
     );
   }
 }
 
 render(
-  <Router history={hashHistory}>
-    <Route path="/" component={App}>
-      <IndexRoute component={Applications} />
-      <Route path="application/:id" component={Application}>
-        <IndexRedirect to="info" />
-        <Route path="info" component={ApplicationInfo} />
-        <Route path="keys" component={ApplicationKeys} />
-        <Route path="console" component={ApplicationConsole} />
-        <Route path="loadtest" component={ApplicationLoadTest} />
-      </Route>
-    </Route>
+  <Router basepath="/admin">
+    <App path="/*" />
   </Router>,
   document.getElementById("root")
 );

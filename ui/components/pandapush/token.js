@@ -58,4 +58,4 @@ Token.propTypes = {
   sub: PropTypes.bool
 };
 
-module.exports = Token;
+export default Token;

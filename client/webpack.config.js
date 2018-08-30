@@ -3,18 +3,21 @@ const path = require("path");
 module.exports = {
   entry: path.join(__dirname, "./index.js"),
   output: {
-    filename: "./client/dist/client.js",
+    path: path.resolve(__dirname, "dist"),
+    filename: "client.js",
     library: "Pandapush",
     libraryTarget: "umd"
   },
   module: {
-    loaders: [
+    rules: [
       {
-        test: /\.js$/,
+        test: /\.js?$/,
         exclude: /node_modules/,
-        loader: "babel-loader",
-        query: {
-          presets: ["env"]
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env"]
+          }
         }
       }
     ]

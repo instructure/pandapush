@@ -1,6 +1,5 @@
 import React from "react";
 import AdminInput from "./admin_input";
-import PropTypes from "prop-types";
 
 class Info extends React.Component {
   constructor(props) {
@@ -94,7 +93,7 @@ class Info extends React.Component {
           <tbody>
             <tr>
               <td>ID</td>
-              <td className="identifier">{this.props.params.id}</td>
+              <td className="identifier">{this.props.app.id}</td>
             </tr>
             <tr>
               <td>Name</td>
@@ -142,10 +141,12 @@ class Info extends React.Component {
           <div>
             <button onClick={this.handleDelete} className="btn btn-danger">
               Delete
-            </button>&nbsp;
+            </button>
+            &nbsp;
             <button onClick={this.handleSave} className="btn btn-default">
               Save
-            </button>&nbsp;
+            </button>
+            &nbsp;
             <button onClick={this.handleCancel} className="btn btn-default">
               Cancel
             </button>
@@ -154,7 +155,8 @@ class Info extends React.Component {
           <div>
             <button onClick={this.handleDelete} className="btn btn-danger">
               Delete
-            </button>&nbsp;
+            </button>
+            &nbsp;
             <button onClick={this.handleEdit} className="btn btn-default">
               Edit
             </button>
@@ -165,8 +167,4 @@ class Info extends React.Component {
   }
 }
 
-Info.contextTypes = {
-  router: PropTypes.object.isRequired
-};
-
-module.exports = Info;
+export default Info;

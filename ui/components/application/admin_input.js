@@ -1,29 +1,35 @@
 import React from "react";
-import Tokenizer from "react-tokenizer";
+import ReactTags from "react-tag-autocomplete";
 import _ from "lodash";
 
 class AdminInput extends React.Component {
+  handleDelete = idx => {
+    const newList = this.props.admins.slice(0);
+    newList.splice(idx, 1);
+    this.props.onChange(this.cleanedAdmins(newList));
+  };
+
+  handleAdd = tag => {
+    let newList = _.union(this.props.admins, [tag.name]);
+    this.props.onChange(this.cleanedAdmins(newList));
+  };
+
   cleanedAdmins(value) {
     return _.union([this.props.thisUser], value);
   }
 
-  handleRemove = value => {
-    const newList = _.without(this.props.admins, value);
-    this.props.onChange(this.cleanedAdmins(newList));
-  };
-
-  handleTokenize = value => {
-    const current = this.props.admins;
-    const newList = _.union(current, [value]);
-    this.props.onChange(this.cleanedAdmins(newList));
-  };
-
   render() {
     return (
-      <Tokenizer
-        tokens={this.props.admins}
-        tokenize={this.handleTokenize}
-        removeToken={this.handleRemove}
+      <ReactTags
+        tags={this.props.admins.map(a => {
+          return { id: a, name: a };
+        })}
+        handleDelete={this.handleDelete}
+        handleAddition={this.handleAdd}
+        allowNew={true}
+        inputAttributes={{ maxLength: 100 }}
+        delimiterChars={[",", " "]}
+        placeholder="Add username"
       />
     );
   }
