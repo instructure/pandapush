@@ -11,7 +11,11 @@ class Applications extends React.Component {
     fetch("/admin/api/applications", { credentials: "same-origin" })
       .then(response => response.json())
       .then(json => {
-        this.setState({ applications: json });
+        const applications = _.sortBy(json, o => [
+          o.name.toLowerCase(),
+          o.created_at
+        ]);
+        this.setState({ applications });
       })
       .catch(e => {
         console.log("error getting applications", e);
