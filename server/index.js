@@ -1,7 +1,5 @@
 require("dotenv").load();
 
-console.log(process.env);
-
 const http = require("http");
 const express = require("express");
 const session = require("cookie-session");

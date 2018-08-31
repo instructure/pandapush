@@ -21,6 +21,9 @@ module.exports = function(env) {
     },
     blocker: function(req, res, next) {
       res.send(403, "Unauthorized");
+    },
+    getUsername: function(req, res, next) {
+      next();
     }
   };
 
