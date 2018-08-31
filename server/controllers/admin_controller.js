@@ -11,7 +11,24 @@ exports.index = function(req, res) {
 };
 
 exports.getInfo = function(req, res) {
-  res.json(200, { username: req.username });
+  const environmentsString = process.env.ENVIRONMENTS || "";
+  const environments = _.compact(environmentsString.split(";")).map(e => {
+    const c = e.split(",");
+    return {
+      name: c[0],
+      url: c[1]
+    };
+  });
+
+  const environment = process.env.CG_ENVIRONMENT || "local";
+  const version = process.env.CG_GIT_COMMIT_ID || "";
+
+  res.json(200, {
+    username: req.username,
+    environments,
+    environment,
+    version
+  });
 };
 
 const loadUserFromRequest = function(req, res, next) {

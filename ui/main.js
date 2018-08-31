@@ -3,6 +3,7 @@ import { render } from "react-dom";
 import { Router, Link } from "@reach/router";
 import Applications from "./components/applications";
 import Application from "./components/application";
+import EnvironmentSelector from "./components/environment_selector";
 
 window.React = React; // for the React chrome extension
 
@@ -19,7 +20,10 @@ class App extends React.Component {
       .then(response => response.json())
       .then(json => {
         this.setState({
-          username: json.username
+          username: json.username,
+          environment: json.environment,
+          environments: json.environments,
+          version: json.version
         });
       })
       .catch(e => {
@@ -61,6 +65,12 @@ class App extends React.Component {
                 </li>
               </ul>
               <ul className="nav navbar-nav navbar-right">
+                <li className="dropdown">
+                  <EnvironmentSelector
+                    environment={this.state.environment}
+                    environments={this.state.environments || []}
+                  />
+                </li>
                 <li>
                   <p className="navbar-text">
                     Logged in as {this.state.username}
@@ -78,6 +88,14 @@ class App extends React.Component {
           <Applications path="/" {...childProps} />
           <Application path="application/:application_id/*" {...childProps} />
         </Router>
+
+        <div className="container-fluid" style={{ float: "right" }}>
+          <span>
+            <span style={{ color: "grey" }}>release</span>
+            &nbsp;
+            {this.state.version || "N/A"}
+          </span>
+        </div>
       </div>
     );
   }
