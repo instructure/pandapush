@@ -8,10 +8,10 @@ authentication.)
 
 ## Getting Started
 
-### Using Docker
+### Using the standalong Docker image
 
 ```bash
-$ docker run -ti -p 49000:3000 -v /tmp/pandapush-data:/app/localdata -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD=password zwily/pandapush:latest
+$ docker run -ti -p 3000:80 -e AUTH_METHOD=basic -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD=password instructure/pandapush:latest
 ```
 
 This will start Pandapush running on your docker host. If that's
@@ -248,8 +248,38 @@ When Joe disconnects, all other users will receive a message:
 
 Presence data should be kept small, as it is persisted in redis in memory.
 
+# Running in Production
+
+The standalone docker image uses an embedded redis process and sqlite for storing
+application metadata, but you don't want that in production.
+
+## Redis hosts
+
+You can specify one or more redis hosts with the `REDIS_HOSTS` environment variable.
+Pass `hostname:port` pairs, separated by commas.
+
+## Database (postgres)
+
+You can specify a postgres database to use with the following environment vars:
+
+```
+DATABASE=postgres
+DATABASE_ADDRESS=<host or ip>
+DATABASE_PORT=<port>
+DATABASE_USERNAME=<username>
+DATABASE_PASSWORD=<password>
+DATABASE_NAME=pandapush
+```
+
+Initialize the database (and apply further migrations) with the following command run
+inside one of your pandapush containers:
+
+```
+knex --knexfile server/knexfile.js migrate:latest
+```
+
 # Mobile
 
 Note that this is _not_ a "Push Notification" service like for iOS and
 Android. There do appear to be some open-source Faye clients
-for iOS and Android, but I have not tested any of them yet.
+for iOS and Android, but I have not tested any of them.
