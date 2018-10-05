@@ -1,5 +1,8 @@
 import React from "react";
-import { Router, Link } from "@reach/router";
+import { Router } from "@reach/router";
+import Heading from "@instructure/ui-elements/lib/components/Heading";
+import TabList, { TabPanel } from "@instructure/ui-tabs/lib/components/TabList";
+
 import Pandapush from "../../client/dist/client";
 import Info from "./application/info";
 import Console from "./application/console";
@@ -9,6 +12,8 @@ const MyRedirect = ({ to, navigate }) => {
   navigate(to, { replace: true });
   return <div />;
 };
+
+const TABS = ["info", "keys", "console"];
 
 class Application extends React.Component {
   state = {
@@ -125,37 +130,36 @@ class Application extends React.Component {
       username: this.props.username
     };
 
+    const tabListIndex = TABS.indexOf(this.props["*"]);
+
     return (
       <div className="container">
-        <h1>
+        <Heading>
           {this.state.app.name}{" "}
           <span style={{ fontSize: "0.6em" }}>
             (<span className="identifier">{this.props.application_id}</span>)
           </span>
-        </h1>
+        </Heading>
 
-        <div className="row">
-          <ul className="nav nav-tabs" role="tablist">
-            <li className={this.props["*"] === "info" ? "active" : ""}>
-              <Link to={"info"}>Info</Link>
-            </li>
-            <li className={this.props["*"] === "keys" ? "active" : ""}>
-              <Link to={"keys"}>Keys</Link>
-            </li>
-            <li className={this.props["*"] === "console" ? "active" : ""}>
-              <Link to={"console"}>Console</Link>
-            </li>
-          </ul>
+        <br />
 
-          <br />
+        <TabList
+          selectedIndex={tabListIndex}
+          onChange={index => {
+            this.props.navigate(`./${TABS[index]}`);
+          }}
+        >
+          <TabPanel title="Info" />
+          <TabPanel title="Keys" />
+          <TabPanel title="Console" />
+        </TabList>
 
-          <Router>
-            <Info path="info" {...childProps} />
-            <Console path="console" {...childProps} />
-            <Keys path="keys" {...childProps} />
-            <MyRedirect default path="/" to="info" />
-          </Router>
-        </div>
+        <Router>
+          <Info path="info" {...childProps} />
+          <Console path="console" {...childProps} />
+          <Keys path="keys" {...childProps} />
+          <MyRedirect default path="/" to="info" />
+        </Router>
       </div>
     );
   }

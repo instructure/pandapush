@@ -1,10 +1,17 @@
 import React from "react";
 import { Link } from "@reach/router";
 import _ from "lodash";
+import Table from "@instructure/ui-elements/lib/components/Table";
+import ScreenReaderContent from "@instructure/ui-a11y/lib/components/ScreenReaderContent";
+import Button from "@instructure/ui-buttons/lib/components/Button";
+import IconAdd from "@instructure/ui-icons/lib/Solid/IconAdd";
+
+import NewApplicationModal from "./new_application";
 
 class Applications extends React.Component {
   state = {
-    applications: []
+    applications: [],
+    newApplicationModal: false
   };
 
   componentDidMount() {
@@ -22,44 +29,15 @@ class Applications extends React.Component {
       });
   }
 
-  handleAppSubmit = e => {
-    e.preventDefault();
-
-    const name = this.newAppNameInput.value;
-
-    if (!name) {
-      alert("Name is required!");
-      return false;
-    }
-
-    fetch("/admin/api/applications", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8"
-      },
-      body: JSON.stringify({
-        name: name
-      })
-    })
-      .then(response => response.json())
-      .then(json => {
-        this.props.navigate(`application/${json.id}`);
-      })
-      .catch(e => {
-        console.log("error creating application", e);
-      });
-
-    return false;
-  };
-
   renderApplications() {
     return _.map(this.state.applications, function(app) {
       return (
         <tr key={app.id}>
-          <td className="identifier">
-            <Link to={`application/${app.id}`}>{app.id}</Link>
-          </td>
+          <th scope="row">
+            <Link to={`application/${app.id}`}>
+              <pre>{app.id}</pre>
+            </Link>
+          </th>
           <td>{app.name}</td>
           <td>{app.created_at}</td>
           <td>{app.created_by}</td>
@@ -70,48 +48,38 @@ class Applications extends React.Component {
 
   render() {
     return (
-      <div className="container">
-        <h1>Applications</h1>
-
-        <table className="table">
-          <tbody>
+      <div style={{ padding: "20px" }}>
+        <div style={{ float: "right" }}>
+          <Button
+            onClick={() => this.setState({ newApplicationModal: true })}
+            icon={<IconAdd />}
+          >
+            New Application
+          </Button>
+        </div>
+        <Table
+          caption={<ScreenReaderContent>Applications</ScreenReaderContent>}
+          striped="rows"
+        >
+          <thead>
             <tr>
-              <th>Application ID</th>
-              <th>Name</th>
-              <th>Created</th>
-              <th>Created By</th>
+              <th scope="col">Application ID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Created</th>
+              <th scope="col">Created By</th>
             </tr>
+          </thead>
+          <tbody>{this.renderApplications()}</tbody>
+        </Table>
 
-            {this.renderApplications()}
-          </tbody>
-        </table>
-
-        <h2>Create Application</h2>
-
-        <form onSubmit={this.handleAppSubmit} className="form-horizontal">
-          <div className="form-group">
-            <label className="col-sm-2 control-label" htmlFor="appName">
-              Name
-            </label>
-            <div className="col-sm-6">
-              <input
-                type="text"
-                className="form-control"
-                ref={e => (this.newAppNameInput = e)}
-                name="name"
-                id="appName"
-              />
-            </div>
-          </div>
-          <div className="form-group">
-            <label className="col-sm-2 control-label" />
-            <div className="col-sm-4">
-              <button type="submit" className="btn btn-default">
-                Create
-              </button>
-            </div>
-          </div>
-        </form>
+        {this.state.newApplicationModal && (
+          <NewApplicationModal
+            onClose={() => this.setState({ newApplicationModal: false })}
+            onCreated={applicationId =>
+              this.props.navigate(`application/${applicationId}`)
+            }
+          />
+        )}
       </div>
     );
   }

@@ -1,4 +1,10 @@
 import React from "react";
+import Table from "@instructure/ui-elements/lib/components/Table";
+import ScreenReaderContent from "@instructure/ui-a11y/lib/components/ScreenReaderContent";
+import TextInput from "@instructure/ui-forms/lib/components/TextInput";
+import Button from "@instructure/ui-buttons/lib/components/Button";
+import Tag from "@instructure/ui-elements/lib/components/Tag";
+
 import AdminInput from "./admin_input";
 
 class Info extends React.Component {
@@ -72,13 +78,11 @@ class Info extends React.Component {
         credentials: "same-origin"
       })
         .then(response => {
-          this.context.router.push({
-            pathname: `/`
-          });
+          this.props.navigate("/admin");
         })
         .catch(e => {
-          console.log("error saving application", e);
-          alert("error saving application", e);
+          console.log("error deleting application", e);
+          alert("error deleting application", e);
         });
     }
   };
@@ -86,22 +90,23 @@ class Info extends React.Component {
   render() {
     return (
       <div className="container">
-        <table className="table">
-          <thead>
-            <tr />
-          </thead>
+        <Table
+          caption={<ScreenReaderContent>Application Info</ScreenReaderContent>}
+        >
           <tbody>
             <tr>
-              <td>ID</td>
-              <td className="identifier">{this.props.app.id}</td>
+              <th scope="row">ID</th>
+              <td>
+                <tt>{this.props.app.id}</tt>
+              </td>
             </tr>
+
             <tr>
-              <td>Name</td>
+              <th scope="row">Name</th>
               <td>
                 {this.state.editing ? (
-                  <input
-                    className="form-control"
-                    type="text"
+                  <TextInput
+                    label={<ScreenReaderContent>Name</ScreenReaderContent>}
                     value={this.state.name}
                     onChange={this.handleChange.bind(this, "name")}
                   />
@@ -110,56 +115,74 @@ class Info extends React.Component {
                 )}
               </td>
             </tr>
+
             <tr>
-              <td>Created At</td>
+              <th scope="row">Created At</th>
               <td>{this.props.app.created_at}</td>
             </tr>
+
             <tr>
-              <td>Created By</td>
+              <th scope="row">Created By</th>
               <td>{this.props.app.created_by}</td>
             </tr>
+
             <tr>
-              <td>Admins</td>
+              <th scope="row">Admins</th>
               <td>
                 {this.state.editing ? (
-                  <div>
-                    <AdminInput
-                      onChange={this.handleAdminChange}
-                      thisUser={this.props.username}
-                      admins={this.state.admins}
-                    />
-                  </div>
+                  <AdminInput
+                    onChange={this.handleAdminChange}
+                    thisUser={this.props.username}
+                    admins={this.state.admins}
+                  />
                 ) : (
-                  this.props.app.admins.join(", ")
+                  this.props.app.admins.map(a => (
+                    <Tag key={a} text={a} margin="0 xx-small 0 0" />
+                  ))
                 )}
               </td>
             </tr>
           </tbody>
-        </table>
+        </Table>
+
+        <br />
 
         {this.state.editing ? (
           <div>
-            <button onClick={this.handleDelete} className="btn btn-danger">
+            <Button variant="danger" disabled margin="0 x-small 0 0">
               Delete
-            </button>
-            &nbsp;
-            <button onClick={this.handleSave} className="btn btn-default">
+            </Button>
+            <Button
+              variant="success"
+              margin="0 x-small 0 0"
+              onClick={this.handleSave}
+            >
               Save
-            </button>
-            &nbsp;
-            <button onClick={this.handleCancel} className="btn btn-default">
+            </Button>
+            <Button
+              variant="light"
+              margin="0 x-small 0 0"
+              onClick={this.handleCancel}
+            >
               Cancel
-            </button>
+            </Button>
           </div>
         ) : (
           <div>
-            <button onClick={this.handleDelete} className="btn btn-danger">
+            <Button
+              variant="danger"
+              margin="0 x-small 0 0"
+              onClick={this.handleDelete}
+            >
               Delete
-            </button>
-            &nbsp;
-            <button onClick={this.handleEdit} className="btn btn-default">
+            </Button>
+            <Button
+              variant="primary"
+              margin="0 x-small 0 0"
+              onClick={this.handleEdit}
+            >
               Edit
-            </button>
+            </Button>
           </div>
         )}
       </div>

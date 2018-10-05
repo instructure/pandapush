@@ -1,40 +1,33 @@
 import React from "react";
+import Menu, { MenuItem } from "@instructure/ui-menu/lib/components/Menu";
+import Button from "@instructure/ui-buttons/lib/components/Button";
+import IconArrowOpenDown from "@instructure/ui-icons/lib/Line/IconArrowOpenDown";
 
-class EnvironmentSelector extends React.Component {
+export default class EnvironmentSelector extends React.Component {
   render() {
     const environments = this.props.environments.map(e => {
-      const className = `dropdown-item ${
-        e.name === this.props.environment ? "disabled" : ""
-      }`;
+      const isCurrent = e.name === this.props.environment;
       return (
-        <li key={e.name}>
-          <a
-            aria-disabled={e.name === this.props.environment}
-            className={className}
-            href={e.url}
-          >
-            {e.name}
-          </a>
-        </li>
+        <MenuItem
+          key={e.name}
+          href={isCurrent ? null : e.url}
+          selected={isCurrent}
+          disabled={isCurrent}
+        >
+          {e.name}
+        </MenuItem>
       );
     });
 
     return (
-      <>
-        <a
-          className="dropdown-toggle"
-          data-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false"
-        >
-          {this.props.environment} <span className="caret" />
-        </a>
-        <ul className="dropdown-menu" aria-labelledby="environmentDropdown">
-          {environments}
-        </ul>
-      </>
+      <Menu
+        placement="bottom"
+        trigger={
+          <Button icon={<IconArrowOpenDown />}>{this.props.environment}</Button>
+        }
+      >
+        {environments}
+      </Menu>
     );
   }
 }
-
-export default EnvironmentSelector;

@@ -1,17 +1,15 @@
 import React from "react";
-import ReactTags from "react-tag-autocomplete";
+import Select from "@instructure/ui-forms/lib/components/Select";
+import ScreenReaderContent from "@instructure/ui-a11y/lib/components/ScreenReaderContent";
+
 import _ from "lodash";
 
 class AdminInput extends React.Component {
-  handleDelete = idx => {
-    const newList = this.props.admins.slice(0);
-    newList.splice(idx, 1);
-    this.props.onChange(this.cleanedAdmins(newList));
-  };
+  state = { inputText: "" };
 
-  handleAdd = tag => {
-    let newList = _.union(this.props.admins, [tag.name]);
-    this.props.onChange(this.cleanedAdmins(newList));
+  handleChange = (e, value) => {
+    const newAdmins = value.map(v => v.value);
+    this.props.onChange(this.cleanedAdmins(newAdmins));
   };
 
   cleanedAdmins(value) {
@@ -19,18 +17,33 @@ class AdminInput extends React.Component {
   }
 
   render() {
+    const options = this.props.admins.map(a => (
+      <option key={a} value={a}>
+        {a}
+      </option>
+    ));
+
+    if (this.state.inputText) {
+      options.unshift(
+        <option key="_inprogress" value={this.state.inputText}>
+          {this.state.inputText}
+        </option>
+      );
+    }
+
     return (
-      <ReactTags
-        tags={this.props.admins.map(a => {
-          return { id: a, name: a };
+      <Select
+        editable
+        selectedOption={this.props.admins.map(a => {
+          return { value: a, label: a, dismissible: a !== this.props.thisUser };
         })}
-        handleDelete={this.handleDelete}
-        handleAddition={this.handleAdd}
-        allowNew={true}
-        inputAttributes={{ maxLength: 100 }}
-        delimiterChars={[",", " "]}
-        placeholder="Add username"
-      />
+        multiple
+        onChange={this.handleChange}
+        onInputChange={(e, value) => this.setState({ inputText: value })}
+        label={<ScreenReaderContent>Admins</ScreenReaderContent>}
+      >
+        {options}
+      </Select>
     );
   }
 }

@@ -136,7 +136,7 @@ exports.createApplication = [
     store
       .addApplication(req.body.name, req.user)
       .then(application => {
-        res.json(200, application);
+        res.json(201, application);
       })
       .catch(err => {
         console.log("error creating application", err);
