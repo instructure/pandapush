@@ -21,7 +21,7 @@ module.exports = function(server) {
 
   const options = {
     mount: "/push",
-    timeout: 60,
+    timeout: 30,
     engine: {
       type: redis,
       shards: redisHosts[1],
