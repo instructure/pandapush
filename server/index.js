@@ -58,7 +58,8 @@ const fayeInstance = faye(server);
 store.init(fayeInstance.internalClient);
 
 // set up http metric gatherer (needs to happen after faye initialization)
-httpMetrics(server, logger, fayeInstance.internalClient).start();
+// temporarily disabled because it is overflowing the redis DB
+// httpMetrics(server, logger, fayeInstance.internalClient).start();
 
 // configure Express application
 
