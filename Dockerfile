@@ -2,6 +2,8 @@ FROM instructure/node-passenger:10
 
 ARG prunedev=true
 
+ENV APP_HOME "/usr/src/app/"
+
 USER root
 
 # Working around https://github.com/npm/npm/issues/19989, waiting until main
@@ -17,18 +19,16 @@ ENV NODE_ENV production
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/src/app/node_modules/.bin
 
 ADD package.json /usr/src/app/package.json
+ADD format_coverage.rb /usr/src/app/format_coverage.rb
 ADD .babelrc /usr/src/app/.babelrc
 ADD .eslintignore /usr/src/app/.eslintignore
 ADD .eslintrc /usr/src/app/.eslintrc
 ADD ./server /usr/src/app/server
 ADD ./ui /usr/src/app/ui
 ADD ./client /usr/src/app/client
-RUN mkdir /usr/src/app/localdata
 
-# for legacy purposes
-RUN ln -s /usr/src/app /app
+RUN mkdir -p localdata coverage log tmp && chown -R docker:docker $APP_HOME
 
-RUN chown -R docker:docker /usr/src/app
 USER docker
 
 # to expose the application to passenger

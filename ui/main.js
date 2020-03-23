@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "react-dom";
-import { Router, Link } from "@reach/router";
+import { Router } from "@reach/router";
 import Applications from "./components/applications";
 import Application from "./components/application";
 import NewApplication from "./components/new_application";
