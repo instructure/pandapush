@@ -33,6 +33,7 @@ module.exports = function(server) {
     }
   };
 
+  // Faye.logger = console.log;
   const faye = new Faye.NodeAdapter(options);
 
   faye.addExtension(auth(internalToken));

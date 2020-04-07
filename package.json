@@ -26,7 +26,7 @@
     "express": "^4.6.1",
     "faye": "^1.2.4",
     "faye-presence": "0.0.3",
-    "faye-redis-sharded": "git://github.com/instructure/faye-redis-sharded-node#4c0f9b708e015b263fc5db2bbbb2e15eced071f4",
+    "faye-redis-sharded": "git://github.com/instructure/faye-redis-sharded-node#bf3086228e34ed48e601fa60dde79845c8f6d02a",
     "jsonwebtoken": "^8.3.0",
     "knex": "^0.15.2",
     "lodash": "^4.17.5",
@@ -35,6 +35,7 @@
     "moment": "^2.7.0",
     "pg": "^7.4.3",
     "redis": "^2.6.5",
+    "redis-evalsha": "1.1.1",
     "shard-manager": "^1.0.0",
     "sqlite3": "^4.0.2"
   },
