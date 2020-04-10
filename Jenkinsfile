@@ -50,13 +50,13 @@ pipeline {
         '''
       }
     }
-    stage('Clougate CD') {
+    stage('Cloudgate') {
       when { environment name: "GERRIT_EVENT_TYPE", value: "change-merged" }
       steps {
         build job: 'pandapush-instructure', parameters: [
-          string(name: 'GERRIT_BRANCH', value: env.GERRIT_BRANCH),
-          string(name: 'GIT_REF', value: sh(script: "git rev-parse --short HEAD",returnStdout:true).trim())
-        ], wait: false
+          string(name: 'GIT_SHA', value: sh(script: "git rev-parse HEAD", returnStdout:true).trim()),
+          string(name: 'GERRIT_REFSPEC', value: 'refs/heads/master')
+        ], wait: true
       }
     }
   }
