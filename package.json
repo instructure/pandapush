@@ -29,7 +29,7 @@
     "faye-redis-sharded": "git://github.com/instructure/faye-redis-sharded-node#4ed567a8a827c1c314d3692f41e2accb74908eb0",
     "jsonwebtoken": "^8.3.0",
     "knex": "^0.15.2",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.13",
     "lynx": "^0.2.0",
     "memory-cache": "^0.2.0",
     "moment": "^2.7.0",
