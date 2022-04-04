@@ -1,41 +1,51 @@
-FROM instructure/node-passenger:10
-
+FROM python:3.10-slim-bullseye
 ARG prunedev=true
 
 ENV APP_HOME "/usr/src/app/"
 
 USER root
 
-# Working around https://github.com/npm/npm/issues/19989, waiting until main
-# image gets upgraded.
-RUN npm install -g npm@"6.1.0"
-
 RUN apt-get update \
+    && apt-get install -y build-essential \
     && apt-get install -y redis-server \
+    && apt-get install -y curl \
+    && apt-get install -y ruby \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor | apt-key add - && \
+  echo "deb https://deb.nodesource.com/node_16.x focal main" > /etc/apt/sources.list.d/nodesource.list && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends nodejs && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/ && \
+  npm install -g "npm@$NPM_VERSION" && \
+  npm cache clean --force
+
 ENV NODE_ENV production
-ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/src/app/node_modules/.bin
+ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${APP_HOME}node_modules/.bin
 
-ADD package.json /usr/src/app/package.json
-ADD format_coverage.rb /usr/src/app/format_coverage.rb
-ADD .babelrc /usr/src/app/.babelrc
-ADD .eslintignore /usr/src/app/.eslintignore
-ADD .eslintrc /usr/src/app/.eslintrc
-ADD ./server /usr/src/app/server
-ADD ./ui /usr/src/app/ui
-ADD ./client /usr/src/app/client
+ADD package.json ${APP_HOME}package.json
+ADD format_coverage.rb ${APP_HOME}format_coverage.rb
+ADD .babelrc ${APP_HOME}.babelrc
+ADD .eslintignore ${APP_HOME}.eslintignore
+ADD .eslintrc ${APP_HOME}.eslintrc
+ADD ./server ${APP_HOME}server
+ADD ./ui ${APP_HOME}ui
+ADD ./client ${APP_HOME}client
 
-RUN mkdir -p localdata coverage log tmp && chown -R docker:docker $APP_HOME
+RUN addgroup --gid 9999 docker \
+    && adduser --uid 9999 --gid 9999 --disabled-password --gecos "Docker User" docker \
+    && usermod -L docker
+
+WORKDIR ${APP_HOME}
+RUN mkdir -p localdata coverage log tmp && chown -R docker:docker ${APP_HOME}
 
 USER docker
 
-# to expose the application to passenger
-RUN ln -s /usr/src/app/ui/public /usr/src/app/public
-RUN ln -s /usr/src/app/server/index.js /usr/src/app/app.js
-
-RUN NODE_ENV=dev npm install && \
+RUN NODE_ENV=dev npm install --legacy-peer-deps && \
     NODE_ENV=production node_modules/.bin/webpack -p --config client/webpack.config.js && \
     NODE_ENV=production node_modules/.bin/webpack -p --config ui/webpack.config.js && \
-    if [ "$prunedev" = "true" ]; then npm prune --production; fi
+    if [ "$prunedev" = "true" ]; then npm prune --legacy-peer-deps --production; fi
+
+EXPOSE 80

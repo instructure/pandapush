@@ -1,6 +1,6 @@
 {
   "name": "pandapush",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "multi-tenant pub/sub system for web (built on faye)",
   "author": "Zach Wily <zach@instructure.com>",
   "readmeFilename": "README.md",
@@ -26,7 +26,7 @@
     "express": "^4.6.1",
     "faye": "^1.2.4",
     "faye-presence": "0.0.3",
-    "faye-redis-sharded": "git://github.com/instructure/faye-redis-sharded-node#4ed567a8a827c1c314d3692f41e2accb74908eb0",
+    "faye-redis-sharded": "https://github.com/instructure/faye-redis-sharded-node#4ed567a8a827c1c314d3692f41e2accb74908eb0",
     "jsonwebtoken": "^8.3.0",
     "knex": "^0.15.2",
     "lodash": "^4.17.5",
