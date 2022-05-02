@@ -22,6 +22,7 @@ pipeline {
     stage('Lint') {
       steps {
         sh 'docker-compose run --rm web npm run eslint > tmp/eslint.out'
+		sh 'cat tmp/eslint.out'
         sh 'cat tmp/eslint.out | sed \'s/\\/usr\\/src\\/app\\///\' | docker-compose run --rm gergich capture eslint -'
       }
     }
