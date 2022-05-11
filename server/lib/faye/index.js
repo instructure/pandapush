@@ -8,6 +8,7 @@ const keyTrackerExtension = require("../extensions/key_tracker");
 const keyTracker = require("../key_tracker");
 const redisConfig = require("./redis_config");
 const internalClient = require("./internal_client");
+const expire = require("../extensions/expire");
 
 module.exports = function(server) {
   // The internal token is used by a client used internally to send messages
@@ -50,6 +51,8 @@ module.exports = function(server) {
     channelRe: /^\/\w+\/presence\//,
     servers: redisHosts[0]
   });
+
+  faye.addExtension(expire(redisHosts[1]));
 
   metrics(faye).start();
 
