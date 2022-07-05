@@ -1,6 +1,6 @@
 {
   "name": "pandapush",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "multi-tenant pub/sub system for web (built on faye)",
   "author": "Zach Wily <zach@instructure.com>",
   "readmeFilename": "README.md",
