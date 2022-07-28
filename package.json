@@ -33,7 +33,7 @@
     "lynx": "^0.2.0",
     "memory-cache": "^0.2.0",
     "moment": "^2.7.0",
-    "pg": "^7.4.3",
+    "pg": "^8.7.3",
     "redis": "^2.6.5",
     "redis-evalsha": "1.1.1",
     "redlock": "4.1.0",
