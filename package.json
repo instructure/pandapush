@@ -27,7 +27,7 @@
     "faye": "^1.2.4",
     "faye-presence": "0.0.3",
     "faye-redis-sharded": "https://github.com/instructure/faye-redis-sharded-node#4ed567a8a827c1c314d3692f41e2accb74908eb0",
-    "jsonwebtoken": "^8.3.0",
+    "jsonwebtoken": "^9.0.0",
     "knex": "^0.15.2",
     "lodash": "^4.17.5",
     "lynx": "^0.2.0",
