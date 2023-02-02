@@ -13,7 +13,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
-    "@okta/oidc-middleware": "^0.1.3",
+    "@okta/oidc-middleware": "^5.0.0",
     "async": "^2.1.4",
     "aws-sdk": "^2.305.0",
     "basic-auth-connect": "^1.0.0",
