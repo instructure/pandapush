@@ -9,6 +9,7 @@ USER root
 RUN apt-get update \
     && apt-get install -y redis-server \
     && apt-get install -y libpython3.8 \
+    && apt-get install -y python3 \
     && apt-get install -y build-essential \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
