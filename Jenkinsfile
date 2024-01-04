@@ -60,6 +60,12 @@ pipeline {
         ], wait: true
       }
     }
+    stage('Snyk') {
+      when { environment name: "GERRIT_EVENT_TYPE", value: "change-merged" }
+      steps {
+        build job: '/Restructure/Pandapush Jobs/pandapush snyk img scan', propagate: false
+      }
+    }
   }
   post {
     always {
