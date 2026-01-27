@@ -6,6 +6,9 @@ ENV APP_HOME "/usr/src/app"
 
 USER root
 
+# remove Yarn apt source - GPG key expired and Yarn is already installed in base image
+RUN rm -f /etc/apt/sources.list.d/yarn.list
+
 RUN apt-get update \
     && apt-get install -y redis-server \
     && apt-get install -y libpython3.8 \
