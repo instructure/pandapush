@@ -13,10 +13,11 @@ services:
     command: redis-server --save ""
 
   statsd:
-    image: hopsoft/graphite-statsd
+    image: graphiteapp/graphite-statsd
     ports:
       - "80"
       - "8125/udp"
+      - "8126"
     volumes:
       - "./docker/statsd-config.json:/opt/statsd/config.js"
     environment:

@@ -30,5 +30,6 @@ if (process.env.DATABASE === "postgres") {
 
 module.exports = {
   development: config,
-  production: config
+  production: config,
+  test: config
 };
