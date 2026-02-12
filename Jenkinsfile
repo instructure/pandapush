@@ -14,22 +14,22 @@ pipeline {
       steps {
         sh 'rm -fr coverage'
         sh 'mkdir tmp'
-        sh 'docker-compose build --pull --parallel'
-        sh 'docker-compose up -d redis1 redis2 web'
-        sh 'docker-compose run --rm gergich reset'
+        sh 'docker compose build --pull --parallel'
+        sh 'docker compose up -d redis1 redis2 web'
+        sh 'docker compose run --rm gergich reset'
       }
     }
     stage('Lint') {
       steps {
-        sh 'docker-compose run --rm web npm run eslint > tmp/eslint.out'
+        sh 'docker compose run --rm web npm run eslint > tmp/eslint.out'
 		sh 'cat tmp/eslint.out'
-        sh 'cat tmp/eslint.out | sed \'s/\\/usr\\/src\\/app\\///\' | docker-compose run --rm gergich capture eslint -'
+        sh 'cat tmp/eslint.out | sed \'s/\\/usr\\/src\\/app\\///\' | docker compose run --rm gergich capture eslint -'
       }
     }
     stage('Tests') {
       steps {
         sh '''
-          docker-compose run --rm web npm run test:coverage
+          docker compose run --rm web npm run test:coverage
           image=$(docker ps --all --no-trunc | grep web | cut -f 1 -d " " | head -n 1)
           docker cp $image:/usr/src/app/coverage ./coverage
           mv coverage/lcov-report/* coverage
@@ -46,8 +46,8 @@ pipeline {
         ]
 
         sh '''
-          COVERAGE=$(docker-compose run --rm web bash -c "cat coverage/clover.xml | grep metrics | head -1 | ruby format_coverage.rb")
-          docker-compose run --rm gergich message "$COVERAGE"
+          COVERAGE=$(docker compose run --rm web bash -c "cat coverage/clover.xml | grep metrics | head -1 | ruby format_coverage.rb")
+          docker compose run --rm gergich message "$COVERAGE"
         '''
       }
     }
@@ -69,10 +69,10 @@ pipeline {
   }
   post {
     always {
-      sh 'docker-compose run --rm gergich publish'
+      sh 'docker compose run --rm gergich publish'
     }
     cleanup { // Always runs after all other post conditions
-        sh 'docker-compose down --volumes --remove-orphans --rmi all'
+        sh 'docker compose down --volumes --remove-orphans --rmi all'
     }
   }
 }

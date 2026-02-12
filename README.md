@@ -21,10 +21,10 @@ in with `admin`/`password`.
 ### From the repository, using docker-compose
 
 ```bash
-$ docker-compose run --rm -u root web chown docker:docker node_modules
-$ docker-compose run --rm web npm install
-$ docker-compose run --rm webpack npm install
-$ docker-compose up
+$ docker compose run --rm -u root web chown docker:docker node_modules
+$ docker compose run --rm web npm install
+$ docker compose run --rm webpack npm install
+$ docker compose up
 ```
 
 This will start Pandapush on http://pandapush.docker/admin.
