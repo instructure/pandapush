@@ -1,4 +1,4 @@
-const dbConfig = require("../knexfile")[process.env.NODE_ENV];
+const dbConfig = require("../knexfile")[process.env.NODE_ENV || "development"];
 const knex = require("knex")(dbConfig);
 const _ = require("lodash");
 const token = require("./token");
@@ -44,11 +44,11 @@ function scopedToUser(query, userId) {
 function populateCache() {
   knex("keys")
     .select("id", "application_id", "secret", "expires")
-    .map(key => {
-      cache.put("key:" + key.application_id + ":" + key.id, key);
-      return key.id;
-    })
-    .then(keyIds => {
+    .then(keys => {
+      const keyIds = keys.map(key => {
+        cache.put("key:" + key.application_id + ":" + key.id, key);
+        return key.id;
+      });
       console.log("reloaded cache with %d items", keyIds.length);
     });
 }
@@ -161,7 +161,7 @@ module.exports = {
     return knex("application_users")
       .where("application_id", applicationId)
       .select("user_id")
-      .map(row => row.user_id);
+      .then(rows => rows.map(row => row.user_id));
   },
 
   getKeyCachedSync: (applicationId, keyId) => {
