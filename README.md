@@ -283,3 +283,38 @@ knex --knexfile server/knexfile.js migrate:latest
 Note that this is _not_ a "Push Notification" service like for iOS and
 Android. There do appear to be some open-source Faye clients
 for iOS and Android, but I have not tested any of them.
+
+# Testing
+
+- Run tests in docker compose: `docker compose run --rm web npm run test:coverage`
+
+## Manual Testing
+
+Currently, there is lots of room for improving our test coverage/quality.
+Therefore, it's important that we manually test the basic pub-sub functionality via the UI as well.
+
+**Prerequisite**: setup dinghy-http-proxy
+
+1. Run dinghy:
+    ```shell
+    docker run -d --restart=always \
+      -v /var/run/docker.sock:/tmp/docker.sock:ro \
+      -v ~/.dinghy/certs:/etc/nginx/certs \
+      -p 80:80 -p 443:443 -p 19322:19322/udp \
+      -e DNS_IP=127.0.0.1 -e CONTAINER_NAME=http-proxy \
+      --name http-proxy ktgeek/dinghy-http-proxy
+    ```
+2. Create `/etc/resolver/docker`
+   ```text
+   nameserver 127.0.0.1
+   port 19322
+   ```
+
+After setting up dinghy, we can
+
+1. spin up the docker stack: `docker compose up -d`
+2. check out the UI: `open http://pandapush.docker/admin`
+
+For testing, we can use the existing `devapp`: `open http://pandapush.docker/admin/application/devapp/console`.
+
+Subscribe to a topic and then publish a message. The message should be visible in the bottom of the page.
