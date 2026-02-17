@@ -16,14 +16,11 @@ pipeline {
         sh 'mkdir tmp'
         sh 'docker compose build --pull --parallel'
         sh 'docker compose up -d redis1 redis2 web'
-        sh 'docker compose run --rm gergich reset'
       }
     }
     stage('Lint') {
       steps {
-        sh 'docker compose run --rm web npm run eslint > tmp/eslint.out'
-		sh 'cat tmp/eslint.out'
-        sh 'cat tmp/eslint.out | sed \'s/\\/usr\\/src\\/app\\///\' | docker compose run --rm gergich capture eslint -'
+        sh 'docker compose run --rm web npm run eslint'
       }
     }
     stage('Tests') {
@@ -44,35 +41,12 @@ pipeline {
           reportFiles: 'index.html',
           reportName: 'Coverage Report'
         ]
-
-        sh '''
-          COVERAGE=$(docker compose run --rm web bash -c "cat coverage/clover.xml | grep metrics | head -1 | ruby format_coverage.rb")
-          docker compose run --rm gergich message "$COVERAGE"
-        '''
-      }
-    }
-    stage('Cloudgate') {
-      when { environment name: "GERRIT_EVENT_TYPE", value: "change-merged" }
-      steps {
-        build job: 'pandapush-instructure', parameters: [
-          string(name: 'GIT_SHA', value: sh(script: "git rev-parse HEAD", returnStdout:true).trim()),
-          string(name: 'GERRIT_REFSPEC', value: 'refs/heads/master')
-        ], wait: true
-      }
-    }
-    stage('Snyk') {
-      when { environment name: "GERRIT_EVENT_TYPE", value: "change-merged" }
-      steps {
-        build job: '/Restructure/Pandapush Jobs/pandapush snyk img scan', propagate: false
       }
     }
   }
   post {
-    always {
-      sh 'docker compose run --rm gergich publish'
-    }
-    cleanup { // Always runs after all other post conditions
-        sh 'docker compose down --volumes --remove-orphans --rmi all'
+    cleanup {
+      sh 'docker compose down --volumes --remove-orphans --rmi all'
     }
   }
 }

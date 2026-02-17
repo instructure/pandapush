@@ -9,19 +9,6 @@ services:
     # this container is run in the background and jenkins will exec
     # commands inside it, then kill it when done.
     command: sleep 100000000000
-  gergich:
-    image: instructure/gergich
-    environment:
-      GERGICH_KEY: "${GERGICH_KEY}"
-      GERRIT_PROJECT: "${GERRIT_PROJECT}"
-      GERRIT_HOST: "${GERRIT_HOST}"
-      GERRIT_BRANCH: "${GERRIT_BRANCH}"
-      GERRIT_CHANGE_ID: "${GERRIT_CHANGE_ID}"
-      GERRIT_PATCHSET_REVISION: "${GERRIT_PATCHSET_REVISION}"
-    volumes:
-      - '.git:/app/.git'
-      - 'tmp:/tmp'
 
 volumes:
-  tmp: {}
   coverage: {}
