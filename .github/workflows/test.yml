@@ -35,6 +35,14 @@ jobs:
       - name: Start services
         run: docker compose up -d
 
+      - name: Check web container status
+        run: |
+          echo "Checking if web container is running..."
+          docker compose ps
+          echo "Checking localdata directory inside web container..."
+          docker compose exec -T web ls -la /usr/src/app/ || echo "Web container not running"
+          docker compose logs web
+
       - name: Wait for services to be ready
         run: |
           echo "Waiting for services to start..."
