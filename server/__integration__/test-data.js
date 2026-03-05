@@ -111,5 +111,6 @@ async function cleanupTestData() {
 
 module.exports = {
   setupTestData,
-  cleanupTestData
+  cleanupTestData,
+  knex
 };

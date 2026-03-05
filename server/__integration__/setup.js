@@ -14,7 +14,6 @@ const http = require("http");
 const express = require("express");
 const bodyParser = require("body-parser");
 const routes = require("../routes");
-const faye = require("../lib/faye");
 const store = require("../lib/store");
 
 // Mock logger to reduce noise in tests
@@ -35,12 +34,22 @@ let server;
 let app;
 let bayeux;
 let internalClient;
+let fayeAdapter;
+let allRedisClients = [];
 
 /**
  * Creates and starts a test server
  */
 async function setupTestServer() {
   // Create Express app
+  // Monkey-patch Redis createClient to track all clients
+  const redis = require("redis");
+  const originalCreateClient = redis.createClient;
+  redis.createClient = function(...args) {
+    const client = originalCreateClient.apply(this, args);
+    allRedisClients.push(client);
+    return client;
+  };
   app = express();
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
@@ -59,14 +68,26 @@ async function setupTestServer() {
   // Create HTTP server from Express app (like production does)
   server = http.Server(app);
 
+  // Monkey-patch Faye.NodeAdapter to capture the instance
+  const Faye = require("faye");
+  const originalNodeAdapter = Faye.NodeAdapter;
+  Faye.NodeAdapter = function(...args) {
+    fayeAdapter = new originalNodeAdapter(...args);
+    return fayeAdapter;
+  };
+  Faye.NodeAdapter.prototype = originalNodeAdapter.prototype;
+
   // Set up Faye with real auth extension (pass HTTP server, like production)
+  const faye = require("../lib/faye");
   const fayeInstance = faye(server);
   bayeux = fayeInstance.bayeux;
   internalClient = fayeInstance.internalClient;
 
+  // Restore original NodeAdapter
+  Faye.NodeAdapter = originalNodeAdapter;
+
   // Initialize store with internal client (like production does)
   store.init(internalClient);
-
   // Add faye instance to all requests (like production does)
   app.use((req, res, next) => {
     req.faye = fayeInstance;
@@ -105,18 +126,76 @@ async function setupTestServer() {
  * Stops the test server and cleans up
  */
 async function teardownTestServer() {
-  return new Promise(resolve => {
-    // Stop store polling and subscriptions
-    store.stop();
+  // Disconnect internal client
+  if (internalClient) {
+    internalClient.disconnect();
+  }
 
-    if (server) {
-      server.close(() => {
-        resolve();
-      });
-    } else {
-      resolve();
+  // Close Faye's Redis connections
+  if (fayeAdapter && fayeAdapter._server) {
+    const fayeServer = fayeAdapter._server;
+
+    if (fayeServer._engine && fayeServer._engine._engine) {
+      const realEngine = fayeServer._engine._engine;
+
+      // Close faye-redis-sharded connections
+      if (realEngine._shardManagers) {
+        realEngine._shardManagers.forEach(manager => {
+          if (manager._shards) {
+            const shards = Array.isArray(manager._shards)
+              ? manager._shards
+              : Object.values(manager._shards);
+
+            shards.forEach(shard => {
+              if (shard && shard.subscriber && shard.subscriber.quit) {
+                shard.subscriber.quit();
+              }
+              if (shard && shard.redis && shard.redis.quit) {
+                shard.redis.quit();
+              }
+            });
+          }
+        });
+      }
+
+      // Close faye-presence Redis connections
+      if (realEngine._presence && realEngine._presence._engine) {
+        const presenceEngine = realEngine._presence._engine;
+        if (presenceEngine._redis) {
+          const redisClients = Array.isArray(presenceEngine._redis)
+            ? presenceEngine._redis
+            : [presenceEngine._redis];
+          redisClients.forEach(client => {
+            if (client && client.quit) {
+              client.quit();
+            }
+          });
+        }
+      }
+    }
+  }
+
+  // Close HTTP server
+  if (server) {
+    await new Promise(resolve => {
+      server.close(resolve);
+    });
+  }
+
+  // Close all Redis clients that were created during setup
+  allRedisClients.forEach(client => {
+    if (client && client.quit) {
+      client.quit();
     }
   });
+  allRedisClients = [];
+
+  // Stop store polling
+  store.stop();
+
+  // Destroy test-data's knex instance
+  const testData = require("./test-data");
+  await testData.knex.destroy();
 }
 
 module.exports = {
