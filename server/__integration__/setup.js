@@ -15,7 +15,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const routes = require("../routes");
 const faye = require("../lib/faye");
-const logger = require("../lib/logger");
 const store = require("../lib/store");
 
 // Mock logger to reduce noise in tests
@@ -24,12 +23,12 @@ jest.mock("../lib/logger", () => ({
     info: jest.fn(),
     error: jest.fn(),
     warn: jest.fn(),
-    debug: jest.fn(),
+    debug: jest.fn()
   }),
   info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  debug: jest.fn(),
+  debug: jest.fn()
 }));
 
 let server;
@@ -52,7 +51,7 @@ async function setupTestServer() {
       info: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
-      debug: jest.fn(),
+      debug: jest.fn()
     };
     next();
   });
@@ -82,12 +81,12 @@ async function setupTestServer() {
     getUsername: (req, res, next) => {
       req.username = "test-user";
       next();
-    },
+    }
   };
   routes.map(app, auth);
 
   // Start server on random port
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     server.listen(0, () => {
       const port = server.address().port;
       resolve({
@@ -96,7 +95,7 @@ async function setupTestServer() {
         bayeux,
         internalClient,
         baseUrl: `http://localhost:${port}`,
-        fayeUrl: `http://localhost:${port}/push`,
+        fayeUrl: `http://localhost:${port}/push`
       });
     });
   });
@@ -106,7 +105,7 @@ async function setupTestServer() {
  * Stops the test server and cleans up
  */
 async function teardownTestServer() {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     // Stop store polling and subscriptions
     store.stop();
 
@@ -122,5 +121,5 @@ async function teardownTestServer() {
 
 module.exports = {
   setupTestServer,
-  teardownTestServer,
+  teardownTestServer
 };

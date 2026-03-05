@@ -63,22 +63,22 @@ async function setupTestData() {
 
   // Cache will be automatically reloaded by store's polling mechanism
   // Give it a moment to populate
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  await new Promise(resolve => setTimeout(resolve, 100));
 
   return {
     applicationId: testAppId,
     validKey: {
       id: validKey.id,
-      secret: validKey.secret,
+      secret: validKey.secret
     },
     expiredKey: {
       id: expiredKey.id,
-      secret: expiredKey.secret,
+      secret: expiredKey.secret
     },
     revokedKey: {
       id: revokedKey.id,
-      secret: revokedKey.secret,
-    },
+      secret: revokedKey.secret
+    }
   };
 }
 
@@ -111,5 +111,5 @@ async function cleanupTestData() {
 
 module.exports = {
   setupTestData,
-  cleanupTestData,
+  cleanupTestData
 };

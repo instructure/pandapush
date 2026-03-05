@@ -29,7 +29,7 @@ const { setupTestData, cleanupTestData } = require("./test-data");
 function generateToken(keyId, secret, payload) {
   const tokenPayload = {
     keyId,
-    ...payload,
+    ...payload
   };
   return jwt.sign(tokenPayload, secret);
 }
@@ -37,13 +37,11 @@ function generateToken(keyId, secret, payload) {
 describe("Publishing Authentication (Integration)", () => {
   let testServer;
   let app;
-  let baseUrl;
   let testData;
 
   beforeAll(async () => {
     testServer = await setupTestServer();
     app = testServer.app;
-    baseUrl = testServer.baseUrl;
 
     // Set up test application and keys in database
     testData = await setupTestData();
@@ -139,7 +137,7 @@ describe("Publishing Authentication (Integration)", () => {
           testData.validKey.secret,
           {
             channel: channel,
-            pub: true,
+            pub: true
           }
         );
 
@@ -157,7 +155,7 @@ describe("Publishing Authentication (Integration)", () => {
           testData.validKey.secret,
           {
             channel: channel,
-            pub: false,
+            pub: false
           }
         );
 
@@ -182,7 +180,7 @@ describe("Publishing Authentication (Integration)", () => {
             pub: true,
             exp: moment()
               .subtract(1, "hour")
-              .unix(),
+              .unix()
           }
         );
 
@@ -203,7 +201,7 @@ describe("Publishing Authentication (Integration)", () => {
           testData.validKey.secret,
           {
             channel: "/testapp/public/different",
-            pub: true,
+            pub: true
           }
         );
 
