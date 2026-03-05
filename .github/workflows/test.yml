@@ -1,0 +1,79 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run eslint
+        continue-on-error: false
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      COMPOSE_FILE: docker-compose.yml:docker-compose.ci.yml
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build Docker images
+        run: docker compose build --pull
+        env:
+          DOCKER_BUILDKIT: 1
+          COMPOSE_DOCKER_CLI_BUILD: 1
+
+      - name: Create required directories
+        run: |
+          mkdir -p localdata
+          chmod 777 localdata
+
+      - name: Start services
+        run: docker compose up -d
+
+      - name: Run unit tests
+        run: docker compose exec -T web npm run test
+        continue-on-error: false
+
+      - name: Check for test failures
+        if: failure()
+        run: |
+          echo "Tests failed! Showing container logs..."
+          docker compose logs web
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
