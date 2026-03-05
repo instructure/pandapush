@@ -9,8 +9,11 @@
   "scripts": {
     "eslint": "eslint .",
     "test": "jest",
+    "test:unit": "jest --testPathIgnorePatterns=__integration__",
+    "test:integration": "jest --testMatch='**/__integration__/**/*.spec.js' --testPathIgnorePatterns='/node_modules/'",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:all": "npm run test:unit && npm run test:integration"
   },
   "dependencies": {
     "@okta/oidc-middleware": "^4.0.0",
@@ -85,6 +88,7 @@
     "react-router-dom": "^4.3.1",
     "react-tag-autocomplete": "^5.6.0",
     "snazzy": "^8.0.0",
+    "supertest": "^6.3.3",
     "webpack": "^4.17.1",
     "webpack-cli": "^3.1.0",
     "whatwg-fetch": "^2.0.2",
@@ -96,7 +100,14 @@
   },
   "jest": {
     "collectCoverageFrom": [
-      "server/**/*.js"
-    ]
+      "server/**/*.js",
+      "!server/**/__tests__/**",
+      "!server/**/__integration__/**"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/__integration__/"
+    ],
+    "setupTestFrameworkScriptFile": "<rootDir>/server/__integration__/jest.setup.js"
   }
 }
