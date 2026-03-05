@@ -1,0 +1,8 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        prunedev: 'false'
+    volumes:
+      - './localdata:/usr/src/app/localdata'
