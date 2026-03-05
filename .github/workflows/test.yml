@@ -27,33 +27,33 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build Docker images
-        run: docker-compose build --pull
+        run: docker compose build --pull
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
 
       - name: Start services
-        run: docker-compose up -d
+        run: docker compose up -d
 
       - name: Wait for services to be ready
         run: |
           echo "Waiting for services to start..."
           sleep 10
-          docker-compose ps
+          docker compose ps
 
       - name: Run unit tests
-        run: docker-compose exec -T web npm run test:unit
+        run: docker compose exec -T web npm run test:unit
         continue-on-error: false
 
       - name: Check for test failures
         if: failure()
         run: |
           echo "Tests failed! Showing container logs..."
-          docker-compose logs web
+          docker compose logs web
 
       - name: Cleanup
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
 
   lint:
     runs-on: ubuntu-latest
