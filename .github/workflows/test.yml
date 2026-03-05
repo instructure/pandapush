@@ -34,6 +34,11 @@ jobs:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
 
+      - name: Create required directories
+        run: |
+          mkdir -p localdata
+          chmod 777 localdata
+
       - name: Start services
         run: docker compose up -d
 
