@@ -6,3 +6,7 @@ services:
         prunedev: 'false'
     volumes:
       - './localdata:/usr/src/app/localdata'
+    depends_on:
+      - redis1
+      - redis2
+      - statsd

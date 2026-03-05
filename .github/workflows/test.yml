@@ -7,7 +7,29 @@ on:
     branches: [main]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run eslint
+        continue-on-error: false
+
   test:
+    needs: lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -42,12 +64,6 @@ jobs:
       - name: Start services
         run: docker compose up -d
 
-      - name: Wait for services to be ready
-        run: |
-          echo "Waiting for services to start..."
-          sleep 10
-          docker compose ps
-
       - name: Run unit tests
         run: docker compose exec -T web npm run test
         continue-on-error: false
@@ -61,24 +77,3 @@ jobs:
       - name: Cleanup
         if: always()
         run: docker compose down -v
-
-  lint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run ESLint
-        run: npm run eslint
-        continue-on-error: false
