@@ -61,24 +61,52 @@ async function setupTestData() {
     console.log("Note: revoked_at column may not exist, skipping revocation");
   }
 
-  // Cache will be automatically reloaded by store's polling mechanism
-  // Give it a moment to populate
-  await new Promise(resolve => setTimeout(resolve, 100));
+  // Wait for cache to be populated with our test keys by polling
+  // This section is to avoid flakiness in tests where keys aren't cached yet when the test runs
+  const maxAttempts = 200; // 10 seconds max
+  const delayMs = 50; // Check every 50ms
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+
+    // Check if our keys are in the cache
+    const cachedValidKey = store.getKeyCachedSync(testAppId, validKey.id);
+    const cachedExpiredKey = store.getKeyCachedSync(testAppId, expiredKey.id);
+    const cachedRevokedKey = store.getKeyCachedSync(testAppId, revokedKey.id);
+
+    if (cachedValidKey && cachedExpiredKey && cachedRevokedKey) {
+      // All keys are cached, we're ready
+      const waitedMs = (attempt + 1) * delayMs;
+      console.log(`Test keys cached successfully after ${waitedMs}ms`);
+      break;
+    }
+
+    if (attempt === maxAttempts - 1) {
+      console.warn(
+        "Warning: Test keys may not be fully cached after 10 seconds"
+      );
+      console.warn("Cache status:", {
+        validKey: !!cachedValidKey,
+        expiredKey: !!cachedExpiredKey,
+        revokedKey: !!cachedRevokedKey,
+      });
+    }
+  }
 
   return {
     applicationId: testAppId,
     validKey: {
       id: validKey.id,
-      secret: validKey.secret
+      secret: validKey.secret,
     },
     expiredKey: {
       id: expiredKey.id,
-      secret: expiredKey.secret
+      secret: expiredKey.secret,
     },
     revokedKey: {
       id: revokedKey.id,
-      secret: revokedKey.secret
-    }
+      secret: revokedKey.secret,
+    },
   };
 }
 
@@ -112,5 +140,5 @@ async function cleanupTestData() {
 module.exports = {
   setupTestData,
   cleanupTestData,
-  knex
+  knex,
 };

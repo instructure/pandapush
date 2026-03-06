@@ -10,7 +10,7 @@
     "eslint": "eslint .",
     "test": "jest",
     "test:unit": "jest --testPathIgnorePatterns=__integration__",
-    "test:integration": "jest --testMatch='**/__integration__/**/*.spec.js' --testPathIgnorePatterns='/node_modules/'",
+    "test:integration": "jest --testMatch='**/__integration__/**/*.spec.js' --testPathIgnorePatterns='/node_modules/' --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:all": "npm run test:unit && npm run test:integration"
@@ -108,6 +108,11 @@
       "/node_modules/",
       "/__integration__/"
     ],
-    "setupTestFrameworkScriptFile": "<rootDir>/server/__integration__/jest.setup.js"
+    "setupTestFrameworkScriptFile": "<rootDir>/server/__integration__/jest.setup.js",
+    "coverageReporters": [
+      "json-summary",
+      "text",
+      "lcov"
+    ]
   }
 }
