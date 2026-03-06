@@ -43,6 +43,12 @@ pipeline {
         ]
       }
     }
+    stage('Trigger Deployment') {
+      when { branch 'main' }
+      steps {
+        build job: '../pandapush-instructure', wait: false
+      }
+    }
   }
   post {
     cleanup {
