@@ -67,7 +67,7 @@ async function setupTestData() {
   const delayMs = 50; // Check every 50ms
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    await new Promise(resolve => setTimeout(resolve, delayMs));
 
     // Check if our keys are in the cache
     const cachedValidKey = store.getKeyCachedSync(testAppId, validKey.id);
@@ -88,7 +88,7 @@ async function setupTestData() {
       console.warn("Cache status:", {
         validKey: !!cachedValidKey,
         expiredKey: !!cachedExpiredKey,
-        revokedKey: !!cachedRevokedKey,
+        revokedKey: !!cachedRevokedKey
       });
     }
   }
@@ -97,16 +97,16 @@ async function setupTestData() {
     applicationId: testAppId,
     validKey: {
       id: validKey.id,
-      secret: validKey.secret,
+      secret: validKey.secret
     },
     expiredKey: {
       id: expiredKey.id,
-      secret: expiredKey.secret,
+      secret: expiredKey.secret
     },
     revokedKey: {
       id: revokedKey.id,
-      secret: revokedKey.secret,
-    },
+      secret: revokedKey.secret
+    }
   };
 }
 
@@ -140,5 +140,5 @@ async function cleanupTestData() {
 module.exports = {
   setupTestData,
   cleanupTestData,
-  knex,
+  knex
 };

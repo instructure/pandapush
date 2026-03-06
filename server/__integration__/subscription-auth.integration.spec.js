@@ -31,7 +31,7 @@ const { setupTestData, cleanupTestData } = require("./test-data");
 function generateToken(keyId, secret, payload) {
   const tokenPayload = {
     keyId,
-    ...payload,
+    ...payload
   };
   return jwt.sign(tokenPayload, secret);
 }
@@ -65,16 +65,16 @@ describe("Subscription Authentication (Integration)", () => {
       // Properly disconnect and wait for cleanup
       client.disconnect();
       // Give Faye time to clean up WebSocket connections
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 50));
     }
   });
 
   describe("Public channels", () => {
-    it("should allow subscription without authentication", (done) => {
+    it("should allow subscription without authentication", done => {
       const channel = "/testapp/public/test-no-auth";
       const testMessage = { text: "test without auth" };
 
-      const subscription = client.subscribe(channel, (message) => {
+      const subscription = client.subscribe(channel, message => {
         expect(message).toEqual(testMessage);
         done();
       });
@@ -90,11 +90,11 @@ describe("Subscription Authentication (Integration)", () => {
       }, 200);
     });
 
-    it("should receive published messages on public channels", (done) => {
+    it("should receive published messages on public channels", done => {
       const testMessage = { message: "test message" };
       const channel = "/testapp/public/test-receive";
 
-      client.subscribe(channel, (message) => {
+      client.subscribe(channel, message => {
         expect(message).toEqual(testMessage);
         done();
       });
@@ -106,11 +106,11 @@ describe("Subscription Authentication (Integration)", () => {
       }, 200);
     });
 
-    it("should allow cancelling a subscription", (done) => {
+    it("should allow cancelling a subscription", done => {
       const channel = "/testapp/public/test-cancel";
       let messageCount = 0;
 
-      const subscription = client.subscribe(channel, (message) => {
+      const subscription = client.subscribe(channel, message => {
         messageCount++;
         if (messageCount > 1) {
           done.fail("Received message after cancellation");
@@ -144,7 +144,7 @@ describe("Subscription Authentication (Integration)", () => {
   });
 
   describe("Private channels", () => {
-    it("should reject subscription without authentication", (done) => {
+    it("should reject subscription without authentication", done => {
       const privateChannel = "/testapp/private/test-no-auth";
       const subscription = client.subscribe(privateChannel, () => {});
 
@@ -154,7 +154,7 @@ describe("Subscription Authentication (Integration)", () => {
             "Private channel subscription succeeded without authentication - SECURITY BUG!"
           );
         },
-        (error) => {
+        error => {
           expect(error).toBeDefined();
           expect(error.message).toMatch(/auth|permission|token/i);
           done();
@@ -167,7 +167,7 @@ describe("Subscription Authentication (Integration)", () => {
       }, 5000);
     });
 
-    it("should reject subscription with invalid token", (done) => {
+    it("should reject subscription with invalid token", done => {
       const privateChannel = "/testapp/private/test-invalid-token";
       // Add invalid token to client extension
       client.addExtension({
@@ -177,7 +177,7 @@ describe("Subscription Authentication (Integration)", () => {
             message.ext.auth = { token: "invalid-token" };
           }
           callback(message);
-        },
+        }
       });
 
       const subscription = client.subscribe(privateChannel, () => {});
@@ -188,7 +188,7 @@ describe("Subscription Authentication (Integration)", () => {
             "Private channel subscription succeeded with invalid token"
           );
         },
-        (error) => {
+        error => {
           expect(error).toBeDefined();
           expect(error.message).toBe("Invalid token");
           done();
@@ -196,7 +196,7 @@ describe("Subscription Authentication (Integration)", () => {
       );
     });
 
-    it("should allow subscription with valid token (sub: true)", (done) => {
+    it("should allow subscription with valid token (sub: true)", done => {
       const privateChannel = "/testapp/private/test-valid-token";
       const testMessage = { text: "private channel test" };
       const token = generateToken(
@@ -204,7 +204,7 @@ describe("Subscription Authentication (Integration)", () => {
         testData.validKey.secret,
         {
           channel: privateChannel,
-          sub: true,
+          sub: true
         }
       );
 
@@ -215,10 +215,10 @@ describe("Subscription Authentication (Integration)", () => {
             message.ext.auth = { token };
           }
           callback(message);
-        },
+        }
       });
 
-      const subscription = client.subscribe(privateChannel, (message) => {
+      const subscription = client.subscribe(privateChannel, message => {
         expect(message).toEqual(testMessage);
         done();
       });
@@ -235,20 +235,20 @@ describe("Subscription Authentication (Integration)", () => {
             testServer.internalClient.publish(privateChannel, testMessage);
           }, 100);
         },
-        (error) => {
+        error => {
           done.fail(`Valid token should allow subscription: ${error.message}`);
         }
       );
     });
 
-    it("should reject subscription with token lacking sub permission", (done) => {
+    it("should reject subscription with token lacking sub permission", done => {
       const privateChannel = "/testapp/private/test-no-sub-permission";
       const token = generateToken(
         testData.validKey.id,
         testData.validKey.secret,
         {
           channel: privateChannel,
-          sub: false,
+          sub: false
         }
       );
 
@@ -259,7 +259,7 @@ describe("Subscription Authentication (Integration)", () => {
             message.ext.auth = { token };
           }
           callback(message);
-        },
+        }
       });
 
       const subscription = client.subscribe(privateChannel, () => {});
@@ -268,7 +268,7 @@ describe("Subscription Authentication (Integration)", () => {
         () => {
           done.fail("Subscription should fail with sub: false");
         },
-        (error) => {
+        error => {
           expect(error).toBeDefined();
           expect(error.message).toMatch(/sub|permission|allow/i);
           done();
@@ -276,7 +276,7 @@ describe("Subscription Authentication (Integration)", () => {
       );
     });
 
-    it("should reject subscription with expired token", (done) => {
+    it("should reject subscription with expired token", done => {
       const privateChannel = "/testapp/private/test-expired-token";
       const token = generateToken(
         testData.validKey.id,
@@ -286,7 +286,7 @@ describe("Subscription Authentication (Integration)", () => {
           sub: true,
           exp: moment()
             .subtract(1, "hour")
-            .unix(),
+            .unix()
         }
       );
 
@@ -297,7 +297,7 @@ describe("Subscription Authentication (Integration)", () => {
             message.ext.auth = { token };
           }
           callback(message);
-        },
+        }
       });
 
       const subscription = client.subscribe(privateChannel, () => {});
@@ -306,7 +306,7 @@ describe("Subscription Authentication (Integration)", () => {
         () => {
           done.fail("Subscription should fail with expired token");
         },
-        (error) => {
+        error => {
           expect(error).toBeDefined();
           expect(error.message).toMatch(/expired|invalid/i);
           done();
@@ -314,14 +314,14 @@ describe("Subscription Authentication (Integration)", () => {
       );
     });
 
-    it("should reject subscription with token for different channel", (done) => {
+    it("should reject subscription with token for different channel", done => {
       const privateChannel = "/testapp/private/test-wrong-channel";
       const token = generateToken(
         testData.validKey.id,
         testData.validKey.secret,
         {
           channel: "/testapp/private/different",
-          sub: true,
+          sub: true
         }
       );
 
@@ -332,7 +332,7 @@ describe("Subscription Authentication (Integration)", () => {
             message.ext.auth = { token };
           }
           callback(message);
-        },
+        }
       });
 
       const subscription = client.subscribe(privateChannel, () => {});
@@ -341,7 +341,7 @@ describe("Subscription Authentication (Integration)", () => {
         () => {
           done.fail("Subscription should fail with wrong channel");
         },
-        (error) => {
+        error => {
           expect(error).toBeDefined();
           expect(error.message).toMatch(/channel|match/i);
           done();
@@ -351,7 +351,7 @@ describe("Subscription Authentication (Integration)", () => {
   });
 
   describe("Presence channels", () => {
-    it("should reject subscription without authentication", (done) => {
+    it("should reject subscription without authentication", done => {
       const presenceChannel = "/testapp/presence/test_no_auth";
       const subscription = client.subscribe(presenceChannel, () => {});
 
@@ -361,7 +361,7 @@ describe("Subscription Authentication (Integration)", () => {
             "Presence channel subscription succeeded without authentication"
           );
         },
-        (error) => {
+        error => {
           expect(error).toBeDefined();
           expect(error.message).toMatch(/No auth supplied/i);
           done();
@@ -369,7 +369,7 @@ describe("Subscription Authentication (Integration)", () => {
       );
     });
 
-    it("should allow subscription even without presence data (but won't track presence)", (done) => {
+    it("should allow subscription even without presence data (but won't track presence)", done => {
       const presenceChannel = "/testapp/presence/test_no_presence_data";
       // Token has sub:true but missing presence field
       // Faye allows the subscription but won't track presence without the data
@@ -378,7 +378,7 @@ describe("Subscription Authentication (Integration)", () => {
         testData.validKey.secret,
         {
           channel: presenceChannel,
-          sub: true,
+          sub: true
           // No presence field - subscription works but no presence tracking
         }
       );
@@ -390,12 +390,12 @@ describe("Subscription Authentication (Integration)", () => {
             message.ext.auth = { token };
           }
           callback(message);
-        },
+        }
       });
 
       const testMessage = { text: "test without presence" };
 
-      const subscription = client.subscribe(presenceChannel, (message) => {
+      const subscription = client.subscribe(presenceChannel, message => {
         expect(message).toEqual(testMessage);
         done();
       });
@@ -408,7 +408,7 @@ describe("Subscription Authentication (Integration)", () => {
             testServer.internalClient.publish(presenceChannel, testMessage);
           }, 200);
         },
-        (error) => {
+        error => {
           // Subscription was rejected - also acceptable behavior
           expect(error).toBeDefined();
           done();
@@ -416,7 +416,7 @@ describe("Subscription Authentication (Integration)", () => {
       );
     });
 
-    it("should allow subscription with valid presence token", (done) => {
+    it("should allow subscription with valid presence token", done => {
       const presenceChannel = "/testapp/presence/test_valid_token";
       const testMessage = { text: "presence test message" };
 
@@ -429,8 +429,8 @@ describe("Subscription Authentication (Integration)", () => {
           presence: {
             id: "user-123",
             name: "Test User",
-            email: "test@example.com",
-          },
+            email: "test@example.com"
+          }
         }
       );
 
@@ -441,10 +441,10 @@ describe("Subscription Authentication (Integration)", () => {
             message.ext.auth = { token };
           }
           callback(message);
-        },
+        }
       });
 
-      const subscription = client.subscribe(presenceChannel, (message) => {
+      const subscription = client.subscribe(presenceChannel, message => {
         expect(message).toEqual(testMessage);
         done();
       });
@@ -457,7 +457,7 @@ describe("Subscription Authentication (Integration)", () => {
             testServer.internalClient.publish(presenceChannel, testMessage);
           }, 200);
         },
-        (error) => {
+        error => {
           done.fail(
             `Valid presence token should allow subscription: ${error.message}`
           );
@@ -470,15 +470,15 @@ describe("Subscription Authentication (Integration)", () => {
       }, 5000);
     });
 
-    it("should broadcast presence info to other subscribers", (done) => {
+    it("should broadcast presence info to other subscribers", done => {
       const channel = "/testapp/presence/test_broadcast";
       const client1PresenceData = {
         id: "user-1",
-        name: "User One",
+        name: "User One"
       };
       const client2PresenceData = {
         id: "user-2",
-        name: "User Two",
+        name: "User Two"
       };
 
       // Create token for first client
@@ -488,7 +488,7 @@ describe("Subscription Authentication (Integration)", () => {
         {
           channel: channel,
           sub: true,
-          presence: client1PresenceData,
+          presence: client1PresenceData
         }
       );
 
@@ -499,7 +499,7 @@ describe("Subscription Authentication (Integration)", () => {
         {
           channel: channel,
           sub: true,
-          presence: client2PresenceData,
+          presence: client2PresenceData
         }
       );
 
@@ -518,10 +518,10 @@ describe("Subscription Authentication (Integration)", () => {
             message.ext.auth = { token: token1 };
           }
           callback(message);
-        },
+        }
       });
 
-      client1.subscribe(channel, (message) => {
+      client1.subscribe(channel, message => {
         // Check if this is a presence notification (has subscribe or unsubscribe fields)
         if (message.subscribe) {
           try {
@@ -548,7 +548,7 @@ describe("Subscription Authentication (Integration)", () => {
               message.ext.auth = { token: token2 };
             }
             callback(message);
-          },
+          }
         });
 
         // Subscribe second client - this should trigger presence notification to first client
@@ -564,7 +564,7 @@ describe("Subscription Authentication (Integration)", () => {
   });
 
   describe("Wildcard subscriptions", () => {
-    it("should support single-level wildcard (*)", (done) => {
+    it("should support single-level wildcard (*)", done => {
       const wildcardChannel = "/testapp/public/*";
       const specificChannel1 = "/testapp/public/foo";
       const specificChannel2 = "/testapp/public/bar";
@@ -573,7 +573,7 @@ describe("Subscription Authentication (Integration)", () => {
       let receivedCount = 0;
       const expectedMessages = 2; // Should receive from foo and bar, but not foo/nested
 
-      client.subscribe(wildcardChannel, (message) => {
+      client.subscribe(wildcardChannel, message => {
         receivedCount++;
         expect(message.text).toMatch(/test message (1|2)/);
 
@@ -585,15 +585,15 @@ describe("Subscription Authentication (Integration)", () => {
       setTimeout(() => {
         // These should be received (single level)
         testServer.internalClient.publish(specificChannel1, {
-          text: "test message 1",
+          text: "test message 1"
         });
         testServer.internalClient.publish(specificChannel2, {
-          text: "test message 2",
+          text: "test message 2"
         });
 
         // This should NOT be received (nested level)
         testServer.internalClient.publish(nestedChannel, {
-          text: "should not receive",
+          text: "should not receive"
         });
 
         // Verify we got exactly 2 messages
@@ -608,18 +608,18 @@ describe("Subscription Authentication (Integration)", () => {
       }, 200);
     });
 
-    it("should support recursive wildcard (**)", (done) => {
+    it("should support recursive wildcard (**)", done => {
       const wildcardChannel = "/testapp/public/**";
       const channels = [
         "/testapp/public/level1",
         "/testapp/public/level1/level2",
-        "/testapp/public/level1/level2/level3",
+        "/testapp/public/level1/level2/level3"
       ];
 
       let receivedCount = 0;
       const expectedMessages = channels.length;
 
-      client.subscribe(wildcardChannel, (message) => {
+      client.subscribe(wildcardChannel, message => {
         receivedCount++;
         expect(message.text).toBeDefined();
 
@@ -632,7 +632,7 @@ describe("Subscription Authentication (Integration)", () => {
       setTimeout(() => {
         channels.forEach((channel, index) => {
           testServer.internalClient.publish(channel, {
-            text: `message ${index + 1}`,
+            text: `message ${index + 1}`
           });
         });
 
@@ -648,7 +648,7 @@ describe("Subscription Authentication (Integration)", () => {
       }, 200);
     });
 
-    it("should enforce auth for wildcard private channels", (done) => {
+    it("should enforce auth for wildcard private channels", done => {
       // Attempt to subscribe to wildcard private channel without auth
       const subscription = client.subscribe("/testapp/private/*", () => {});
 
@@ -658,7 +658,7 @@ describe("Subscription Authentication (Integration)", () => {
             "Wildcard private subscription succeeded without auth - SECURITY BUG!"
           );
         },
-        (error) => {
+        error => {
           expect(error).toBeDefined();
           expect(error.message).toMatch(/auth|permission|token/i);
           done();
@@ -668,14 +668,14 @@ describe("Subscription Authentication (Integration)", () => {
   });
 
   describe("Invalid channels", () => {
-    it("should reject subscription to invalid channel format", (done) => {
+    it("should reject subscription to invalid channel format", done => {
       const subscription = client.subscribe("/invalidchannel", () => {});
 
       subscription.then(
         () => {
           done.fail("Invalid channel subscription should fail");
         },
-        (error) => {
+        error => {
           expect(error).toBeDefined();
           expect(error.message).toMatch(/Invalid channel name/);
           done();
@@ -683,14 +683,14 @@ describe("Subscription Authentication (Integration)", () => {
       );
     });
 
-    it("should reject subscription to unknown channel type", (done) => {
+    it("should reject subscription to unknown channel type", done => {
       const subscription = client.subscribe("/testapp/unknown/test", () => {});
 
       subscription.then(
         () => {
           done.fail("Unknown channel type subscription should fail");
         },
-        (error) => {
+        error => {
           expect(error).toBeDefined();
           expect(error.message).toMatch(/Invalid channel name/);
           done();
