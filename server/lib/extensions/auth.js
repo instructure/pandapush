@@ -149,7 +149,7 @@ const checks = {
 
     verifyAuth(message.channel, auth, false, function(err, appKeyInfo) {
       if (err) {
-        return msgError(err, callback);
+        return msgError(err);
       }
 
       if (
@@ -157,7 +157,7 @@ const checks = {
         appKeyInfo.decodedToken &&
         appKeyInfo.decodedToken.pub !== true
       ) {
-        return msgError("Token does not allow publishing", callback);
+        return msgError("Token does not allow publishing");
       }
 
       message.__internal = appKeyInfo;

@@ -65,7 +65,11 @@ jobs:
         run: docker compose up -d
 
       - name: Run unit tests
-        run: docker compose exec -T web npm run test
+        run: docker compose exec -T web npm run test:unit
+        continue-on-error: false
+
+      - name: Run integration tests
+        run: docker compose exec -T web npm run test:integration
         continue-on-error: false
 
       - name: Check for test failures
