@@ -21,6 +21,7 @@ ENV NODE_ENV production
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${APP_HOME}/node_modules/.bin
 
 ADD package.json ${APP_HOME}/package.json
+ADD package-lock.json ${APP_HOME}/package-lock.json
 ADD format_coverage.rb ${APP_HOME}/format_coverage.rb
 ADD .babelrc ${APP_HOME}/.babelrc
 ADD .eslintignore ${APP_HOME}/.eslintignore
@@ -37,7 +38,7 @@ USER docker
 RUN ln -s ${APP_HOME}/ui/public ${APP_HOME}/public
 RUN ln -s ${APP_HOME}/server/index.js ${APP_HOME}/app.js
 
-RUN NODE_ENV=dev npm install --legacy-peer-deps --python=/usr/bin/python3 \
+RUN NODE_ENV=dev npm ci --legacy-peer-deps --python=/usr/bin/python3 \
     && NODE_ENV=production node_modules/.bin/webpack -p --config client/webpack.config.js \
     && NODE_ENV=production node_modules/.bin/webpack -p --config ui/webpack.config.js \
     && if [ "$prunedev" = "true" ]; then npm prune --legacy-peer-deps --production; fi

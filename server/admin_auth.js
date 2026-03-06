@@ -39,6 +39,7 @@ module.exports = function(env) {
     }
 
     const oidc = new ExpressOIDC({
+      appBaseUrl: new URL(env.OKTA_REDIRECT_URI).origin,
       issuer: env.OKTA_ISSUER,
       client_id: env.OKTA_CLIENT_ID,
       client_secret: env.OKTA_CLIENT_SECRET,
