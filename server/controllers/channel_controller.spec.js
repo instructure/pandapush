@@ -18,24 +18,24 @@ describe("channel_controller", () => {
       body: { message: "test" },
       get: jest.fn(),
       log: {
-        info: jest.fn(),
+        info: jest.fn()
       },
       faye: {
         client: {
           publish: jest.fn(() => ({
-            callback: mockCallback.mockImplementation((cb) => {
+            callback: mockCallback.mockImplementation(cb => {
               cb();
               return { errback: mockErrback };
             }),
-            errback: mockErrback,
-          })),
-        },
-      },
+            errback: mockErrback
+          }))
+        }
+      }
     };
 
     // Setup mock response
     res = {
-      send: jest.fn(),
+      send: jest.fn()
     };
   });
 
@@ -57,7 +57,7 @@ describe("channel_controller", () => {
 
       expect(req.body.__auth).toEqual({
         key: "mykey",
-        secret: "mysecret",
+        secret: "mysecret"
       });
     });
 
@@ -200,13 +200,13 @@ describe("channel_controller", () => {
         "/appid/private/messages",
         {
           message: "hello",
-          __auth: { token: "mytoken" },
+          __auth: { token: "mytoken" }
         }
       );
     });
 
     it("returns 200 OK on successful publish", () => {
-      mockCallback.mockImplementation((cb) => {
+      mockCallback.mockImplementation(cb => {
         cb();
         return { errback: mockErrback };
       });
@@ -224,7 +224,7 @@ describe("channel_controller", () => {
         errback: jest.fn(function(fn) {
           fn("Publish failed");
           return mockPub;
-        }),
+        })
       };
       req.faye.client.publish.mockReturnValue(mockPub);
 
@@ -243,7 +243,7 @@ describe("channel_controller", () => {
         errback: jest.fn(function(fn) {
           fn(error);
           return mockPub;
-        }),
+        })
       };
       req.faye.client.publish.mockReturnValue(mockPub);
 
