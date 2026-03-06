@@ -1,6 +1,6 @@
 # Overview
 
-Pandapush is an web pub/sub system similar to [Pusher](http://pusher.com/).
+Pandapush is a web pub/sub system similar to [Pusher](http://pusher.com/).
 
 Currently built on [Faye](http://faye.jcoglan.com/) for event routing
 and dispatch. (Pandapush adds a layer of multi-tenancy and
@@ -8,7 +8,7 @@ authentication.)
 
 ## Getting Started
 
-### Using the standalong Docker image
+### Using the standalone Docker image
 
 ```bash
 $ docker run -ti -p 3000:80 -e AUTH_METHOD=basic -e ADMIN_USERNAME=admin -e ADMIN_PASSWORD=password instructure/pandapush:latest
@@ -64,7 +64,7 @@ client.subscribe("/fRP0y2aVpYCKiW6PIFOK/public/messages", function(message) {
 
 Create a token and push an event via HTTP POST.
 
-(We need a library for this for Ruby and Javascript as well.)
+(We need a library for this for Ruby and JavaScript as well.)
 
 ```ruby
 require 'httparty'
@@ -85,7 +85,7 @@ You should see the message arrive in your browser console.
 ## Channel Names
 
 Channel names must be formatted as absolute path names whose segments
-may contains only letters, number, and the symbols -, \_, and ~.
+may contain only letters, number, and the symbols -, \_, and ~.
 
 The first segment of the channel must be the applicationId, the second
 segment must be "public" or "private", and the remainder is up to you:
