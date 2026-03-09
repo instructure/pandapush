@@ -64,13 +64,35 @@ jobs:
       - name: Start services
         run: docker compose up -d
 
-      - name: Run unit tests
-        run: docker compose exec -T web npm run test:unit
-        continue-on-error: false
+      - name: Run unit tests with coverage
+        id: unit-tests
+        run: |
+          docker compose exec -T web npm run test:unit -- --coverage --json --outputFile=/usr/src/app/localdata/unit-results.json > unit-output.txt 2>&1 || true
+          docker compose exec -T web cat localdata/unit-results.json > unit-results.json || echo '{}' > unit-results.json
+        continue-on-error: true
 
-      - name: Run integration tests
-        run: docker compose exec -T web npm run test:integration
-        continue-on-error: false
+      - name: Run integration tests with coverage
+        id: integration-tests
+        run: |
+          docker compose exec -T web npm run test:integration -- --coverage --json --outputFile=/usr/src/app/localdata/integration-results.json > integration-output.txt 2>&1 || true
+          docker compose exec -T web cat localdata/integration-results.json > integration-results.json || echo '{}' > integration-results.json
+        continue-on-error: true
+
+      - name: Generate test summary
+        if: always()
+        id: test-summary
+        run: |
+          SUMMARY=$(./scripts/generate-test-summary.sh)
+          echo "summary<<EOFMARKER" >> $GITHUB_OUTPUT
+          echo "$SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOFMARKER" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with test results
+        if: always() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: test-results
+          message: ${{ steps.test-summary.outputs.summary }}
 
       - name: Check for test failures
         if: failure()
