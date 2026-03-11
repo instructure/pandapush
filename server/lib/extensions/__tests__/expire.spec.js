@@ -33,12 +33,12 @@ describe("expire extension", () => {
       callback = jest.fn();
     });
 
-    test("creates extension with incoming method", () => {
+    it("creates extension with incoming method", () => {
       expect(extension.incoming).toBeDefined();
       expect(typeof extension.incoming).toBe("function");
     });
 
-    test("sets expiry on presence channels", async () => {
+    it("sets expiry on presence channels", async () => {
       const message = {
         channel: "/app123/presence/room"
       };
@@ -63,7 +63,7 @@ describe("expire extension", () => {
       expect(callback).toHaveBeenCalledWith(message);
     });
 
-    test("does not set expiry on public channels", async () => {
+    it("does not set expiry on public channels", async () => {
       const message = {
         channel: "/app123/public/chat"
       };
@@ -74,7 +74,7 @@ describe("expire extension", () => {
       expect(callback).toHaveBeenCalledWith(message);
     });
 
-    test("does not set expiry on private channels", async () => {
+    it("does not set expiry on private channels", async () => {
       const message = {
         channel: "/app123/private/secure"
       };
@@ -85,7 +85,7 @@ describe("expire extension", () => {
       expect(callback).toHaveBeenCalledWith(message);
     });
 
-    test("does not set expiry on meta channels", async () => {
+    it("does not set expiry on meta channels", async () => {
       const message = {
         channel: "/meta/subscribe"
       };
@@ -96,7 +96,7 @@ describe("expire extension", () => {
       expect(callback).toHaveBeenCalledWith(message);
     });
 
-    test("regex matches valid presence channels", async () => {
+    it("regex matches valid presence channels", async () => {
       const validChannels = [
         "/app/presence/room",
         "/myapp123/presence/lobby",
@@ -113,7 +113,7 @@ describe("expire extension", () => {
       }
     });
 
-    test("regex rejects invalid presence-like channels", async () => {
+    it("regex rejects invalid presence-like channels", async () => {
       const invalidChannels = [
         "/presence/room", // Missing app ID
         "app/presence/room", // Missing leading slash
@@ -131,7 +131,7 @@ describe("expire extension", () => {
       }
     });
 
-    test("always calls callback regardless of channel type", async () => {
+    it("always calls callback regardless of channel type", async () => {
       const channels = [
         "/app/presence/room",
         "/app/public/test",
@@ -148,7 +148,7 @@ describe("expire extension", () => {
   });
 
   describe("with custom redis configs", () => {
-    test("works with multiple Redis configs", async () => {
+    it("works with multiple Redis configs", async () => {
       const configs = [
         { host: "redis1", port: 6379 },
         { host: "redis2", port: 6380 },
@@ -170,7 +170,7 @@ describe("expire extension", () => {
       expect(redis.createClient).toHaveBeenCalledWith(6381, "redis3");
     });
 
-    test("works with single Redis config", async () => {
+    it("works with single Redis config", async () => {
       const configs = [{ host: "redis1", port: 6379 }];
 
       const extension = await createExpireExtension(configs);
@@ -186,7 +186,7 @@ describe("expire extension", () => {
       expect(redis.createClient).toHaveBeenCalledWith(6379, "redis1");
     });
 
-    test("handles empty redis configs", async () => {
+    it("handles empty redis configs", async () => {
       const extension = await createExpireExtension([]);
       const callback = jest.fn();
 

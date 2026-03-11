@@ -13,12 +13,12 @@ describe("key_tracker extension", () => {
     callback = jest.fn();
   });
 
-  test("creates extension with incoming method", () => {
+  it("creates extension with incoming method", () => {
     expect(extension.incoming).toBeDefined();
     expect(typeof extension.incoming).toBe("function");
   });
 
-  test("records key usage when __internal is present", () => {
+  it("records key usage when __internal is present", () => {
     const message = {
       channel: "/app123/public/test",
       __internal: {
@@ -33,7 +33,7 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledWith(message);
   });
 
-  test("does not record when __internal is missing", () => {
+  it("does not record when __internal is missing", () => {
     const message = {
       channel: "/app123/public/test"
     };
@@ -44,7 +44,7 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledWith(message);
   });
 
-  test("does not crash when __internal is null", () => {
+  it("does not crash when __internal is null", () => {
     const message = {
       channel: "/app123/public/test",
       __internal: null
@@ -56,7 +56,7 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledWith(message);
   });
 
-  test("does not crash when __internal is undefined", () => {
+  it("does not crash when __internal is undefined", () => {
     const message = {
       channel: "/app123/public/test",
       __internal: undefined
@@ -68,7 +68,7 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledWith(message);
   });
 
-  test("handles missing applicationId in __internal", () => {
+  it("handles missing applicationId in __internal", () => {
     const message = {
       channel: "/app123/public/test",
       __internal: {
@@ -82,7 +82,7 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledWith(message);
   });
 
-  test("handles missing keyId in __internal", () => {
+  it("handles missing keyId in __internal", () => {
     const message = {
       channel: "/app123/public/test",
       __internal: {
@@ -96,7 +96,7 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledWith(message);
   });
 
-  test("handles empty __internal object", () => {
+  it("handles empty __internal object", () => {
     const message = {
       channel: "/app123/public/test",
       __internal: {}
@@ -108,7 +108,7 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledWith(message);
   });
 
-  test("always calls callback even without __internal", () => {
+  it("always calls callback even without __internal", () => {
     const message = { channel: "/test" };
 
     extension.incoming(message, callback);
@@ -116,7 +116,7 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledWith(message);
   });
 
-  test("records multiple messages sequentially", () => {
+  it("records multiple messages sequentially", () => {
     const messages = [
       { __internal: { applicationId: "app1", keyId: "key1" } },
       { __internal: { applicationId: "app2", keyId: "key2" } },
@@ -134,7 +134,7 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledTimes(3);
   });
 
-  test("preserves message object in callback", () => {
+  it("preserves message object in callback", () => {
     const message = {
       channel: "/app/public/test",
       data: { foo: "bar" },
@@ -147,7 +147,7 @@ describe("key_tracker extension", () => {
     expect(callback.mock.calls[0][0]).toBe(message); // Same object reference
   });
 
-  test("works with different tracker implementations", () => {
+  it("works with different tracker implementations", () => {
     const trackers = [
       { record: jest.fn() },
       { record: jest.fn() },

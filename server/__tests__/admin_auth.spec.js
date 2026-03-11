@@ -39,14 +39,14 @@ describe("admin_auth", () => {
       auth = createAdminAuth(env);
     });
 
-    test("returns auth object with all required methods defined", () => {
+    it("returns auth object with all required methods defined", () => {
       expect(auth.logout).toBeDefined();
       expect(auth.bouncer).toBeDefined();
       expect(auth.blocker).toBeDefined();
       expect(auth.getUsername).toBeDefined();
     });
 
-    test("bouncer returns 403", () => {
+    it("bouncer returns 403", () => {
       const mockRes = { send: jest.fn() };
 
       auth.bouncer({}, mockRes, jest.fn());
@@ -54,7 +54,7 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("blocker returns 403", () => {
+    it("blocker returns 403", () => {
       const mockRes = { send: jest.fn() };
 
       auth.blocker({}, mockRes, jest.fn());
@@ -62,7 +62,7 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("logout calls next without side effects", () => {
+    it("logout calls next without side effects", () => {
       const mockNext = jest.fn();
 
       auth.logout({}, {}, mockNext);
@@ -70,7 +70,7 @@ describe("admin_auth", () => {
       expect(mockNext).toHaveBeenCalled();
     });
 
-    test("getUsername calls next without setting username", () => {
+    it("getUsername calls next without setting username", () => {
       const mockReq = {};
       const mockNext = jest.fn();
 
@@ -82,7 +82,7 @@ describe("admin_auth", () => {
   });
 
   describe('when AUTH_METHOD is "okta"', () => {
-    test("returns noAdminAreaAuth when Okta config is incomplete - missing all", () => {
+    it("returns noAdminAreaAuth when Okta config is incomplete - missing all", () => {
       const env = {
         AUTH_METHOD: "okta"
         // Missing all Okta config
@@ -94,7 +94,7 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("returns noAdminAreaAuth when missing OKTA_ISSUER", () => {
+    it("returns noAdminAreaAuth when missing OKTA_ISSUER", () => {
       const env = {
         AUTH_METHOD: "okta",
         OKTA_CLIENT_ID: "client123",
@@ -109,7 +109,7 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("returns noAdminAreaAuth when missing OKTA_CLIENT_ID", () => {
+    it("returns noAdminAreaAuth when missing OKTA_CLIENT_ID", () => {
       const env = {
         AUTH_METHOD: "okta",
         OKTA_ISSUER: "https://example.okta.com",
@@ -124,7 +124,7 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("returns noAdminAreaAuth when missing OKTA_CLIENT_SECRET", () => {
+    it("returns noAdminAreaAuth when missing OKTA_CLIENT_SECRET", () => {
       const env = {
         AUTH_METHOD: "okta",
         OKTA_ISSUER: "https://example.okta.com",
@@ -139,7 +139,7 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("returns noAdminAreaAuth when missing OKTA_REDIRECT_URI", () => {
+    it("returns noAdminAreaAuth when missing OKTA_REDIRECT_URI", () => {
       const env = {
         AUTH_METHOD: "okta",
         OKTA_ISSUER: "https://example.okta.com",
@@ -169,7 +169,7 @@ describe("admin_auth", () => {
         auth = createAdminAuth(env);
       });
 
-      test("creates auth object with correct properties", () => {
+      it("creates auth object with correct properties", () => {
         expect(auth.router).toBeDefined();
         expect(auth.bouncer).toBeDefined();
         expect(auth.blocker).toBeDefined();
@@ -177,7 +177,7 @@ describe("admin_auth", () => {
         expect(auth.getUsername).toBeDefined();
       });
 
-      test("getUsername extracts preferred_username from userinfo", () => {
+      it("getUsername extracts preferred_username from userinfo", () => {
         const mockReq = {
           userinfo: { preferred_username: "testuser@example.com" }
         };
@@ -189,7 +189,7 @@ describe("admin_auth", () => {
         expect(mockNext).toHaveBeenCalled();
       });
 
-      test("getUsername strips domain when OKTA_STRIP_DOMAIN is set", () => {
+      it("getUsername strips domain when OKTA_STRIP_DOMAIN is set", () => {
         env.OKTA_STRIP_DOMAIN = "@example.com";
         auth = createAdminAuth(env);
 
@@ -204,7 +204,7 @@ describe("admin_auth", () => {
         expect(mockNext).toHaveBeenCalled();
       });
 
-      test("getUsername handles missing userinfo", () => {
+      it("getUsername handles missing userinfo", () => {
         const mockReq = {};
         const mockNext = jest.fn();
 
@@ -214,7 +214,7 @@ describe("admin_auth", () => {
         expect(mockNext).toHaveBeenCalled();
       });
 
-      test("getUsername handles missing preferred_username", () => {
+      it("getUsername handles missing preferred_username", () => {
         const mockReq = {
           userinfo: { email: "test@example.com" }
         };
@@ -226,7 +226,7 @@ describe("admin_auth", () => {
         expect(mockNext).toHaveBeenCalled();
       });
 
-      test("logout clears session and redirects", () => {
+      it("logout clears session and redirects", () => {
         const mockReq = {
           session: { user: "data" },
           logout: jest.fn()
@@ -245,7 +245,7 @@ describe("admin_auth", () => {
   });
 
   describe('when AUTH_METHOD is "basic"', () => {
-    test("returns noAdminAreaAuth when basic auth config is incomplete - missing all", () => {
+    it("returns noAdminAreaAuth when basic auth config is incomplete - missing all", () => {
       const env = {
         AUTH_METHOD: "basic"
         // Missing ADMIN_USERNAME and ADMIN_PASSWORD
@@ -257,7 +257,7 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("returns noAdminAreaAuth when missing ADMIN_USERNAME", () => {
+    it("returns noAdminAreaAuth when missing ADMIN_USERNAME", () => {
       const env = {
         AUTH_METHOD: "basic",
         ADMIN_PASSWORD: "password123"
@@ -270,7 +270,7 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("returns noAdminAreaAuth when missing ADMIN_PASSWORD", () => {
+    it("returns noAdminAreaAuth when missing ADMIN_PASSWORD", () => {
       const env = {
         AUTH_METHOD: "basic",
         ADMIN_USERNAME: "admin"
@@ -296,7 +296,7 @@ describe("admin_auth", () => {
         auth = createAdminAuth(env);
       });
 
-      test("creates auth object with correct properties", () => {
+      it("creates auth object with correct properties", () => {
         expect(auth.bouncer).toBeDefined();
         expect(auth.blocker).toBeDefined();
         expect(auth.logout).toBeDefined();
@@ -304,7 +304,7 @@ describe("admin_auth", () => {
         expect(auth.router).toBeUndefined(); // Basic auth doesn't have router
       });
 
-      test("getUsername sets username from req.user", () => {
+      it("getUsername sets username from req.user", () => {
         const mockReq = { user: "adminuser" };
         const mockNext = jest.fn();
 
@@ -314,7 +314,7 @@ describe("admin_auth", () => {
         expect(mockNext).toHaveBeenCalled();
       });
 
-      test("getUsername handles missing req.user", () => {
+      it("getUsername handles missing req.user", () => {
         const mockReq = {};
         const mockNext = jest.fn();
 
@@ -324,7 +324,7 @@ describe("admin_auth", () => {
         expect(mockNext).toHaveBeenCalled();
       });
 
-      test("logout calls next without clearing session", () => {
+      it("logout calls next without clearing session", () => {
         const mockReq = { session: { data: "test" } };
         const mockNext = jest.fn();
 
