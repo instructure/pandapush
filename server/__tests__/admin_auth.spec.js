@@ -31,29 +31,38 @@ describe("admin_auth", () => {
   });
 
   describe("when AUTH_METHOD is not set", () => {
-    test("returns noAdminAreaAuth with 403 responses", () => {
-      const env = {};
-      const auth = createAdminAuth(env);
+    let env;
+    let auth;
 
+    beforeEach(() => {
+      env = {};
+      auth = createAdminAuth(env);
+    });
+
+    test("returns auth object with all required methods defined", () => {
       expect(auth.logout).toBeDefined();
       expect(auth.bouncer).toBeDefined();
       expect(auth.blocker).toBeDefined();
       expect(auth.getUsername).toBeDefined();
+    });
 
-      // Bouncer returns 403
+    test("bouncer returns 403", () => {
       const mockRes = { send: jest.fn() };
-      auth.bouncer({}, mockRes, jest.fn());
-      expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
 
-      // Blocker returns 403
-      mockRes.send.mockClear();
+      auth.bouncer({}, mockRes, jest.fn());
+
+      expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
+    });
+
+    test("blocker returns 403", () => {
+      const mockRes = { send: jest.fn() };
+
       auth.blocker({}, mockRes, jest.fn());
+
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
     test("logout calls next without side effects", () => {
-      const env = {};
-      const auth = createAdminAuth(env);
       const mockNext = jest.fn();
 
       auth.logout({}, {}, mockNext);
@@ -62,8 +71,6 @@ describe("admin_auth", () => {
     });
 
     test("getUsername calls next without setting username", () => {
-      const env = {};
-      const auth = createAdminAuth(env);
       const mockReq = {};
       const mockNext = jest.fn();
 
@@ -79,6 +86,21 @@ describe("admin_auth", () => {
       const env = {
         AUTH_METHOD: "okta"
         // Missing all Okta config
+      };
+
+      const auth = createAdminAuth(env);
+      const mockRes = { send: jest.fn() };
+      auth.bouncer({}, mockRes, jest.fn());
+      expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
+    });
+
+    test("returns noAdminAreaAuth when missing OKTA_ISSUER", () => {
+      const env = {
+        AUTH_METHOD: "okta",
+        OKTA_CLIENT_ID: "client123",
+        OKTA_CLIENT_SECRET: "secret456",
+        OKTA_REDIRECT_URI: "https://pandapush.example.com/callback"
+        // Missing OKTA_ISSUER
       };
 
       const auth = createAdminAuth(env);
@@ -132,131 +154,93 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("creates auth object with correct properties when fully configured", () => {
-      const env = {
-        AUTH_METHOD: "okta",
-        OKTA_ISSUER: "https://example.okta.com",
-        OKTA_CLIENT_ID: "client123",
-        OKTA_CLIENT_SECRET: "secret456",
-        OKTA_REDIRECT_URI:
-          "https://pandapush.example.com/authorization-code/callback"
-      };
+    describe("when fully configured", () => {
+      let env;
+      let auth;
 
-      const auth = createAdminAuth(env);
+      beforeEach(() => {
+        env = {
+          AUTH_METHOD: "okta",
+          OKTA_ISSUER: "https://example.okta.com",
+          OKTA_CLIENT_ID: "client123",
+          OKTA_CLIENT_SECRET: "secret456",
+          OKTA_REDIRECT_URI: "https://pandapush.example.com/callback"
+        };
+        auth = createAdminAuth(env);
+      });
 
-      expect(auth.router).toBeDefined();
-      expect(auth.bouncer).toBeDefined();
-      expect(auth.blocker).toBeDefined();
-      expect(auth.logout).toBeDefined();
-      expect(auth.getUsername).toBeDefined();
-    });
+      test("creates auth object with correct properties", () => {
+        expect(auth.router).toBeDefined();
+        expect(auth.bouncer).toBeDefined();
+        expect(auth.blocker).toBeDefined();
+        expect(auth.logout).toBeDefined();
+        expect(auth.getUsername).toBeDefined();
+      });
 
-    test("getUsername extracts preferred_username from userinfo", () => {
-      const env = {
-        AUTH_METHOD: "okta",
-        OKTA_ISSUER: "https://example.okta.com",
-        OKTA_CLIENT_ID: "client123",
-        OKTA_CLIENT_SECRET: "secret456",
-        OKTA_REDIRECT_URI: "https://pandapush.example.com/callback"
-      };
+      test("getUsername extracts preferred_username from userinfo", () => {
+        const mockReq = {
+          userinfo: { preferred_username: "testuser@example.com" }
+        };
+        const mockNext = jest.fn();
 
-      const auth = createAdminAuth(env);
-      const mockReq = {
-        userinfo: { preferred_username: "testuser@example.com" }
-      };
-      const mockNext = jest.fn();
+        auth.getUsername(mockReq, {}, mockNext);
 
-      auth.getUsername(mockReq, {}, mockNext);
+        expect(mockReq.username).toBe("testuser@example.com");
+        expect(mockNext).toHaveBeenCalled();
+      });
 
-      expect(mockReq.username).toBe("testuser@example.com");
-      expect(mockNext).toHaveBeenCalled();
-    });
+      test("getUsername strips domain when OKTA_STRIP_DOMAIN is set", () => {
+        env.OKTA_STRIP_DOMAIN = "@example.com";
+        auth = createAdminAuth(env);
 
-    test("getUsername strips domain when OKTA_STRIP_DOMAIN is set", () => {
-      const env = {
-        AUTH_METHOD: "okta",
-        OKTA_ISSUER: "https://example.okta.com",
-        OKTA_CLIENT_ID: "client123",
-        OKTA_CLIENT_SECRET: "secret456",
-        OKTA_REDIRECT_URI: "https://pandapush.example.com/callback",
-        OKTA_STRIP_DOMAIN: "@example.com"
-      };
+        const mockReq = {
+          userinfo: { preferred_username: "testuser@example.com" }
+        };
+        const mockNext = jest.fn();
 
-      const auth = createAdminAuth(env);
-      const mockReq = {
-        userinfo: { preferred_username: "testuser@example.com" }
-      };
-      const mockNext = jest.fn();
+        auth.getUsername(mockReq, {}, mockNext);
 
-      auth.getUsername(mockReq, {}, mockNext);
+        expect(mockReq.username).toBe("testuser");
+        expect(mockNext).toHaveBeenCalled();
+      });
 
-      expect(mockReq.username).toBe("testuser");
-      expect(mockNext).toHaveBeenCalled();
-    });
+      test("getUsername handles missing userinfo", () => {
+        const mockReq = {};
+        const mockNext = jest.fn();
 
-    test("getUsername handles missing userinfo", () => {
-      const env = {
-        AUTH_METHOD: "okta",
-        OKTA_ISSUER: "https://example.okta.com",
-        OKTA_CLIENT_ID: "client123",
-        OKTA_CLIENT_SECRET: "secret456",
-        OKTA_REDIRECT_URI: "https://pandapush.example.com/callback"
-      };
+        auth.getUsername(mockReq, {}, mockNext);
 
-      const auth = createAdminAuth(env);
-      const mockReq = {};
-      const mockNext = jest.fn();
+        expect(mockReq.username).toBeUndefined();
+        expect(mockNext).toHaveBeenCalled();
+      });
 
-      auth.getUsername(mockReq, {}, mockNext);
+      test("getUsername handles missing preferred_username", () => {
+        const mockReq = {
+          userinfo: { email: "test@example.com" }
+        };
+        const mockNext = jest.fn();
 
-      expect(mockReq.username).toBeUndefined();
-      expect(mockNext).toHaveBeenCalled();
-    });
+        auth.getUsername(mockReq, {}, mockNext);
 
-    test("getUsername handles missing preferred_username", () => {
-      const env = {
-        AUTH_METHOD: "okta",
-        OKTA_ISSUER: "https://example.okta.com",
-        OKTA_CLIENT_ID: "client123",
-        OKTA_CLIENT_SECRET: "secret456",
-        OKTA_REDIRECT_URI: "https://pandapush.example.com/callback"
-      };
+        expect(mockReq.username).toBeUndefined();
+        expect(mockNext).toHaveBeenCalled();
+      });
 
-      const auth = createAdminAuth(env);
-      const mockReq = {
-        userinfo: { email: "test@example.com" }
-      };
-      const mockNext = jest.fn();
+      test("logout clears session and redirects", () => {
+        const mockReq = {
+          session: { user: "data" },
+          logout: jest.fn()
+        };
+        const mockRes = {
+          redirect: jest.fn()
+        };
 
-      auth.getUsername(mockReq, {}, mockNext);
+        auth.logout(mockReq, mockRes);
 
-      expect(mockReq.username).toBeUndefined();
-      expect(mockNext).toHaveBeenCalled();
-    });
-
-    test("logout clears session and redirects", () => {
-      const env = {
-        AUTH_METHOD: "okta",
-        OKTA_ISSUER: "https://example.okta.com",
-        OKTA_CLIENT_ID: "client123",
-        OKTA_CLIENT_SECRET: "secret456",
-        OKTA_REDIRECT_URI: "https://pandapush.example.com/callback"
-      };
-
-      const auth = createAdminAuth(env);
-      const mockReq = {
-        session: { user: "data" },
-        logout: jest.fn()
-      };
-      const mockRes = {
-        redirect: jest.fn()
-      };
-
-      auth.logout(mockReq, mockRes);
-
-      expect(mockReq.session).toBeNull();
-      expect(mockReq.logout).toHaveBeenCalled();
-      expect(mockRes.redirect).toHaveBeenCalledWith("/");
+        expect(mockReq.session).toBeNull();
+        expect(mockReq.logout).toHaveBeenCalled();
+        expect(mockRes.redirect).toHaveBeenCalledWith("/");
+      });
     });
   });
 
@@ -299,71 +283,56 @@ describe("admin_auth", () => {
       expect(mockRes.send).toHaveBeenCalledWith(403, "Unauthorized");
     });
 
-    test("creates auth object with correct properties when fully configured", () => {
-      const env = {
-        AUTH_METHOD: "basic",
-        ADMIN_USERNAME: "admin",
-        ADMIN_PASSWORD: "password123"
-      };
+    describe("when fully configured", () => {
+      let env;
+      let auth;
 
-      const auth = createAdminAuth(env);
+      beforeEach(() => {
+        env = {
+          AUTH_METHOD: "basic",
+          ADMIN_USERNAME: "admin",
+          ADMIN_PASSWORD: "password123"
+        };
+        auth = createAdminAuth(env);
+      });
 
-      expect(auth.bouncer).toBeDefined();
-      expect(auth.blocker).toBeDefined();
-      expect(auth.logout).toBeDefined();
-      expect(auth.getUsername).toBeDefined();
-      expect(auth.router).toBeUndefined(); // Basic auth doesn't have router
-    });
+      test("creates auth object with correct properties", () => {
+        expect(auth.bouncer).toBeDefined();
+        expect(auth.blocker).toBeDefined();
+        expect(auth.logout).toBeDefined();
+        expect(auth.getUsername).toBeDefined();
+        expect(auth.router).toBeUndefined(); // Basic auth doesn't have router
+      });
 
-    test("getUsername sets username from req.user", () => {
-      const env = {
-        AUTH_METHOD: "basic",
-        ADMIN_USERNAME: "admin",
-        ADMIN_PASSWORD: "password123"
-      };
+      test("getUsername sets username from req.user", () => {
+        const mockReq = { user: "adminuser" };
+        const mockNext = jest.fn();
 
-      const auth = createAdminAuth(env);
-      const mockReq = { user: "adminuser" };
-      const mockNext = jest.fn();
+        auth.getUsername(mockReq, {}, mockNext);
 
-      auth.getUsername(mockReq, {}, mockNext);
+        expect(mockReq.username).toBe("adminuser");
+        expect(mockNext).toHaveBeenCalled();
+      });
 
-      expect(mockReq.username).toBe("adminuser");
-      expect(mockNext).toHaveBeenCalled();
-    });
+      test("getUsername handles missing req.user", () => {
+        const mockReq = {};
+        const mockNext = jest.fn();
 
-    test("getUsername handles missing req.user", () => {
-      const env = {
-        AUTH_METHOD: "basic",
-        ADMIN_USERNAME: "admin",
-        ADMIN_PASSWORD: "password123"
-      };
+        auth.getUsername(mockReq, {}, mockNext);
 
-      const auth = createAdminAuth(env);
-      const mockReq = {};
-      const mockNext = jest.fn();
+        expect(mockReq.username).toBeUndefined();
+        expect(mockNext).toHaveBeenCalled();
+      });
 
-      auth.getUsername(mockReq, {}, mockNext);
+      test("logout calls next without clearing session", () => {
+        const mockReq = { session: { data: "test" } };
+        const mockNext = jest.fn();
 
-      expect(mockReq.username).toBeUndefined();
-      expect(mockNext).toHaveBeenCalled();
-    });
+        auth.logout(mockReq, {}, mockNext);
 
-    test("logout calls next without clearing session", () => {
-      const env = {
-        AUTH_METHOD: "basic",
-        ADMIN_USERNAME: "admin",
-        ADMIN_PASSWORD: "password123"
-      };
-
-      const auth = createAdminAuth(env);
-      const mockReq = { session: { data: "test" } };
-      const mockNext = jest.fn();
-
-      auth.logout(mockReq, {}, mockNext);
-
-      expect(mockReq.session).toEqual({ data: "test" }); // Session unchanged
-      expect(mockNext).toHaveBeenCalled();
+        expect(mockReq.session).toEqual({ data: "test" }); // Session unchanged
+        expect(mockNext).toHaveBeenCalled();
+      });
     });
   });
 });

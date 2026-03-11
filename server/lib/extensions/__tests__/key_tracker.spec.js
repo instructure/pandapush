@@ -3,19 +3,22 @@
 const createKeyTrackerExtension = require("../key_tracker");
 
 describe("key_tracker extension", () => {
-  test("creates extension with incoming method", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
+  let mockTracker;
+  let extension;
+  let callback;
 
+  beforeEach(() => {
+    mockTracker = { record: jest.fn() };
+    extension = createKeyTrackerExtension(mockTracker);
+    callback = jest.fn();
+  });
+
+  test("creates extension with incoming method", () => {
     expect(extension.incoming).toBeDefined();
     expect(typeof extension.incoming).toBe("function");
   });
 
   test("records key usage when __internal is present", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
     const message = {
       channel: "/app123/public/test",
       __internal: {
@@ -31,10 +34,6 @@ describe("key_tracker extension", () => {
   });
 
   test("does not record when __internal is missing", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
     const message = {
       channel: "/app123/public/test"
     };
@@ -46,10 +45,6 @@ describe("key_tracker extension", () => {
   });
 
   test("does not crash when __internal is null", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
     const message = {
       channel: "/app123/public/test",
       __internal: null
@@ -62,10 +57,6 @@ describe("key_tracker extension", () => {
   });
 
   test("does not crash when __internal is undefined", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
     const message = {
       channel: "/app123/public/test",
       __internal: undefined
@@ -78,10 +69,6 @@ describe("key_tracker extension", () => {
   });
 
   test("handles missing applicationId in __internal", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
     const message = {
       channel: "/app123/public/test",
       __internal: {
@@ -96,10 +83,6 @@ describe("key_tracker extension", () => {
   });
 
   test("handles missing keyId in __internal", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
     const message = {
       channel: "/app123/public/test",
       __internal: {
@@ -114,10 +97,6 @@ describe("key_tracker extension", () => {
   });
 
   test("handles empty __internal object", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
     const message = {
       channel: "/app123/public/test",
       __internal: {}
