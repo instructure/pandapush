@@ -108,6 +108,45 @@ describe("key_tracker extension", () => {
     expect(callback).toHaveBeenCalledWith(message);
   });
 
+  test("always calls callback even without __internal", () => {
+    const message = { channel: "/test" };
+
+    extension.incoming(message, callback);
+
+    expect(callback).toHaveBeenCalledWith(message);
+  });
+
+  test("records multiple messages sequentially", () => {
+    const messages = [
+      { __internal: { applicationId: "app1", keyId: "key1" } },
+      { __internal: { applicationId: "app2", keyId: "key2" } },
+      { __internal: { applicationId: "app3", keyId: "key3" } }
+    ];
+
+    messages.forEach(message => {
+      extension.incoming(message, callback);
+    });
+
+    expect(mockTracker.record).toHaveBeenCalledTimes(3);
+    expect(mockTracker.record).toHaveBeenNthCalledWith(1, "app1", "key1");
+    expect(mockTracker.record).toHaveBeenNthCalledWith(2, "app2", "key2");
+    expect(mockTracker.record).toHaveBeenNthCalledWith(3, "app3", "key3");
+    expect(callback).toHaveBeenCalledTimes(3);
+  });
+
+  test("preserves message object in callback", () => {
+    const message = {
+      channel: "/app/public/test",
+      data: { foo: "bar" },
+      __internal: { applicationId: "app", keyId: "key" }
+    };
+
+    extension.incoming(message, callback);
+
+    expect(callback).toHaveBeenCalledWith(message);
+    expect(callback.mock.calls[0][0]).toBe(message); // Same object reference
+  });
+
   test("works with different tracker implementations", () => {
     const trackers = [
       { record: jest.fn() },
@@ -129,56 +168,5 @@ describe("key_tracker extension", () => {
       expect(tracker.record).toHaveBeenCalledWith("app", "key");
       expect(callback).toHaveBeenCalled();
     });
-  });
-
-  test("always calls callback even without __internal", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
-    const message = { channel: "/test" };
-
-    extension.incoming(message, callback);
-
-    expect(callback).toHaveBeenCalledWith(message);
-  });
-
-  test("records multiple messages sequentially", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
-    const messages = [
-      { __internal: { applicationId: "app1", keyId: "key1" } },
-      { __internal: { applicationId: "app2", keyId: "key2" } },
-      { __internal: { applicationId: "app3", keyId: "key3" } }
-    ];
-
-    messages.forEach(message => {
-      extension.incoming(message, callback);
-    });
-
-    expect(mockTracker.record).toHaveBeenCalledTimes(3);
-    expect(mockTracker.record).toHaveBeenNthCalledWith(1, "app1", "key1");
-    expect(mockTracker.record).toHaveBeenNthCalledWith(2, "app2", "key2");
-    expect(mockTracker.record).toHaveBeenNthCalledWith(3, "app3", "key3");
-    expect(callback).toHaveBeenCalledTimes(3);
-  });
-
-  test("preserves message object in callback", () => {
-    const mockTracker = { record: jest.fn() };
-    const extension = createKeyTrackerExtension(mockTracker);
-    const callback = jest.fn();
-
-    const message = {
-      channel: "/app/public/test",
-      data: { foo: "bar" },
-      __internal: { applicationId: "app", keyId: "key" }
-    };
-
-    extension.incoming(message, callback);
-
-    expect(callback).toHaveBeenCalledWith(message);
-    expect(callback.mock.calls[0][0]).toBe(message); // Same object reference
   });
 });
