@@ -8,7 +8,7 @@ class LoginPage extends BasePage {
     await this.page.goto("/admin", { waitUntil: "domcontentloaded" });
     await this.page.getByRole("heading", { name: "Pandapush" }).waitFor({
       state: "visible",
-      timeout: 15000,
+      timeout: 15000
     });
   }
 
@@ -16,7 +16,7 @@ class LoginPage extends BasePage {
     try {
       await this.page.getByRole("link", { name: "Logout" }).waitFor({
         state: "visible",
-        timeout: 5000,
+        timeout: 5000
       });
       return true;
     } catch (error) {
