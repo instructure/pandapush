@@ -6,3 +6,6 @@ localdata
 coverage
 npm-debug.log
 client/dist
+test-results
+playwright-report
+.playwright

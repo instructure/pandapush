@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/playwright:v1.48.2-focal
+
+ENV APP_HOME "/usr/src/app"
+WORKDIR ${APP_HOME}
+
+COPY package.json package-lock.json ./
+
+RUN npm ci --legacy-peer-deps
+
+COPY e2e ./e2e
+
+RUN mkdir -p test-results playwright-report
+
+CMD ["npx", "playwright", "test", "--config=e2e/playwright.config.js"]
