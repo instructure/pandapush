@@ -44,6 +44,7 @@
     "sqlite3": "^5.0.3"
   },
   "devDependencies": {
+    "@playwright/test": "1.48.2",
     "@babel/core": "^7.0.0",
     "@babel/plugin-proposal-class-properties": "^7.0.0",
     "@babel/preset-env": "^7.0.0",

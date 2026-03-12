@@ -1,0 +1,33 @@
+services:
+  web:
+    environment:
+      # Use Basic Auth for E2E tests (simpler than Okta)
+      AUTH_METHOD: basic
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: testpassword123
+    volumes:
+      # Share the database directory so E2E tests can clean it up
+      - db-data:/usr/src/app/localdata
+
+  e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+    environment:
+      E2E_BASE_URL: http://web:3000
+      CI: ${CI:-false}
+      # Point to the same database location as web service
+      DATABASE_PATH: /usr/src/app/localdata/db.sqlite
+    depends_on:
+      - web
+    volumes:
+      - './e2e:/usr/src/app/e2e'
+      - './test-results:/usr/src/app/test-results'
+      - './playwright-report:/usr/src/app/playwright-report'
+      # Mount the same database volume as web service
+      - db-data:/usr/src/app/localdata
+    networks:
+      - default
+
+volumes:
+  db-data:
