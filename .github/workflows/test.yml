@@ -126,7 +126,9 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build Docker images
-        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml build --pull
+        run:
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml build
+          --pull
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
@@ -137,16 +139,20 @@ jobs:
           chmod 777 localdata playwright-report test-results
 
       - name: Start services
-        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d web
+        run:
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d
+          web
 
       - name: Run E2E tests
-        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml run --rm e2e
+        run:
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml run
+          --rm e2e
         env:
           CI: true
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
@@ -154,7 +160,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: e2e-test-results
           path: test-results/
@@ -168,4 +174,5 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
+        run:
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
