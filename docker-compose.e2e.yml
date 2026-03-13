@@ -8,6 +8,12 @@ services:
     volumes:
       # Share the database directory so E2E tests can clean it up
       - db-data:/usr/src/app/localdata
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health_check.json"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
 
   e2e:
     build:
