@@ -34,9 +34,9 @@ module.exports = async () => {
       }
       if (i % 5 === 0) {
         console.log(
-          `⏳ Attempt ${i + 1}/${maxRetries}: Waiting for service... (${
+          `⏳ Attempt ${i + 1}/${maxRetries}: ${error.code || error.name} - ${
             error.message
-          })`
+          }`
         );
       }
       await new Promise(resolve => setTimeout(resolve, retryDelay));
