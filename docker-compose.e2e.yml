@@ -12,12 +12,6 @@ services:
     volumes:
       # Share the database directory so E2E tests can clean it up
       - db-data:/usr/src/app/localdata
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health_check.json', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-      start_period: 10s
 
   e2e:
     build:
@@ -29,8 +23,7 @@ services:
       # Point to the same database location as web service
       DATABASE_PATH: /usr/src/app/localdata/db.sqlite
     depends_on:
-      web:
-        condition: service_healthy
+      - web
     volumes:
       - './e2e:/usr/src/app/e2e'
       - './test-results:/usr/src/app/test-results'
