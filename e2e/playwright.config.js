@@ -15,8 +15,8 @@ module.exports = defineConfig({
     baseURL: process.env.E2E_BASE_URL || "http://web:3000",
     navigationTimeout: 15000,
     actionTimeout: 10000,
-    trace: "on-first-retry",
-    screenshot: "on",
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
     video: "retain-on-failure"
   },
   timeout: 30000,

@@ -8,8 +8,8 @@ module.exports = async () => {
 
   // Wait for web service to be ready
   const baseURL = process.env.E2E_BASE_URL || "http://web:3000";
-  const maxRetries = process.env.CI ? 60 : 30;
-  const retryDelay = 2000;
+  const maxRetries = 30;
+  const retryDelay = 1000;
 
   for (let i = 0; i < maxRetries; i++) {
     try {
@@ -34,7 +34,7 @@ module.exports = async () => {
       }
       if (i % 5 === 0) {
         console.log(
-          `⏳ Attempt ${i + 1}/${maxRetries}: ${error.code || error.name} - ${
+          `⏳ Attempt ${i + 1}/${maxRetries}: Waiting for service... (${
             error.message
           }`
         );
