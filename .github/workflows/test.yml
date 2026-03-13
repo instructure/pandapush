@@ -156,6 +156,7 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: Upload test results
         if: always()
@@ -164,6 +165,7 @@ jobs:
           name: e2e-test-results
           path: test-results/
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: Check for E2E test failures
         if: failure()
