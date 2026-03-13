@@ -10,7 +10,7 @@ const LoginPage = require("../page-objects/LoginPage");
 
 test.describe("Authentication", () => {
   test("should login with basic auth and display username", async ({
-    authenticatedPage,
+    authenticatedPage
   }) => {
     const loginPage = new LoginPage(authenticatedPage);
     await loginPage.navigateToAdmin();
@@ -23,7 +23,7 @@ test.describe("Authentication", () => {
 
     expect(authenticatedPage.url()).toContain("/admin");
     const heading = authenticatedPage.getByRole("heading", {
-      name: "Pandapush",
+      name: "Pandapush"
     });
     await expect(heading).toBeVisible();
   });
@@ -48,10 +48,10 @@ test.describe("Authentication", () => {
   });
 
   test("should require authentication to access admin area", async ({
-    page,
+    page
   }) => {
     const response = await page.goto("/admin", {
-      waitUntil: "domcontentloaded",
+      waitUntil: "domcontentloaded"
     });
     expect(response.status()).toBe(401);
 
@@ -63,12 +63,12 @@ test.describe("Authentication", () => {
     const context = await browser.newContext({
       httpCredentials: {
         username: "admin",
-        password: "wrongpassword",
-      },
+        password: "wrongpassword"
+      }
     });
     const page = await context.newPage();
     const response = await page.goto("/admin", {
-      waitUntil: "domcontentloaded",
+      waitUntil: "domcontentloaded"
     });
     expect(response.status()).toBe(401);
 
