@@ -5,11 +5,9 @@ const {
 
 module.exports = async () => {
   console.log("🚀 E2E Global Setup: Starting...");
-  const baseURL = process.env.E2E_BASE_URL || "http://web:3000";
-  console.log(`📍 Target URL: ${baseURL}`);
-  console.log(`🌐 Node version: ${process.version}`);
 
   // Wait for web service to be ready
+  const baseURL = process.env.E2E_BASE_URL || "http://web:3000";
   const maxRetries = process.env.CI ? 60 : 30;
   const retryDelay = 2000;
 
@@ -28,11 +26,6 @@ module.exports = async () => {
     } catch (error) {
       if (i === maxRetries - 1) {
         console.error("❌ Last error:", error.message);
-        console.error("❌ Error details:", {
-          code: error.code,
-          cause: error.cause,
-          stack: error.stack
-        });
         throw new Error(
           `Web service not ready after ${maxRetries} attempts. Last error: ${
             error.message
@@ -45,9 +38,6 @@ module.exports = async () => {
             error.message
           }`
         );
-        if (error.cause) {
-          console.log(`   Cause: ${error.cause.code || error.cause.message}`);
-        }
       }
       await new Promise(resolve => setTimeout(resolve, retryDelay));
     }
