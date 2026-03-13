@@ -140,8 +140,7 @@ jobs:
 
       - name: Start services
         run:
-          docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d
-          --wait web
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d web
 
       - name: Run E2E tests
         run:

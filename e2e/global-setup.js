@@ -4,12 +4,12 @@ const {
 } = require("./fixtures/db-cleanup");
 
 module.exports = async () => {
-  console.log("🚀 E2E Global Setup: Starting...");
+  console.log(`🚀 E2E Global Setup: Starting... Env: ${process.env}`);
 
   // Wait for web service to be ready
   const baseURL = process.env.E2E_BASE_URL || "http://web:3000";
-  const maxRetries = 30;
-  const retryDelay = 1000;
+  const maxRetries = process.env.CI ? 60 : 30;
+  const retryDelay = 2000;
 
   for (let i = 0; i < maxRetries; i++) {
     try {
