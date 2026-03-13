@@ -9,6 +9,4 @@ RUN npm ci --legacy-peer-deps
 
 COPY e2e ./e2e
 
-RUN mkdir -p test-results playwright-report
-
 CMD ["npx", "playwright", "test", "--config=e2e/playwright.config.js"]
