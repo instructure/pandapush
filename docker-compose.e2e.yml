@@ -1,5 +1,9 @@
 services:
   web:
+    build:
+      context: .
+      args:
+        prunedev: 'false'
     environment:
       # Use Basic Auth for E2E tests (simpler than Okta)
       AUTH_METHOD: basic

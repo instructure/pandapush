@@ -32,13 +32,6 @@ class LoginPage extends BasePage {
     const match = userInfoSection.match(/Logged in as\s+(.+)/);
     return match ? match[1].trim() : null;
   }
-
-  async logout() {
-    await this.page.getByRole("link", { name: "Logout" }).click();
-    await this.page.waitForLoadState("domcontentloaded");
-    // Give the server a moment to process the logout
-    await this.page.waitForTimeout(500);
-  }
 }
 
 module.exports = LoginPage;
