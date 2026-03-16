@@ -41,7 +41,7 @@
     "redis-evalsha": "1.1.1",
     "redlock": "4.1.0",
     "shard-manager": "^1.0.0",
-    "sqlite3": "^6.0.0"
+    "sqlite3": "npm:@vscode/sqlite3@^5.1.12-vscode"
   },
   "devDependencies": {
     "@playwright/test": "1.48.2",
