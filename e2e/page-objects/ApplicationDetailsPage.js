@@ -54,7 +54,7 @@ class ApplicationDetailsPage extends BasePage {
   }
 
   async deleteApplication(confirm = true) {
-    this.page.once("dialog", async (dialog) => {
+    this.page.once("dialog", async dialog => {
       if (confirm) {
         const textToType = "confirm";
         await dialog.accept(textToType); // type "confirm" and click OK in Playwright

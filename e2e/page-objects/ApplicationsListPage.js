@@ -8,7 +8,7 @@ class ApplicationsListPage extends BasePage {
     await this.page.goto("/admin", { waitUntil: "domcontentloaded" });
     await this.page.getByRole("heading", { name: "Pandapush" }).waitFor({
       state: "visible",
-      timeout: 15000,
+      timeout: 15000
     });
   }
 
@@ -26,7 +26,7 @@ class ApplicationsListPage extends BasePage {
     await this.page.getByRole("button", { name: "Submit" }).click();
     // Wait for modal to close and redirect
     await this.page.waitForURL(/\/admin\/application\/[^/]+/, {
-      timeout: 10000,
+      timeout: 10000
     });
   }
 
@@ -40,7 +40,7 @@ class ApplicationsListPage extends BasePage {
         id: cells[0].trim(),
         name: cells[1].trim(),
         createdAt: cells[2].trim(),
-        createdBy: cells[3].trim(),
+        createdBy: cells[3].trim()
       });
     }
 
@@ -61,7 +61,7 @@ class ApplicationsListPage extends BasePage {
   async clickApplication(applicationId) {
     await this.page.getByRole("link", { name: applicationId }).click();
     await this.page.waitForURL(/\/admin\/application\/[^/]+/, {
-      timeout: 10000,
+      timeout: 10000
     });
   }
 }
