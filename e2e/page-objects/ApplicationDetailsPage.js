@@ -1,4 +1,5 @@
 const BasePage = require("./BasePage");
+const { expect } = require("@playwright/test");
 
 /**
  * Page Object for Application Details page (/admin/application/:id)
@@ -10,6 +11,8 @@ class ApplicationDetailsPage extends BasePage {
       .locator("tr")
       .filter({ has: this.page.locator('th:has-text("ID")') });
     const cell = row.locator("td");
+    // Wait for the cell to have non-empty content (data loaded from API)
+    await expect(cell).toHaveText(/.+/, { timeout: 10000 });
     return (await cell.textContent()).trim();
   }
 
@@ -18,6 +21,8 @@ class ApplicationDetailsPage extends BasePage {
       .locator("tr")
       .filter({ has: this.page.locator('th:has-text("Name")') });
     const cell = row.locator("td");
+    // Wait for the cell to have non-empty content (data loaded from API)
+    await expect(cell).toHaveText(/.+/, { timeout: 10000 });
     return (await cell.textContent()).trim();
   }
 

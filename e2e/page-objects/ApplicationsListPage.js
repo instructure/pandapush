@@ -24,8 +24,8 @@ class ApplicationsListPage extends BasePage {
     await this.clickNewApplication();
     await this.page.getByLabel("Name").fill(name);
     await this.page.getByRole("button", { name: "Submit" }).click();
-    // Wait for modal to close and redirect
-    await this.page.waitForURL(/\/admin\/application\/[^/]+/, {
+    // Wait for modal to close and redirect to info tab
+    await this.page.waitForURL(/\/admin\/application\/[^/]+\/info/, {
       timeout: 10000
     });
   }
@@ -60,7 +60,7 @@ class ApplicationsListPage extends BasePage {
 
   async clickApplication(applicationId) {
     await this.page.getByRole("link", { name: applicationId }).click();
-    await this.page.waitForURL(/\/admin\/application\/[^/]+/, {
+    await this.page.waitForURL(/\/admin\/application\/[^/]+\/info/, {
       timeout: 10000
     });
   }

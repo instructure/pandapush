@@ -23,8 +23,8 @@ test.describe("Application Management", () => {
 
       await applicationsPage.createApplication(appName);
 
-      // Should redirect to application details page
-      expect(authenticatedPage.url()).toMatch(/\/admin\/application\/[^/]+/);
+      // Should redirect to application details page (with /info suffix)
+      expect(authenticatedPage.url()).toMatch(/\/admin\/application\/[^/]+\/info/);
 
       // Verify application details page loaded
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -124,7 +124,7 @@ test.describe("Application Management", () => {
       await detailsPage.deleteApplication(false);
 
       // Should still be on the application details page
-      expect(authenticatedPage.url()).toContain(`/admin/application/${appId}`);
+      expect(authenticatedPage.url()).toContain(`/admin/application/${appId}/info`);
 
       // Application still exists
       const displayedName = await detailsPage.getApplicationName();
