@@ -41,7 +41,7 @@ function getFutureDate(daysFromNow = 30) {
 test.describe("Keys Management", () => {
   test.describe("Create Key Flow", () => {
     test("should create a new key and display it in the keys table", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -79,7 +79,7 @@ test.describe("Keys Management", () => {
     });
 
     test("should display key ID and secret in alert after creation", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -105,7 +105,7 @@ test.describe("Keys Management", () => {
     });
 
     test("should support creating multiple keys for one application", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -139,20 +139,20 @@ test.describe("Keys Management", () => {
       const keys = await keysPage.getKeys();
       expect(keys.length).toBe(initialCount + 3);
 
-      const keyIds = keys.map((key) => key.id);
+      const keyIds = keys.map(key => key.id);
       expect(keyIds).toContain(key1.id);
       expect(keyIds).toContain(key2.id);
       expect(keyIds).toContain(key3.id);
 
       // Verify purposes are preserved
-      const purposes = keys.map((k) => k.purpose);
+      const purposes = keys.map(k => k.purpose);
       expect(purposes).toContain("Production Key");
       expect(purposes).toContain("Staging Key");
       expect(purposes).toContain("Development Key");
     });
 
     test("should disable submit button when required fields are empty", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -172,7 +172,7 @@ test.describe("Keys Management", () => {
     });
 
     test("should enable submit button when all required fields are filled", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -195,7 +195,7 @@ test.describe("Keys Management", () => {
     });
 
     test("should close new key modal without creating key", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -228,7 +228,7 @@ test.describe("Keys Management", () => {
 
   test.describe("Keys Display and Status", () => {
     test("should display key status as active for newly created keys", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -248,7 +248,7 @@ test.describe("Keys Management", () => {
     });
 
     test("should display key expiration date", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -270,7 +270,7 @@ test.describe("Keys Management", () => {
     });
 
     test("should display creation info with username", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -291,7 +291,7 @@ test.describe("Keys Management", () => {
     });
 
     test("should display empty usage statistics for new keys", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -315,7 +315,7 @@ test.describe("Keys Management", () => {
 
   test.describe("Initial State", () => {
     test("should display keys tab with New Key button available", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -343,7 +343,7 @@ test.describe("Keys Management", () => {
 
   test.describe("Navigation", () => {
     test("should navigate directly to keys tab via URL", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);
@@ -366,7 +366,7 @@ test.describe("Keys Management", () => {
     });
 
     test("should persist keys when navigating back from other tabs", async ({
-      authenticatedPage,
+      authenticatedPage
     }) => {
       const applicationsPage = new ApplicationsListPage(authenticatedPage);
       const detailsPage = new ApplicationDetailsPage(authenticatedPage);

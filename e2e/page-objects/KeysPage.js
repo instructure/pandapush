@@ -8,7 +8,7 @@ const { expect } = require("@playwright/test");
 class KeysPage extends BasePage {
   async navigate(applicationId) {
     await this.page.goto(`/admin/application/${applicationId}/keys`, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "domcontentloaded"
     });
     await this.page
       .getByRole("button", { name: "New Key" })
@@ -64,7 +64,7 @@ class KeysPage extends BasePage {
     let keyCredentials = null;
 
     // Set up alert handler to capture key ID and secret
-    this.page.once("dialog", async (dialog) => {
+    this.page.once("dialog", async dialog => {
       const message = dialog.message();
       // Parse the alert message to extract ID and secret
       // Format: "Your new key ID is\n\n{id}\n\n and secret is\n\n{secret}\n\n..."
@@ -74,7 +74,7 @@ class KeysPage extends BasePage {
       if (idMatch && secretMatch) {
         keyCredentials = {
           id: idMatch[1],
-          secret: secretMatch[1],
+          secret: secretMatch[1]
         };
       }
 
@@ -110,7 +110,7 @@ class KeysPage extends BasePage {
           expires: cells[3].trim(),
           status: cells[4].trim(),
           lastUsed: cells[5].trim(),
-          used: cells[6].trim(),
+          used: cells[6].trim()
         });
       }
     }
@@ -130,7 +130,7 @@ class KeysPage extends BasePage {
 
   async getKeyByPurpose(purpose) {
     const keys = await this.getKeys();
-    return keys.find((key) => key.purpose === purpose);
+    return keys.find(key => key.purpose === purpose);
   }
 
   async isSubmitButtonDisabled() {
