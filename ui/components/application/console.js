@@ -415,6 +415,7 @@ export default class Console extends React.Component {
           type={query.pubChannelType || "public"}
           path={query.pubChannelPath || ""}
           updateParams={this.updateChannelParams.bind(this, "pubChannel")}
+          testIdPrefix="publish"
         />
 
         <br />
@@ -464,6 +465,7 @@ export default class Console extends React.Component {
           updateParams={this.updateChannelParams.bind(this, "subChannel")}
           showPresence="1"
           showMeta="1"
+          testIdPrefix="subscribe"
         />
 
         {this.renderPresenceFields()}
