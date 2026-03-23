@@ -57,32 +57,48 @@ export default class ChannelPicker extends React.Component {
           <FlexItem padding="x-small">{this.props.applicationId}</FlexItem>
           <FlexItem padding="x-small">/</FlexItem>
           <FlexItem padding="x-small">
-            <Select
-              width="8em"
-              label={<ScreenReaderContent>Path Type</ScreenReaderContent>}
-              selectedOption={this.props.type}
-              onChange={(_, { value }) => {
-                this.props.updateParams({
-                  channelType: value,
-                  path: this.props.path
-                });
-              }}
+            <div
+              data-testid={
+                this.props.testIdPrefix
+                  ? `${this.props.testIdPrefix}-channel-type`
+                  : undefined
+              }
             >
-              {options}
-            </Select>
+              <Select
+                width="8em"
+                label={<ScreenReaderContent>Path Type</ScreenReaderContent>}
+                selectedOption={this.props.type}
+                onChange={(_, { value }) => {
+                  this.props.updateParams({
+                    channelType: value,
+                    path: this.props.path
+                  });
+                }}
+              >
+                {options}
+              </Select>
+            </div>
           </FlexItem>
           <FlexItem padding="x-small">/</FlexItem>
           <FlexItem padding="x-small" grow>
-            <TextInput
-              label={<ScreenReaderContent>Path</ScreenReaderContent>}
-              value={this.props.path}
-              onChange={e => {
-                this.props.updateParams({
-                  channelType: this.props.type,
-                  path: e.target.value
-                });
-              }}
-            />
+            <div
+              data-testid={
+                this.props.testIdPrefix
+                  ? `${this.props.testIdPrefix}-channel-path`
+                  : undefined
+              }
+            >
+              <TextInput
+                label={<ScreenReaderContent>Path</ScreenReaderContent>}
+                value={this.props.path}
+                onChange={e => {
+                  this.props.updateParams({
+                    channelType: this.props.type,
+                    path: e.target.value
+                  });
+                }}
+              />
+            </div>
           </FlexItem>
         </Flex>
       </div>
