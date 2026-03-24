@@ -63,27 +63,30 @@ class KeysPage extends BasePage {
   async createKey(purpose, futureDate) {
     let keyCredentials = null;
 
-    // Set up alert handler to capture key ID and secret
-    this.page.once("dialog", async dialog => {
-      const message = dialog.message();
-      // Parse the alert message to extract ID and secret
-      // Format: "Your new key ID is\n\n{id}\n\n and secret is\n\n{secret}\n\n..."
-      const idMatch = message.match(/key ID is\s+([^\s]+)/);
-      const secretMatch = message.match(/secret is\s+([^\s]+)/);
-
-      if (idMatch && secretMatch) {
-        keyCredentials = {
-          id: idMatch[1],
-          secret: secretMatch[1]
-        };
-      }
-
-      await dialog.accept();
-    });
-
     await this.clickNewKey();
     await this.fillKeyDetails(purpose, futureDate);
+
+    // Set up dialog promise BEFORE triggering the action
+    const dialogPromise = this.page.waitForEvent("dialog");
     await this.submitKeyCreation();
+
+    // Wait for the dialog to appear
+    const dialog = await dialogPromise;
+    const message = dialog.message();
+
+    // Parse the alert message to extract ID and secret
+    // Format: "Your new key ID is\n\n{id}\n\n and secret is\n\n{secret}\n\n..."
+    const idMatch = message.match(/key ID is\s+([^\s]+)/);
+    const secretMatch = message.match(/secret is\s+([^\s]+)/);
+
+    if (idMatch && secretMatch) {
+      keyCredentials = {
+        id: idMatch[1],
+        secret: secretMatch[1]
+      };
+    }
+
+    await dialog.accept();
 
     // Wait for modal to close after successful creation
     await expect(
