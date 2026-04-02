@@ -49,6 +49,15 @@ docker compose run --rm web npm run test:integration
 
 Tests use Jest. Integration tests live in `server/__integration__/`.
 
+### Smoke Tests
+
+End-to-end tests that run against a live instance live in `smoke-tests/` (TypeScript, Vitest). Requires the port to be exposed via the smoke-test compose override:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.smoke-test.yml up -d
+cd smoke-tests && npm install && npm test
+```
+
 ## Architecture Notes
 
 - **Runtime**: Nginx + Phusion Passenger (Node.js mode). Passenger loads `app.js`, which is a symlink to `server/index.js`.

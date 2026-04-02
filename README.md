@@ -288,10 +288,22 @@ for iOS and Android, but I have not tested any of them.
 
 - Run tests in docker compose: `docker compose run --rm web npm run test:coverage`
 
-## Manual Testing
+## Smoke Tests
 
-Currently, there is lots of room for improving our test coverage/quality.
-Therefore, it's important that we manually test the basic pub-sub functionality via the UI as well.
+An end-to-end smoke test suite lives in `smoke-tests/`.
+It runs against a live Pandapush instance and verifies the full pub/sub stack.
+
+```bash
+# Start the stack with the port exposed
+docker compose -f docker-compose.yml -f docker-compose.smoke-test.yml up -d
+
+# Run the suite
+cd smoke-tests && npm install && npm test
+```
+
+See [`smoke-tests/README.md`](smoke-tests/README.md) for full configuration options and the test plan matrix.
+
+## Manual Testing
 
 **Prerequisite**: setup dinghy-http-proxy
 
