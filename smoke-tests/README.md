@@ -61,10 +61,10 @@ Tests are tiered by risk. Higher tiers run in fewer environments.
 | Expired token → rejected                           | ✅     | ☑️   | ☑️   | ❌    |
 | Token for wrong channel → rejected                 | ✅     | ☑️   | ☑️   | ❌    |
 | Presence channel round-trip                        | ✅     | ☑️   | ❌    | ❌    |
-| Admin API: create application                      | ☑️    | ❌    | ❌    | ❌    |
-| Admin API: create key                              | ☑️    | ❌    | ❌    | ❌    |
-| Admin API: generate token                          | ☑️    | ❌    | ❌    | ❌    |
-| Admin API: delete application                      | ☑️    | ❌    | ❌    | ❌    |
+| Admin API: create application                      | ✅     | ❌    | ❌    | ❌    |
+| Admin API: create key                              | ✅     | ❌    | ❌    | ❌    |
+| Admin API: generate token                          | ✅     | ❌    | ❌    | ❌    |
+| Admin API: delete application                      | ✅     | ❌    | ❌    | ❌    |
 
 **Legend**:
 * ✅: supported
