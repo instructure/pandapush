@@ -13,8 +13,8 @@ describe("Publishing", () => {
   const channel = `/${config.appId}/public/${uniquePath}`;
   const payload = { message: "smoke test" };
 
-  describe("with basic auth (key/secret)", () => {
-    it("should allow publishing with valid key/secret", async () => {
+  describe("with basic auth using valid key/secret", () => {
+    it("should allow publishing", async () => {
       const res = await http.post(publishUrl, payload, {
         auth: { username: config.keyId, password: config.keySecret },
       });
@@ -34,8 +34,8 @@ describe("Publishing", () => {
     });
   });
 
-  describe("with JWT token", () => {
-    it("should allow publishing with valid token (pub: true)", async () => {
+  describe("with valid JWT token (pub: true)", () => {
+    it("should allow publishing", async () => {
       const token = generateToken(config.keyId, config.keySecret, {
         channel,
         pub: true,
@@ -47,5 +47,10 @@ describe("Publishing", () => {
 
       expect(res.status).toBe(200);
     });
+
+    // Note: expired token and wrong channel tests are covered on the
+    // subscription path (subscription.test.ts). The HTTP publish endpoint
+    // hangs on auth failures due to a Faye errback propagation issue over
+    // the network, so we don't test those cases here.
   });
 });
