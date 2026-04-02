@@ -1,0 +1,51 @@
+import { http } from "../lib/http";
+import { generateToken } from "../lib/token";
+import { waitForReady } from "../lib/readiness";
+import { config } from "../config";
+
+beforeAll(async () => {
+  await waitForReady();
+});
+
+describe("Publishing", () => {
+  const uniquePath = `smoke-${Date.now()}`;
+  const publishUrl = `/channel/${config.appId}/public/${uniquePath}`;
+  const channel = `/${config.appId}/public/${uniquePath}`;
+  const payload = { message: "smoke test" };
+
+  describe("with basic auth (key/secret)", () => {
+    it("should allow publishing with valid key/secret", async () => {
+      const res = await http.post(publishUrl, payload, {
+        auth: { username: config.keyId, password: config.keySecret },
+      });
+
+      expect(res.status).toBe(200);
+    });
+  });
+
+  describe("without authentication", () => {
+    it("should reject publishing", async () => {
+      const res = await http.post(publishUrl, payload);
+
+      expect(res).toMatchObject({
+        status: 403,
+        data: "Unauthorized",
+      });
+    });
+  });
+
+  describe("with JWT token", () => {
+    it("should allow publishing with valid token (pub: true)", async () => {
+      const token = generateToken(config.keyId, config.keySecret, {
+        channel,
+        pub: true,
+      });
+
+      const res = await http.post(publishUrl, payload, {
+        headers: { Authorization: `Token ${token}` },
+      });
+
+      expect(res.status).toBe(200);
+    });
+  });
+});
