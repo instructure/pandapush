@@ -5,3 +5,4 @@ ui/public/**
 coverage
 public/
 app.js
+smoke-tests/
