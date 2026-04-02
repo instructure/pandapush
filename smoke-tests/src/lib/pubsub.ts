@@ -8,6 +8,14 @@ interface SubscribeOptions {
   onSubscribed?: () => void | Promise<void>;
 }
 
+interface PresenceOptions {
+  fayeUrl: string;
+  channel: string;
+  token1: string;
+  token2: string;
+  timeoutMs?: number;
+}
+
 export function subscribeAndWaitForMessage(
   options: SubscribeOptions,
 ): Promise<unknown> {
@@ -50,6 +58,62 @@ export function subscribeAndWaitForMessage(
       (error: Error) => {
         clearTimeout(timer);
         client.disconnect();
+        reject(error);
+      },
+    );
+  });
+}
+
+export function waitForPresenceNotification(
+  options: PresenceOptions,
+): Promise<unknown> {
+  const { fayeUrl, channel, token1, token2, timeoutMs = 10_000 } = options;
+
+  const client1 = new Faye.Client(fayeUrl);
+  const client2 = new Faye.Client(fayeUrl);
+
+  const addAuthExtension = (client: Faye.Client, token: string) => {
+    client.addExtension({
+      outgoing(message, callback) {
+        if (message.channel === "/meta/subscribe") {
+          message.ext = { ...(message.ext as object), auth: { token } };
+        }
+        callback(message);
+      },
+    });
+  };
+
+  addAuthExtension(client1, token1);
+  addAuthExtension(client2, token2);
+
+  const cleanup = () => {
+    client1.disconnect();
+    client2.disconnect();
+  };
+
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error(`no presence notification within ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    const subscription1 = client1.subscribe(channel, (message: unknown) => {
+      const msg = message as Record<string, unknown>;
+      if (msg.subscribe) {
+        clearTimeout(timer);
+        cleanup();
+        resolve(msg);
+      }
+    });
+
+    subscription1.then(
+      () => {
+        // client 1 subscribed — now subscribe client 2 to trigger presence notification
+        client2.subscribe(channel, () => {});
+      },
+      (error: Error) => {
+        clearTimeout(timer);
+        cleanup();
         reject(error);
       },
     );

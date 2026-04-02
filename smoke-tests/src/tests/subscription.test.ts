@@ -1,6 +1,6 @@
 import { http } from "../lib/http";
 import { generateToken } from "../lib/token";
-import { subscribeAndWaitForMessage, expectSubscriptionRejected } from "../lib/pubsub";
+import { expectSubscriptionRejected, subscribeAndWaitForMessage, waitForPresenceNotification } from "../lib/pubsub";
 import { waitForReady } from "../lib/readiness";
 import { config } from "../config";
 
@@ -104,6 +104,36 @@ describe("Subscription", () => {
         });
 
         expect(error.message).toMatch(/channel|match/i);
+      });
+    });
+  });
+
+  describe("presence channels when a second client joins", () => {
+    it("should broadcast presence", async () => {
+      const channel = `/${config.appId}/presence/smoke-presence-${uniqueId}`;
+      const token1 = generateToken(config.keyId, config.keySecret, {
+        channel,
+        sub: true,
+        presence: { id: "smoke-user-1", name: "Smoke User 1" },
+      });
+      const token2 = generateToken(config.keyId, config.keySecret, {
+        channel,
+        sub: true,
+        presence: { id: "smoke-user-2", name: "Smoke User 2" },
+      });
+      const notification = await waitForPresenceNotification({
+        fayeUrl: config.fayeUrl,
+        channel,
+        token1,
+        token2,
+      });
+
+      const msg = notification as Record<string, unknown>;
+      const subscribed = msg.subscribe as Record<string, unknown>;
+
+      expect(subscribed["smoke-user-2"]).toMatchObject({
+        id: "smoke-user-2",
+        name: "Smoke User 2",
       });
     });
   });

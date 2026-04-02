@@ -58,9 +58,9 @@ Tests are tiered by risk. Higher tiers run in fewer environments.
 | Pub/sub round-trip (subscribe + publish + receive) | ✅     | ☑️   | ☑️   | ☑️   |
 | Private channel subscribe with valid JWT           | ✅     | ☑️   | ☑️   | ❌    |
 | Private channel subscribe without auth → rejected  | ✅     | ☑️   | ☑️   | ❌    |
-| Expired token → rejected                           | ☑️    | ☑️   | ☑️   | ❌    |
-| Token for wrong channel → rejected                 | ☑️    | ☑️   | ☑️   | ❌    |
-| Presence channel round-trip                        | ☑️    | ☑️   | ❌    | ❌    |
+| Expired token → rejected                           | ✅     | ☑️   | ☑️   | ❌    |
+| Token for wrong channel → rejected                 | ✅     | ☑️   | ☑️   | ❌    |
+| Presence channel round-trip                        | ✅     | ☑️   | ❌    | ❌    |
 | Admin API: create application                      | ☑️    | ❌    | ❌    | ❌    |
 | Admin API: create key                              | ☑️    | ❌    | ❌    | ❌    |
 | Admin API: generate token                          | ☑️    | ❌    | ❌    | ❌    |
