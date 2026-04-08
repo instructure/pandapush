@@ -1,5 +1,11 @@
 services:
   web:
+    build:
+      context: .
+      args:
+        prunedev: 'false'
+    volumes:
+      - './localdata:/usr/src/app/localdata'
     ports:
       - "3000:3000"
   smoke:
