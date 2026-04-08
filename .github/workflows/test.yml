@@ -104,6 +104,54 @@ jobs:
         if: always()
         run: docker compose down -v
 
+  smoke:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      COMPOSE_FILES: -f docker-compose.yml -f docker-compose.smoke-test.yml
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-smoke-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-smoke-
+            ${{ runner.os }}-buildx-
+
+      - name: Build Docker images
+        run: docker compose $COMPOSE_FILES build --pull
+        env:
+          DOCKER_BUILDKIT: 1
+          COMPOSE_DOCKER_CLI_BUILD: 1
+
+      - name: Create required directories
+        run: |
+          mkdir -p localdata
+          chmod 777 localdata
+
+      - name: Start services
+        run: docker compose $COMPOSE_FILES up -d web
+
+      - name: Run smoke tests
+        run: docker compose $COMPOSE_FILES run --rm smoke
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose $COMPOSE_FILES logs web
+
+      - name: Cleanup
+        if: always()
+        run: docker compose $COMPOSE_FILES down -v
+
   e2e:
     needs: test
     runs-on: ubuntu-latest

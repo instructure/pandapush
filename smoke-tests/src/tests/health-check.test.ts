@@ -6,6 +6,11 @@ beforeAll(async () => {
 });
 
 describe("Health Check", () => {
+  // TODO: remove after verifying CI pipeline fails on assertion errors
+  it("should fail intentionally", () => {
+    expect(1).toBe(2);
+  });
+
   it("should return 200 with version info", async () => {
     const res = await http.get("/health_check.json");
 
