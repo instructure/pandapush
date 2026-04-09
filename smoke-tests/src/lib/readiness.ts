@@ -1,7 +1,9 @@
 import { http } from "./http";
 
+const defaultMaxAttempts = Number(process.env.SMOKE_TEST_HOOK_TIMEOUT_SECONDS) || 60;
+
 export async function waitForReady(
-  maxAttempts = 60,
+  maxAttempts = defaultMaxAttempts,
   intervalMs = 1000,
 ): Promise<void> {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
