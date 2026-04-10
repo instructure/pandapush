@@ -1,4 +1,30 @@
 services:
   web:
+    build:
+      context: .
+      args:
+        prunedev: 'false'
+    volumes:
+      - './localdata:/usr/src/app/localdata'
     ports:
       - "3000:3000"
+  smoke:
+    image: node:20-alpine
+    working_dir: /smoke-tests
+    volumes:
+      - ./smoke-tests:/smoke-tests
+      - smoke_node_modules:/smoke-tests/node_modules
+    environment:
+      SMOKE_TEST_BASE_URL: http://web:3000
+      SMOKE_TEST_APP_ID: devapp
+      SMOKE_TEST_KEY_ID: devkey
+      SMOKE_TEST_KEY_SECRET: devsecret
+      SMOKE_TEST_ENVIRONMENT: local
+      SMOKE_TEST_ADMIN_USERNAME: admin
+      SMOKE_TEST_ADMIN_PASSWORD: password
+    command: sh -c "npm ci && npm test"
+    depends_on:
+      - web
+
+volumes:
+  smoke_node_modules:
